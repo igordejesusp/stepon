@@ -292,6 +292,8 @@ body.ob .lvl{width:54px;height:54px;flex:none;border-radius:50%;background:var(-
 .aavg{position:absolute;right:2px;transform:translateY(-100%);font-size:9px;color:rgba(255,255,255,.65);pointer-events:none}
 .axt{position:relative;height:30px;grid-column:2}.axt i{position:absolute;top:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#7b8590}.axt span{position:absolute;top:13px;font-size:10px;color:var(--dim);font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
 .sw1{margin-top:44px}.sw1 svg{height:140px}
+.pts{display:inline-block;margin-left:2px}.pts i{font-style:normal;animation:ptpisca 1.8s ease-in-out infinite}.pts i:nth-child(2){animation-delay:.3s}.pts i:nth-child(3){animation-delay:.6s}
+@keyframes ptpisca{0%,100%{opacity:.15}50%{opacity:1}}.b.conectando:disabled{opacity:1;cursor:default}
 </style>
 </head>
 <body>
@@ -780,12 +782,12 @@ const SIMPLES=()=>{const v=LS.get('simples',null);if(v!=null)return !!v;return !
 window.setSimples=v=>{LS.set('simples',v?1:0);toast(v?'MODO SIMPLES':'MODO COMPLETO');render()};
 function rIni(){
   const el=$('#ini');
-  if(!temConta()){el.innerHTML=`<div class="sec">CONFIGURAÇÃO</div><div class="card alert"><h2>Sem conexão com o Intervals.icu</h2><p class="empty">Toque no botão abaixo para entrar com a sua conta.</p><button class="b pri full" style="margin-top:10px" onclick="entrarIntervals()">Entrar com o Intervals</button></div>`;return}
+  if(!temConta()){el.innerHTML=`<div class="sec">CONFIGURAÇÃO</div><div class="card alert"><h2>Sem conexão com o Intervals.icu</h2><p class="empty">Toque no botão abaixo para entrar com a sua conta.</p>${btnEntrar('margin-top:10px')}</div>`;return}
   const t=TODAY(),ds=ymd(t),r=readiness(t),last=D.acts.find(isRun),S=pmc(),cur=S[S.length-1];
   const w=r.w,vo2=[...D.well].reverse().find(x=>x.vo2);
   let h='';
   // a conexão foi recusada (chave trocada ou acesso revogado): mostra o caminho para entrar de novo
-  if(LS.get('authRuim',0))h+=`<div class="card alert"><div class="lbl bad">O INTERVALS NÃO ACEITOU A CONEXÃO</div><p class="empty" style="margin-top:4px">A chave ou o acesso deixou de valer. Entre de novo com a sua conta; as suas corridas continuam lá.</p><button class="b pri full" style="margin-top:10px" onclick="entrarIntervals()">Entrar com o Intervals</button><button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`;
+  if(LS.get('authRuim',0))h+=`<div class="card alert"><div class="lbl bad">O INTERVALS NÃO ACEITOU A CONEXÃO</div><p class="empty" style="margin-top:4px">A chave ou o acesso deixou de valer. Entre de novo com a sua conta; as suas corridas continuam lá.</p>${btnEntrar('margin-top:10px')}<button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`;
   if(!LS.get('guia'))h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">COMO USAR</div><p class="empty" style="margin-top:4px">Toque no <b style="color:var(--hi)">?</b> ao lado de cada título para ver o que o número significa. Os cartões de sono, VO2 e FC abrem um resumo com o histórico.</p><button class="b sm pri" style="margin-top:8px" onclick="LS.set('guia',1);render()">Entendi</button></div>`;
   if(D.athlete&&!D.athlete.gAct&&hasWatch())h+=`<div class="card alert"><div class="lbl bad">ALERTA // SINCRONIZAÇÃO</div><p class="empty" style="margin-top:4px">As corridas do Garmin não estão chegando ao Intervals.icu (último treino recebido: ${last?last.date.slice(0,10).split('-').reverse().join('/'):'nenhum'}). Veja MAIS → Dispositivos.</p></div>`;
   // resultado do teste de 1 km ainda não aplicado
@@ -1106,7 +1108,7 @@ function rMais(){
   if(SIMPLES())h=h.slice(0,mA);
   h+=`<div class="sec">CONEXÃO</div><div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?'<span class="tag ok">CONECTADO</span>':'<span class="tag bad">NÃO CONECTADO</span>'}</div>
   <p class="empty" style="margin-top:6px">${CFG.token?'Conectado pelo login do Intervals. O app não guarda a sua senha.':CFG.key?'Conectado pelo ID e pela chave de API.':'Entre com a sua conta do Intervals para o app ler as suas corridas e mandar os treinos.'}</p>
-  ${CFG.token?'':'<button class="b pri full" style="margin-top:10px" onclick="entrarIntervals()">Entrar com o Intervals</button>'}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
+  ${CFG.token?'':btnEntrar('margin-top:10px')}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
   <details style="margin-top:10px"><summary class="meta" style="cursor:pointer">Usar o ID e a chave de API</summary>${connForm('saveConn()','Salvar e sincronizar')}</details></div>
   <div class="sec">SOBRE</div><div class="card"><p class="empty">Coach: por enquanto a leitura e os ajustes são calculados no próprio app (carga pela FC, forma, fadiga, VDOT, deriva cardíaca). A conexão com o Claude pela API da Anthropic entra na próxima fase, por um servidor próprio, para a chave não ficar no celular.</p><p class="empty" style="margin-top:8px"><a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--blue)">Política de privacidade</a></p></div>`;
   $('#mais').innerHTML=h;
@@ -1320,8 +1322,12 @@ const OAUTH={id:'1688',auth:'https://intervals.icu/oauth/authorize',token:'https
   scope:'ACTIVITY:WRITE,WELLNESS:READ,CALENDAR:WRITE,SETTINGS:READ'};
 const redirUri=()=>location.origin+location.pathname;
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+let CONECTANDO=/[?&](code|error)=/.test(location.search)?'volta':'';
+const btnEntrar=(st)=>CONECTANDO?`<button class="b pri full conectando" style="${st}" disabled>${CONECTANDO==='volta'?'Conectando':'Abrindo o Intervals'}<span class="pts"><i>.</i><i>.</i><i>.</i></span></button>${CONECTANDO==='volta'?'<p class="meta" style="margin:8px 0 0;text-align:center;line-height:1.5">Pode levar alguns segundos. Estamos buscando as suas corridas.</p>':''}`:`<button class="b pri full" style="${st}" onclick="entrarIntervals()">Entrar com o Intervals</button>`;
+window.addEventListener('pageshow',e=>{if(e.persisted&&CONECTANDO==='ida'){CONECTANDO='';render()}});
 window.entrarIntervals=async()=>{
   if(!/^\d+$/.test(OAUTH.id))return toast('O LOGIN DO INTERVALS AINDA ESTÁ SENDO CONFIGURADO',3500);
+  CONECTANDO='ida';render();
   const v=b64u(crypto.getRandomValues(new Uint8Array(48))),st=b64u(crypto.getRandomValues(new Uint8Array(16)));
   const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
   LS.set('oauth',{v,st,t:Date.now()});
@@ -1334,7 +1340,8 @@ async function trocaCodigo(body){
     const r=await fetch(PUBURL+'/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     return {ok:r.ok,status:r.status,j:await r.json().catch(()=>({}))}}
 }
-async function voltaOAuth(){
+async function voltaOAuth(){const was=CONECTANDO;try{return await voltaOAuth0()}finally{CONECTANDO='';if(was)render()}}
+async function voltaOAuth0(){
   const q=new URLSearchParams(location.search);if(!q.get('code')&&!q.get('error'))return false;
   history.replaceState(null,'',redirUri());
   const o=LS.get('oauth',null);LS.set('oauth',null);
@@ -1439,7 +1446,7 @@ function rOB(){
   const o=(k,v,t,sub)=>`<button class="opt ${a[k]===v?'on':''}" onclick="obSet('${k}',${q(v)})"><span>${t}${sub?`<small>${sub}</small>`:''}</span></button>`;
   let h=s.id==='conn'?'':`<div class="row" style="justify-content:space-between;margin-bottom:8px">${OB.i>0?`<button class="b sm" onclick="obGo(-1)">◀ Voltar</button>`:OB.force?`<button class="b sm" onclick="obCancel()">Cancelar</button>`:'<span></span>'}<span class="meta">${OB.i+1} de ${st.length}</span></div><div class="bar" style="margin-bottom:18px"><i style="width:${(OB.i+1)/st.length*100}%"></i></div>`;
   if(s.id==='conn')h+=`<div style="text-align:center;margin:18px 0 16px"><img src="logo.svg" alt="" style="height:96px"></div><div class="obh" style="text-align:center">Bem-vindo ao Boonie Run</div><p class="obp" style="text-align:center">Treino pronto, guiado e no seu ritmo. Para começar, entre com o Intervals.icu: o site gratuito que guarda as suas corridas e conversa com vários relógios.</p>
-    <button class="b pri full" style="min-height:56px;font-size:16px" onclick="entrarIntervals()">Entrar com o Intervals</button>
+    ${btnEntrar('min-height:56px;font-size:16px')}
     <p class="meta" style="margin:8px 0 16px;text-align:center;line-height:1.5">É de graça e leva uns 3 minutos. Você entra com a sua conta do Intervals, ou cria uma na hora, e autoriza o app. Não precisa copiar chave nenhuma. Depois do login, perguntamos sobre o seu relógio e montamos o plano.</p>
     <details class="card"><summary><span>Prefiro colar o ID e a chave</span></summary><div style="margin-top:10px"><div class="card"><div class="cs"><i>1</i><div><b>Tenha uma conta no Intervals</b><p class="empty">O cadastro é gratuito. Já tem conta? Pule para o passo 2.</p></div></div><a class="b full" href="https://intervals.icu/" target="_blank" rel="noopener">Abrir o Intervals.icu</a></div>
     <div class="card"><div class="cs"><i>2</i><div><b>Copie o ID e a chave</b><p class="empty">No Intervals, abra <b>Settings</b> e desça até <b>Developer Settings</b>. Copie o <b>Athlete ID</b> (começa com i). Se ainda não houver uma <b>API Key</b>, crie e copie também.</p></div></div><a class="b full" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as configurações</a></div>
