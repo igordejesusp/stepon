@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#000000">
 <title>Boonie Run</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v3.png">
 <script>
 // no iPhone aberto pela Tela de Início (barra de status transparente) a página recebe a altura da tela menos a barra de status,
 // e sobra uma faixa preta embaixo; aqui o app ocupa a altura real da tela, em qualquer modelo e orientação
@@ -392,7 +392,7 @@ async function sync(full){
     await analyzeRuns(full);
     publishMine().catch(()=>{}); // corrida nova entra no ranking público (só para quem aceitou)
     toast('SINCRONIZADO // '+D.acts.length+' ATIVIDADES');
-  }catch(e){const neg=/HTTP 40[13]/.test(e.message);LS.set('authRuim',neg?1:0);toast(e.message==='SEM CHAVE'?'CONECTE O INTERVALS EM MAIS':neg?'O INTERVALS NÃO ACEITOU A CONEXÃO. TOQUE EM ENTRAR COM O INTERVALS':'FALHA NA SINCRONIZAÇÃO // '+e.message,4500)}
+  }catch(e){const neg=/HTTP 40[13]/.test(e.message);LS.set('authRuim',neg?1:0);toast(e.message==='SEM CHAVE'?'CONECTE O INTERVALS EM MAIS':neg?(CFG.token?'ESTE APARELHO PERDEU O ACESSO. TOQUE EM RECONECTAR':'O INTERVALS NÃO ACEITOU A CONEXÃO. TOQUE EM ENTRAR COM O INTERVALS'):'FALHA NA SINCRONIZAÇÃO // '+e.message,4500)}
   btn.disabled=false;btn.classList.remove('gira');render();setTimeout(checaNivel,2700);
 }
 
@@ -787,7 +787,7 @@ function rIni(){
   const w=r.w,vo2=[...D.well].reverse().find(x=>x.vo2);
   let h='';
   // a conexão foi recusada (chave trocada ou acesso revogado): mostra o caminho para entrar de novo
-  if(LS.get('authRuim',0))h+=`<div class="card alert"><div class="lbl bad">O INTERVALS NÃO ACEITOU A CONEXÃO</div><p class="empty" style="margin-top:4px">A chave ou o acesso deixou de valer. Entre de novo com a sua conta; as suas corridas continuam lá.</p>${btnEntrar('margin-top:10px')}<button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`;
+  if(LS.get('authRuim',0))h+=CFG.token?`<div class="card alert"><div class="lbl bad">VOCÊ ENTROU EM OUTRO APARELHO</div><p class="empty" style="margin-top:4px">O Intervals só mantém um acesso ativo por vez. Como você entrou em outro aparelho, este perdeu o acesso. Toque em Reconectar para voltar a usar aqui. As suas corridas continuam todas lá.</p>${btnEntrar('margin-top:10px','Reconectar')}<p class="meta" style="margin-top:8px;line-height:1.5">Reconectar aqui desconecta o outro aparelho. Para usar dois aparelhos ao mesmo tempo, entre com o ID e a chave de API, em Mais.</p><button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`:`<div class="card alert"><div class="lbl bad">O INTERVALS NÃO ACEITOU A CONEXÃO</div><p class="empty" style="margin-top:4px">A chave ou o acesso deixou de valer. Entre de novo com a sua conta; as suas corridas continuam lá.</p>${btnEntrar('margin-top:10px')}<button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`;
   if(!LS.get('guia'))h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">COMO USAR</div><p class="empty" style="margin-top:4px">Toque no <b style="color:var(--hi)">?</b> ao lado de cada título para ver o que o número significa. Os cartões de sono, VO2 e FC abrem um resumo com o histórico.</p><button class="b sm pri" style="margin-top:8px" onclick="LS.set('guia',1);render()">Entendi</button></div>`;
   if(D.athlete&&!D.athlete.gAct&&hasWatch())h+=`<div class="card alert"><div class="lbl bad">ALERTA // SINCRONIZAÇÃO</div><p class="empty" style="margin-top:4px">As corridas do Garmin não estão chegando ao Intervals.icu (último treino recebido: ${last?last.date.slice(0,10).split('-').reverse().join('/'):'nenhum'}). Veja MAIS → Dispositivos.</p></div>`;
   // resultado do teste de 1 km ainda não aplicado
@@ -1106,9 +1106,9 @@ function rMais(){
   <table style="margin-top:10px"><tr><th>Zona</th><th class="r">FC</th></tr>${z.map((v,i)=>`<tr><td style="font-family:var(--f)">${zn[i]}</td><td class="r">${i?z[i-1]+1:0}–${v}</td></tr>`).join('')}</table>
   <p class="empty" style="margin-top:8px">As zonas vêm do Intervals.icu. Para mudar, edite lá (Configurações → Corrida) e sincronize.</p></div>`;
   if(SIMPLES())h=h.slice(0,mA);
-  h+=`<div class="sec">CONEXÃO</div><div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?'<span class="tag ok">CONECTADO</span>':'<span class="tag bad">NÃO CONECTADO</span>'}</div>
-  <p class="empty" style="margin-top:6px">${CFG.token?'Conectado pelo login do Intervals. O app não guarda a sua senha.':CFG.key?'Conectado pelo ID e pela chave de API.':'Entre com a sua conta do Intervals para o app ler as suas corridas e mandar os treinos.'}</p>
-  ${CFG.token?'':btnEntrar('margin-top:10px')}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
+  h+=`<div class="sec">CONEXÃO</div><div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?(LS.get('authRuim',0)?'<span class="tag bad">SEM ACESSO</span>':'<span class="tag ok">CONECTADO</span>'):'<span class="tag bad">NÃO CONECTADO</span>'}</div>
+  <p class="empty" style="margin-top:6px">${CFG.token?(LS.get('authRuim',0)?'Este aparelho perdeu o acesso, provavelmente porque você entrou em outro. Toque em Reconectar.':'Conectado pelo login do Intervals. O app não guarda a sua senha.'):CFG.key?'Conectado pelo ID e pela chave de API.':'Entre com a sua conta do Intervals para o app ler as suas corridas e mandar os treinos.'}</p>
+  ${CFG.token?(LS.get('authRuim',0)?btnEntrar('margin-top:10px','Reconectar'):''):btnEntrar('margin-top:10px')}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
   <details style="margin-top:10px"><summary class="meta" style="cursor:pointer">Usar o ID e a chave de API</summary>${connForm('saveConn()','Salvar e sincronizar')}</details></div>
   <div class="sec">SOBRE</div><div class="card"><p class="empty">Coach: por enquanto a leitura e os ajustes são calculados no próprio app (carga pela FC, forma, fadiga, VDOT, deriva cardíaca). A conexão com o Claude pela API da Anthropic entra na próxima fase, por um servidor próprio, para a chave não ficar no celular.</p><p class="empty" style="margin-top:8px"><a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--blue)">Política de privacidade</a></p></div>`;
   $('#mais').innerHTML=h;
@@ -1323,7 +1323,7 @@ const OAUTH={id:'1688',auth:'https://intervals.icu/oauth/authorize',token:'https
 const redirUri=()=>location.origin+location.pathname;
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 let CONECTANDO=/[?&](code|error)=/.test(location.search)?'volta':'';
-const btnEntrar=(st)=>CONECTANDO?`<button class="b pri full conectando" style="${st}" disabled>${CONECTANDO==='volta'?'Conectando':'Abrindo o Intervals'}<span class="pts"><i>.</i><i>.</i><i>.</i></span></button>${CONECTANDO==='volta'?'<p class="meta" style="margin:8px 0 0;text-align:center;line-height:1.5">Pode levar alguns segundos. Estamos buscando as suas corridas.</p>':''}`:`<button class="b pri full" style="${st}" onclick="entrarIntervals()">Entrar com o Intervals</button>`;
+const btnEntrar=(st,lbl)=>CONECTANDO?`<button class="b pri full conectando" style="${st}" disabled>${CONECTANDO==='volta'?'Conectando':'Abrindo o Intervals'}<span class="pts"><i>.</i><i>.</i><i>.</i></span></button>${CONECTANDO==='volta'?'<p class="meta" style="margin:8px 0 0;text-align:center;line-height:1.5">Pode levar alguns segundos. Estamos buscando as suas corridas.</p>':''}`:`<button class="b pri full" style="${st}" onclick="entrarIntervals()">${lbl||'Entrar com o Intervals'}</button>`;
 window.addEventListener('pageshow',e=>{if(e.persisted&&CONECTANDO==='ida'){CONECTANDO='';render()}});
 window.entrarIntervals=async()=>{
   if(!/^\d+$/.test(OAUTH.id))return toast('O LOGIN DO INTERVALS AINDA ESTÁ SENDO CONFIGURADO',3500);
