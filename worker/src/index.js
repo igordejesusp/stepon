@@ -1,4 +1,4 @@
-// Servidor do Competitivo do Boonie Run (Cloudflare Worker + KV).
+// Servidor do Competitivo do StepOn (Cloudflare Worker + KV).
 // Cada app publica o resumo das próprias corridas; qualquer app lê o de todos.
 // Amigos: pedido por ID do Intervals, que só vale depois que o outro aceita (guardado em 'f:<id>').
 // A chave do Intervals só serve para provar que o atleta é quem diz ser: é conferida no Intervals e descartada, nunca é gravada.
@@ -136,6 +136,6 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    return json(req, { app: 'Boonie Run', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'POST /oauth/token'] });
+    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'POST /oauth/token'] });
   },
 };

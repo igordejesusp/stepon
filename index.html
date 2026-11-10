@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<title>Boonie Run</title>
+<title>StepOn</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v3.png">
 <script>
@@ -1311,9 +1311,9 @@ window.openCartao=id=>{
 };
 window.cartCorta=v=>{CART.corta=v?1:0;drawCart($('#cart'))};
 const cartBlob=()=>new Promise(r=>$('#cart').toBlob(r,'image/png'));
-window.cartSave=async()=>{const b=await cartBlob();if(!b)return toast('NÃO FOI POSSÍVEL GERAR A IMAGEM');const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='boonie-run.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('IMAGEM SALVA')};
-window.cartShare=async()=>{const b=await cartBlob();if(!b)return toast('NÃO FOI POSSÍVEL GERAR A IMAGEM');const f=new File([b],'boonie-run.png',{type:'image/png'});
-  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Boonie Run'})}catch(e){}}else cartSave()};
+window.cartSave=async()=>{const b=await cartBlob();if(!b)return toast('NÃO FOI POSSÍVEL GERAR A IMAGEM');const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='stepon.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('IMAGEM SALVA')};
+window.cartShare=async()=>{const b=await cartBlob();if(!b)return toast('NÃO FOI POSSÍVEL GERAR A IMAGEM');const f=new File([b],'stepon.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'StepOn'})}catch(e){}}else cartSave()};
 
 /* ================= entrar com o Intervals (OAuth com PKCE) =================
    o app manda a pessoa ao Intervals, ela entra (ou cria a conta) e autoriza; o Intervals devolve um código
@@ -1445,7 +1445,7 @@ function rOB(){
   const q=v=>typeof v==='string'?`'${v}'`:v;
   const o=(k,v,t,sub)=>`<button class="opt ${a[k]===v?'on':''}" onclick="obSet('${k}',${q(v)})"><span>${t}${sub?`<small>${sub}</small>`:''}</span></button>`;
   let h=s.id==='conn'?'':`<div class="row" style="justify-content:space-between;margin-bottom:8px">${OB.i>0?`<button class="b sm" onclick="obGo(-1)">◀ Voltar</button>`:OB.force?`<button class="b sm" onclick="obCancel()">Cancelar</button>`:'<span></span>'}<span class="meta">${OB.i+1} de ${st.length}</span></div><div class="bar" style="margin-bottom:18px"><i style="width:${(OB.i+1)/st.length*100}%"></i></div>`;
-  if(s.id==='conn')h+=`<div style="text-align:center;margin:18px 0 16px"><img src="logo.svg" alt="" style="height:96px"></div><div class="obh" style="text-align:center">Bem-vindo ao Boonie Run</div><p class="obp" style="text-align:center">Treino pronto, guiado e no seu ritmo. Para começar, entre com o Intervals.icu: o site gratuito que guarda as suas corridas e conversa com vários relógios.</p>
+  if(s.id==='conn')h+=`<div style="text-align:center;margin:18px 0 16px"><img src="logo.svg" alt="" style="height:96px"></div><div class="obh" style="text-align:center">Bem-vindo ao StepOn</div><p class="obp" style="text-align:center">Treino pronto, guiado e no seu ritmo. Para começar, entre com o Intervals.icu: o site gratuito que guarda as suas corridas e conversa com vários relógios.</p>
     ${btnEntrar('min-height:56px;font-size:16px')}
     <p class="meta" style="margin:8px 0 16px;text-align:center;line-height:1.5">É de graça e leva uns 3 minutos. Você entra com a sua conta do Intervals, ou cria uma na hora, e autoriza o app. Não precisa copiar chave nenhuma. Depois do login, perguntamos sobre o seu relógio e montamos o plano.</p>
     <details class="card"><summary><span>Prefiro colar o ID e a chave</span></summary><div style="margin-top:10px"><div class="card"><div class="cs"><i>1</i><div><b>Tenha uma conta no Intervals</b><p class="empty">O cadastro é gratuito. Já tem conta? Pule para o passo 2.</p></div></div><a class="b full" href="https://intervals.icu/" target="_blank" rel="noopener">Abrir o Intervals.icu</a></div>
@@ -1454,7 +1454,7 @@ function rOB(){
     </div></details>
     <details class="card"><summary><span>Dúvidas frequentes</span></summary>
     <p class="empty" style="margin-top:8px"><b style="color:var(--hi)">Preciso pagar?</b> O cadastro no Intervals é gratuito.</p>
-    <p class="empty" style="margin-top:8px"><b style="color:var(--hi)">Para que serve a chave?</b> Ela deixa o Boonie Run ler as suas corridas e enviar treinos para a sua conta do Intervals. Fica guardada só neste aparelho.</p>
+    <p class="empty" style="margin-top:8px"><b style="color:var(--hi)">Para que serve a chave?</b> Ela deixa o StepOn ler as suas corridas e enviar treinos para a sua conta do Intervals. Fica guardada só neste aparelho.</p>
     <p class="empty" style="margin-top:8px"><b style="color:var(--hi)">Tenho relógio Garmin.</b> No Intervals, em Settings, abra Connections e ligue o Garmin: as corridas passam a chegar sozinhas.</p>
     <p class="empty" style="margin-top:8px"><b style="color:var(--hi)">Não uso relógio.</b> Sem relógio, o Intervals serve só de arquivo: é onde ficam guardadas as corridas que você grava pelo app.</p>
     <p class="empty" style="margin-top:8px"><b style="color:var(--hi)">Meu relógio não conversa com o Intervals.</b> Tudo bem. Você segue os treinos pelo app e grava as corridas pelo próprio celular.</p></details>`;
@@ -1640,7 +1640,7 @@ window.saveDone=async ds=>{
   if(!(k>0&&mn>0))return toast('PREENCHA A DISTÂNCIA E O TEMPO');
   const p=planOn(ds),a={date:ds+'T07:00:00',type:'Run',name:p?p.titulo:'Corrida',dist:Math.round(k*1000),mov:Math.round(mn*60),el:Math.round(mn*60),src:'MANUAL'};
   try{ // grava no Intervals para valer em qualquer aparelho; sem conexão, fica só neste
-    const r=await api(`/athlete/${CFG.athlete}/activities/manual`,{method:'POST',body:JSON.stringify({start_date_local:a.date,type:'Run',name:a.name,distance:a.dist,moving_time:a.mov,elapsed_time:a.mov,description:'Marcado como feito no Boonie Run'})});
+    const r=await api(`/athlete/${CFG.athlete}/activities/manual`,{method:'POST',body:JSON.stringify({start_date_local:a.date,type:'Run',name:a.name,distance:a.dist,moving_time:a.mov,elapsed_time:a.mov,description:'Marcado como feito no StepOn'})});
     const x=slim(r||{});x.id=x.id||'icu-'+Date.now();x.date=x.date||a.date;x.type=x.type||'Run';x.dist=x.dist??a.dist;x.mov=x.mov??a.mov;x.src='MANUAL';
     D.acts=withMan([x].concat(D.acts));toast('TREINO MARCADO // SALVO NO INTERVALS');
   }catch(e){a.id='man-'+Date.now();MAN.push(a);LS.set('man',MAN);D.acts=withMan(D.acts);toast('TREINO MARCADO NESTE CELULAR')}
@@ -1771,7 +1771,7 @@ function placeName(pl){
     await new Promise(r=>setTimeout(r,1100));return PN[pl.key]});
 }
 // servidor público do Competitivo: cada app publica o resumo das próprias corridas e lê o de todos
-const PUBURL='https://boonie-run.igordejesusp.workers.dev';
+const PUBURL='https://stepon.igordejesusp.workers.dev';
 let PUBL=LS.get('pub',[]);
 // tira 200 m do começo e do fim (para não mostrar onde a pessoa mora) e reduz a até 80 pontos
 function trimTrack(tr){
@@ -2235,12 +2235,12 @@ window.recEnd=()=>{
 window.recTrash=()=>{if(!confirm('Descartar esta corrida? Ela não poderá ser recuperada.'))return;recClear();closeSheet();toast('CORRIDA DESCARTADA')};
 function recClear(){REC=null;LS.set('rec',null);wake(0);recWatch(0);clearInterval(RTK);RTK=null;$('#rec').classList.remove('on');$('#rec').innerHTML='';if(RM){RM.remove();RM=null}render()}
 function toGpx(name){
-  let s=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Boonie Run" xmlns="http://www.topografix.com/GPX/1/1"><metadata><time>${new Date(REC.pts[0][0]).toISOString()}</time></metadata><trk><name>${esc(name)}</name><type>running</type>`,seg=null;
+  let s=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="StepOn" xmlns="http://www.topografix.com/GPX/1/1"><metadata><time>${new Date(REC.pts[0][0]).toISOString()}</time></metadata><trk><name>${esc(name)}</name><type>running</type>`,seg=null;
   for(const q of REC.pts){if(q[4]!==seg){if(seg!==null)s+='</trkseg>';s+='<trkseg>';seg=q[4]}s+=`<trkpt lat="${q[1]}" lon="${q[2]}">${q[3]!=null?`<ele>${q[3]}</ele>`:''}<time>${new Date(q[0]).toISOString()}</time></trkpt>`}
   return s+'</trkseg></trk></gpx>';
 }
 async function upGpx(name,gpx){
-  const fd=new FormData();fd.append('file',new Blob([gpx],{type:'application/gpx+xml'}),'boonie-run.gpx');
+  const fd=new FormData();fd.append('file',new Blob([gpx],{type:'application/gpx+xml'}),'stepon.gpx');
   const r=await fetch(`${API}/athlete/${CFG.athlete}/activities?name=${encodeURIComponent(name)}`,{method:'POST',headers:{Authorization:authH()},body:fd});
   if(!r.ok)throw new Error('HTTP '+r.status);
 }

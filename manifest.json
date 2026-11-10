@@ -1,6 +1,6 @@
 {
-  "name": "Boonie Run",
-  "short_name": "Boonie Run",
+  "name": "StepOn",
+  "short_name": "StepOn",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",

@@ -1,4 +1,4 @@
-name = "boonie-run"
+name = "stepon"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 account_id = "f4758d1c66cbf131cd9fe0867ee809be"
