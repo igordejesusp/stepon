@@ -1295,8 +1295,12 @@ function drawCart(cv){
     ctx.shadowBlur=10;ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle='#4a9eff';ctx.lineWidth=11;
     ctx.beginPath();P.forEach((p,i)=>{const X=ox+(p[0]-x0)*sc,Y=oy+(p[1]-y0)*sc;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();
   }
-  // símbolo branco, pequeno e discreto
-  const sz=84,sx=W/2-sz/2,sy=1300-sz/2;ctx.shadowBlur=8;ctx.fillStyle='#fff';
+  // rodapé: nome StepOn e o símbolo à direita, os dois juntos e centralizados
+  ctx.shadowBlur=8;ctx.fillStyle='#fff';ctx.textAlign='left';
+  const nome='StepOn',fs=58,gap=20,sz=70;ctx.font=`800 ${fs}px ${F}`;
+  const tw=ctx.measureText(nome).width,x0=(W-(tw+gap+sz))/2,base=1322,cy0=base-fs*0.36;
+  ctx.fillText(nome,x0,base);
+  const sx=x0+tw+gap,sy=cy0-sz/2;
   for(const [cx,cy,r] of SIMB){ctx.beginPath();ctx.arc(sx+cx/100*sz,sy+cy/100*sz,r/100*sz,0,Math.PI*2);ctx.fill()}
 }
 window.openCartao=id=>{
