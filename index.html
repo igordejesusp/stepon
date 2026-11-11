@@ -321,14 +321,19 @@ body.ob .lvl{width:54px;height:54px;flex:none;border-radius:50%;background:var(-
 #tabbar button{border-radius:28px;color:var(--vidro-ic);font-size:11px;font-weight:600;letter-spacing:0;gap:3px;opacity:.9}
 #tabbar button.on{color:var(--blue);box-shadow:none;background:var(--vidro-on);opacity:1}
 #tabbar svg{width:23px;height:23px;stroke-width:1.8}
-#recfab{width:62px;height:62px;min-width:62px;padding:0;border-radius:31px;bottom:calc(90px + env(safe-area-inset-bottom));right:16px;
+#recfab{width:50px;height:50px;min-width:50px;padding:0;border-radius:25px;bottom:calc(90px + env(safe-area-inset-bottom));right:16px;
   background:var(--vidro);border:1px solid var(--vidro-b);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);box-shadow:0 8px 22px rgba(0,0,0,.35)}
-#recfab i{width:24px;height:24px;background:var(--red);box-shadow:0 0 0 3px var(--vidro-bg,rgba(14,18,24,.9)),0 0 0 6px var(--blue)}
-:root[data-theme="light"] #recfab i{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--blue)}
+#recfab i,:root[data-theme="light"] #recfab i{width:28px;height:28px;background:var(--red);box-shadow:none}
 #recfab.live{width:auto;padding:0 20px 0 18px;gap:12px}
 #toast{top:calc(66px + env(safe-area-inset-top))}
 body.ob .view{padding-bottom:30px}
 @media (min-width:760px){#tabbar{left:50%;right:auto;transform:translateX(-50%);width:min(560px,92vw)}.view{padding-top:calc(78px + env(safe-area-inset-top))}}
+
+/* ajustes: sem o pontinho da aba ativa e barra de abas mais transparente, com brilho de vidro nas bordas */
+#tabbar button.on:after{display:none}
+#tabbar{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 45%),rgba(30,36,46,.34);-webkit-backdrop-filter:blur(10px) saturate(1.7) brightness(1.05);backdrop-filter:blur(10px) saturate(1.7) brightness(1.05);
+  box-shadow:0 10px 30px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(255,255,255,.05)}
+:root[data-theme="light"] #tabbar{background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 50%),rgba(255,255,255,.42);box-shadow:0 10px 30px rgba(20,40,70,.16),inset 0 1px 0 rgba(255,255,255,.7)}
 </style>
 </head>
 <body>
