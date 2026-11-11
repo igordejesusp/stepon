@@ -294,6 +294,13 @@ body.ob .lvl{width:54px;height:54px;flex:none;border-radius:50%;background:var(-
 .sw1{margin-top:44px}.sw1 svg{height:140px}
 .pts{display:inline-block;margin-left:2px}.pts i{font-style:normal;animation:ptpisca 1.8s ease-in-out infinite}.pts i:nth-child(2){animation-delay:.3s}.pts i:nth-child(3){animation-delay:.6s}
 @keyframes ptpisca{0%,100%{opacity:.15}50%{opacity:1}}.b.conectando:disabled{opacity:1;cursor:default}
+
+#r-par{margin-top:12px}.rpar-h{font-size:10px;letter-spacing:.14em;color:var(--dim);text-align:center;margin-bottom:6px;font-weight:700}
+.rpar{display:flex;gap:6px;align-items:flex-end}.rp{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.rp b{font-family:var(--m);font-size:15px;color:var(--hi);margin-bottom:4px}.rp i{display:block;width:100%;border-radius:8px;background:#cfe2fb}
+.rp.cur i{background:var(--blue);box-shadow:0 3px 0 #ff5a1f}.rp span{font-size:10px;color:var(--txt);margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rp small{font-size:9px;color:var(--dim);white-space:nowrap}.rpar-v{font-size:12px;color:var(--dim);text-align:center;padding:8px 0}
+:root[data-theme="light"] .rp i{background:#bcd7f7}
 </style>
 </head>
 <body>
@@ -983,7 +990,7 @@ window.openDay=ds=>{
   let h=`<div class="hd"><b>${DOW[d.getDay()]} ${ds.split('-').reverse().join('/')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
   if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
     ${ds>=ymd(TODAY())?`<button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${ds}')">▶ Fazer treino agora</button>`:''}
-    <div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())?`<button class="b" onclick="openBuilder('${ds}')">Editar treino</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
+    <div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
   ex.forEach(a=>h+=`<div class="card" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
   if(!p&&!ex.length)h+=`<p class="empty">Dia de descanso.</p>`;
   if(!p&&ds>=ymd(TODAY()))h+=`<button class="b full" style="margin:8px 0" onclick="openBib('${ds}')">+ Treino neste dia</button>`;
@@ -2068,6 +2075,24 @@ function wkStep(){
   }
 }
 window.recSkip=()=>{if(REC&&REC.wk&&REC.wk.i<REC.wk.steps.length&&REC.st==='run'){wkNext(true);recUI()}};
+
+// parciais anteriores na tela de gravação: km a km na corrida livre, etapa a etapa no treino guiado (as 4 últimas + a atual)
+function parHtml(t,d,done){
+  const w=REC&&REC.wk,it=[];
+  const nc=e=>({'Rec.':'Rec.','Aquecer':'Aquec.','Desaquecer':'Desaq.'}[e.nome]||e.nome)+(e.n?' '+e.r:'');
+  const dTxt=m=>m>=1000?(m/1000).toFixed(m%1000?2:0).replace('.',',')+' km':Math.round(m)+' m';
+  if(w){
+    w.laps.forEach(l=>it.push({p:l.dist>=20?l.t/l.dist*1000:null,t:l.t,lb:nc(l),sub:l.dist>=20?dTxt(l.dist):fmtT(l.t)}));
+    if(w.i<w.steps.length){const e=w.steps[w.i],dd=REC.dist-w.d0,tt=recMov()-w.t0;if(dd>=20||tt>=10)it.push({p:dd>=20?tt/dd*1000:null,t:tt,lb:nc(e),sub:'agora',cur:1})}
+  }else{
+    REC.splits.forEach((s,i)=>it.push({p:s,lb:'km '+(i+1)}));
+    const kd=d%1000;if(kd>=50)it.push({p:(t-done)/kd*1000,lb:'km '+(REC.splits.length+1),sub:'agora',cur:1});
+  }
+  if(!it.length)return `<div class="rpar-v">${w?'As etapas aparecem aqui assim que cada uma terminar.':'As parciais aparecem aqui a cada quilômetro.'}</div>`;
+  const vs=it.slice(-5),sp=vs.filter(x=>x.p&&x.p<1200).map(x=>1/x.p),mn=Math.min(...sp),mx=Math.max(...sp);
+  const alt=x=>!x.p||x.p>=1200?24:Math.round(34+(mx>mn?(1/x.p-mn)/(mx-mn):1)*36);
+  return `<div class="rpar-h">${w?'ETAPAS (RITMO /KM)':'PARCIAIS (/KM)'}</div><div class="rpar">${vs.map(x=>`<div class="rp${x.cur?' cur':''}"><b>${x.p&&x.p<1200?fmtP(x.p):fmtT(x.t)}</b><i style="height:${alt(x)}px"></i><span>${esc(x.lb)}</span><small>${x.sub||''}</small></div>`).join('')}</div>`;
+}
 function wkUI(){
   const el=$('#r-wk'),w=REC&&REC.wk;if(!el)return;
   $('#r-run').classList.toggle('wkon',!!w);
@@ -2156,6 +2181,7 @@ function recUI(){
     else if(g.avisa>now)msg=`<span class="warn">O app ficou fora da tela por ${fmtT(g.ult/1000)}. O GPS parou nesse trecho.</span>`}
   const al=$('#r-al');al.innerHTML=msg;al.style.display=msg?'block':'none';
   wkUI();
+  if(!idle){const pe=$('#r-par');if(pe)pe.innerHTML=parHtml(t,d,done)}
   // antes de iniciar: só libera quando o GPS estiver bom (como no relógio)
   if(idle){const ok=!!FIX&&FIX.acc<=30&&now-FIX.t<8000,cat=ok?'ok':!FIX?'busca':'fraco',go=$('#r-go'),gt=$('#r-gate'),fo=$('#r-force');
     if(go){go.disabled=!ok;go.textContent=ok?'INICIAR':'GPS…'}
@@ -2184,7 +2210,7 @@ window.openRec=d=>{
     <div id="rmap"><span class="chip" id="r-st" style="position:absolute;z-index:2;left:10px;top:10px;color:var(--red);border-color:var(--red)"></span><div class="ral" id="r-al" style="display:none"></div></div>
     <div id="r-pre"></div>
     <div class="rmet" id="r-run" style="display:none"><div class="meta" style="text-align:center;min-height:14px"></div><div id="r-wk"></div><div class="rbig" id="r-t">0:00</div><div class="lbl" style="text-align:center;margin-top:3px">TEMPO EM MOVIMENTO</div>
-    <div class="grid g2" style="margin-top:12px"><div class="cell"><div class="lbl">Distância</div><span class="num big" id="r-d"></span></div><div class="cell"><div class="lbl">Ritmo atual</div><span class="num big" id="r-pa"></span></div><div class="cell"><div class="lbl">Ritmo médio</div><span class="num" id="r-pm"></span></div><div class="cell"><div class="lbl">Km atual</div><span class="num" id="r-pk"></span></div></div></div>
+    <div class="grid g2" style="margin-top:12px"><div class="cell"><div class="lbl">Distância</div><span class="num big" id="r-d"></span></div><div class="cell"><div class="lbl">Ritmo atual</div><span class="num big" id="r-pa"></span></div><div class="cell"><div class="lbl">Ritmo médio</div><span class="num" id="r-pm"></span></div><div class="cell"><div class="lbl">Km atual</div><span class="num" id="r-pk"></span></div></div><div id="r-par"></div></div>
     <div class="rctl" id="r-ctl"></div>`}
   prePaint();
   $('#r-voz').textContent=LS.get('voz',1)?'🔊':'🔇';
