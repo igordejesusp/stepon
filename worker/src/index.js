@@ -87,6 +87,30 @@ async function amigos(env, eu, acao, alvo) {
   return { ...me, pessoas, aviso, conhecido: acao === 'pedir' ? !!(await env.BR.get('a:' + alvo)) : undefined };
 }
 
+// ---------- curtidas e comentários ----------
+// cada atividade tem a chave 's:<dono>:<atividade>' com { l: [ids que curtiram], m: [comentários] }
+const CHAVE = /^i\d{1,12}:[A-Za-z0-9_-]{1,40}$/;
+const MAXCOM = 200, MAXTXT = 280;
+async function social(env, a, b) {
+  const k = String(b.dono || '') + ':' + String(b.act || '');
+  if (!CHAVE.test(k)) return { erro: 'atividade inválida' };
+  const s = (await env.BR.get('s:' + k, 'json')) || { l: [], m: [] };
+  const eu = b.athlete;
+  if (b.acao === 'curtir') s.l = com(s.l, eu);
+  else if (b.acao === 'descurtir') s.l = sem(s.l, eu);
+  else if (b.acao === 'comentar') {
+    const txt = String(b.txt || '').replace(/\s+/g, ' ').trim().slice(0, MAXTXT);
+    if (!txt) return { erro: 'comentário vazio' };
+    if (s.m.length >= MAXCOM) return { erro: 'limite de comentários' };
+    s.m.push({ i: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), id: eu, name: a.name || eu, t: Date.now(), txt });
+  } else if (b.acao === 'apagar') { // quem escreveu ou o dono da atividade
+    s.m = s.m.filter((c) => !(c.i === b.cid && (c.id === eu || b.dono === eu)));
+  } else return { erro: 'ação inválida' };
+  if (!s.l.length && !s.m.length) await env.BR.delete('s:' + k);
+  else await env.BR.put('s:' + k, JSON.stringify(s));
+  return { ok: true, k, s };
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -127,6 +151,24 @@ export default {
       return new Response(await r.text(), { status: r.status, headers: { 'Content-Type': 'application/json', ...cors(req) } });
     }
 
+    if (req.method === 'GET' && url.pathname === '/social') {
+      const ks = [...new Set(String(url.searchParams.get('k') || '').split(',').filter((k) => CHAVE.test(k)))].slice(0, 60);
+      const out = {};
+      await Promise.all(ks.map(async (k) => { const v = await env.BR.get('s:' + k, 'json'); if (v) out[k] = v; }));
+      return json(req, out, 200, { 'Cache-Control': 'no-store' });
+    }
+
+    if (req.method === 'POST' && url.pathname === '/social') {
+      const txt = await req.text();
+      if (txt.length > 4000) return json(req, { erro: 'pedido grande demais' }, 413);
+      let b;
+      try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      const r = await social(env, a, b);
+      return json(req, r, r.erro ? 400 : 200);
+    }
+
     if (req.method === 'POST' && url.pathname === '/amigos') {
       let b;
       try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
@@ -136,6 +178,6 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'POST /oauth/token'] });
+    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'POST /oauth/token'] });
   },
 };
