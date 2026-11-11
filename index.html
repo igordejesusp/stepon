@@ -366,6 +366,11 @@ body.ob .view{padding-bottom:30px}
 .ucomp{cursor:pointer;padding:14px 16px}.uc-t{font-size:15px;color:var(--txt);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.uc-b{display:flex;align-items:center;gap:14px}
 .uc-ic{width:46px;height:46px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}.uc-ic svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.uc-ic svg circle{fill:#fff;stroke:none}
 .uc-n{flex:1;min-width:0}.uc-n b{display:block;font-size:24px;color:var(--hi);font-family:var(--m)}.uc-n span{font-size:13px;color:var(--dim)}.uc-r{width:96px;height:78px;flex:none}.uc-r svg{width:100%;height:100%}
+
+.li-ic{width:46px;height:46px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(74,158,255,.16)}.li-ic svg{width:24px;height:24px;fill:none;stroke:var(--blue);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.li-ic.red{background:rgba(224,68,47,.15)}.li-ic.red svg{stroke:var(--red)}
+.li-num{width:46px;height:46px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--m);font-weight:800;font-size:17px;border:3px solid var(--blue);color:var(--hi)}.li-num.warn{border-color:var(--amber)}.li-num.bad{border-color:var(--red)}
+.li-ch{color:var(--dim);font-size:18px;margin-left:4px}
 </style>
 </head>
 <body>
@@ -898,7 +903,7 @@ function rIni(){
     h+=`<div class="card ucomp" onclick="openAct('${last.id}')"><div class="uc-t">${esc(last.name)}</div><div class="uc-b"><span class="uc-ic"><svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M9 21l3-6 3 2v5M7.5 11.5l2.5-3.5 4 1 2.5 3.5 2.5 1M10 8l-1.5 5.5L5 15"/></svg></span><div class="uc-n"><b>${km(last.dist).replace('.',',')} km</b><span>${fmtT(last.mov)}${pace?' · '+pace:''}</span></div>${rt?`<div class="uc-r">${rotaSvg(rt,200,160)}</div>`:''}</div></div>`;
     h+=progBox('ini',semanas(D.acts.filter(isRun).map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))))}
   else h+=`<div class="card"><p class="empty">Nenhuma corrida registrada ainda.</p></div>`;
-  const mD=h.length;
+  const mD=h.length;let mD2,mC2,mV2,mP2,mE2;
   // disposição
   h+=`<div class="sec"><span>DISPOSIÇÃO${qb('disp')}</span><small>HOJE</small></div><div class="card ${r.cls==='bad'?'alert':''}"><div class="ring">${ringSvg(r.sc,r.cls)}<div style="flex:1"><div class="lbl">Hoje está</div><div class="num big ${r.cls}">${r.st}</div>
     ${r.parts.map(p=>`<div class="row" style="justify-content:space-between;margin-top:4px;font-size:11px"><span class="dim">${p[0]}</span><span class="num" style="font-size:11px">${p[1]}</span></div><div class="bar ${p[2]<.5?'red':''}" style="margin-top:2px;height:3px"><i style="width:${p[2]*100}%"></i></div>`).join('')}</div></div>
@@ -924,7 +929,16 @@ function rIni(){
   else h+=`<div class="card"><p class="empty">Nenhuma atividade planejada.</p><button class="b full" style="margin-top:8px" onclick="openBib()">+ Escolher um treino</button></div>`;
   const mE=h.length;
   h+=`<div class="meta" style="text-align:center;margin-top:14px">${D.at?'Sincronizado '+new Date(D.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Nunca sincronizado'}</div>`;
-  if(SIMPLES())h=h.slice(0,mU)+h.slice(mP,mE)+h.slice(mU,mD)+h.slice(mE); // treino de hoje primeiro
+  {// disposição, vitais, condição e próxima atividade viram blocos com resumo
+    const sD=semSec(h.slice(mD,mC)),sV=h.slice(mC,mV),sC=semSec(h.slice(mV,mP)),sP=semSec(h.slice(mP,mE));
+    const ck=LS.get('ck',{})[ds];
+    const bD=blk('disp','Disposição',linhaI(`<span class="li-num ${r.cls}">${Math.round(r.sc)}</span>`,r.st,ck?'Você acordou '+['','destruído','cansado','normal','bem','100%'][ck]:'Toque para dizer como você acordou',''),sD);
+    const bV=blk('vit','Vitais',linhaI(icoC('sono'),'Sono',w.sleep?'Última noite':'Sem dado de hoje',fmtSleep(w.sleep),"openVital('sono')")+linhaI(icoC('fc','red'),'FC de repouso',r.rb?'Média '+r.rb.toFixed(0)+' bpm':'',(w.rhr||'--')+' bpm',"openVital('fc')")+linhaI(icoC('vo2'),'VO2 máx',vo2?'Garmin '+fmtD(vo2.d):'Sem dado',vo2?vo2.vo2:'--',"openVital('vo2')"),null);
+    const bC=blk('cond','Condição atual',linhaI(icoC('forma'),'Forma','CTL',cur.ctl.toFixed(1))+linhaI(icoC('fadiga','red'),'Fadiga','ATL',cur.atl.toFixed(1))+linhaI(icoC('equil'),'Equilíbrio',tsbTxt(cur.tsb).split(':')[0],sgn(cur.tsb)),sC);
+    const bP=blk('prox','Próxima atividade',nx?linhaI(icoC('corrida'),esc(nx.titulo),DOW[parseD(nx.date).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+' '+fmtD(nx.date)+' · '+nx.km+' km',''):linhaI(icoC('cal'),PF?'Plano concluído':'Nenhuma atividade planejada',PF?'Toque para montar o próximo':'Toque para escolher um treino',''),sP);
+    const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=bV;mV2=h.length;h+=bC;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
+  }
+  if(SIMPLES())h=h.slice(0,mU)+h.slice(mP2,mE2)+h.slice(mU,mD2)+h.slice(mE2); // treino de hoje primeiro
   el.innerHTML=h;
 }
 window.checkin=n=>{const c=LS.get('ck',{});c[ymd(TODAY())]=n;LS.set('ck',c);render()};
@@ -1191,18 +1205,29 @@ function rMais(){
     h+=`<div class="sec">MEU PLANO</div><div class="card"><div class="grid g2"><div class="cell"><div class="lbl">Meta</div><span class="num" style="font-size:14px">${M.n}</span></div><div class="cell"><div class="lbl">Duração</div><span class="num" style="font-size:14px">${P.length?fmtD(P[0].date)+' a '+fmtD(P[P.length-1].date):'--'}</span></div><div class="cell"><div class="lbl">Dias</div><span class="num" style="font-size:14px">${ORD.filter(d=>PF.dias.includes(d)).map(d=>DOW[d]).join(' ')}</span></div><div class="cell"><div class="lbl">Longão</div><span class="num" style="font-size:14px">${DNOME[ld]}</span></div></div>
     <p class="empty" style="margin-top:8px">Ritmo leve: ${fmtP(Z.E[0])}–${fmtP(Z.E[1])}/km. O volume sobe no máximo 8% por semana e, a cada 4 semanas, uma semana mais leve para o corpo assimilar.</p><p class="empty" style="margin-top:6px">Nível do plano: <b style="color:var(--hi)">${['iniciante','intermediário','avançado'][nivelDe(PF)]}</b>. Cada treino de qualidade se repete por 2 semanas antes de subir de degrau, e a cada 8 semanas o app marca um teste de 1 km para recalibrar os seus ritmos.</p>
     <button class="b full" style="margin-top:10px" onclick="redoPlan()">Refazer o questionário</button></div>`}
+  const k1=h.length;
   h+=`<div class="sec">MODO DO APP</div><div class="card"><div class="seg"><button class="${SIMPLES()?'on':''}" onclick="setSimples(1)">SIMPLES</button><button class="${SIMPLES()?'':'on'}" onclick="setSimples(0)">COMPLETO</button></div><p class="empty" style="margin-top:8px">${SIMPLES()?'Mostra só o essencial: o treino de hoje, o último treino e a semana. Os números avançados ficam guardados e aparecem no modo Completo.':'Mostra tudo: disposição, forma e fadiga, vitais e métricas avançadas.'}</p></div>`;
+  const k2=h.length;
   h+=`<div class="sec">BIBLIOTECA DE TREINOS</div><div class="card"><p class="empty" style="color:var(--txt)">${BIBL.length} treinos prontos: rodagens, fartlek, ritmo, tiros, HIIT, pirâmide, escada de ritmos e testes. Veja como é cada um e agende no calendário, nos seus ritmos.</p><button class="b pri full" style="margin-top:10px" onclick="openBib()">Abrir a biblioteca</button></div>`;
   const mA=h.length;
   h+=`<div class="sec">MÉTRICAS AVANÇADAS</div><div class="card"><div class="grid g2"><div class="cell"><div class="lbl" style="display:flex;align-items:center;justify-content:space-between">VDOT ${qb('vdot')}</div><span class="num">${V?V.v.toFixed(1):'--'}</span><div class="meta">${V?(V.est?'estimado pelo questionário':'base: '+(V.dist/1000)+' km em '+fmtT(V.t)):'sem esforço de 1,5 km ou mais'}</div></div><div class="cell"><div class="lbl" style="display:flex;align-items:center;justify-content:space-between">Rampa 7 dias ${qb('rampa')}</div><span class="num ${ramp>8?'bad':ramp>5?'warn':''}">${(ramp>0?'+':'')+ramp.toFixed(1)}</span><div class="meta">seguro: até +5 por semana</div></div></div>
   ${V?`<div class="lbl" style="margin-top:12px">Projeção de prova (condicionamento atual)</div><table style="margin-top:4px"><tr><th>Prova</th><th class="r">Tempo</th><th class="r">Ritmo</th></tr>${[[5000,'5 km'],[10000,'10 km'],[21097.5,'21 km'],[42195,'42 km']].map(([d,n])=>{const s=predict(V.v,d);return `<tr><td>${n}</td><td class="r">${fmtT(s)}</td><td class="r">${fmtP(s/d*1000)}</td></tr>`}).join('')}</table>
   <div class="lbl" style="margin-top:12px">Ritmos de treino (Daniels)</div><table style="margin-top:4px">${[['E','Leve / rodagem'],['M','Maratona'],['T','Limiar'],['I','Intervalado'],['R','Repetição']].map(([k,n])=>`<tr><td>${k}</td><td style="font-family:var(--f)">${n}</td><td class="r">${fmtP(Z[k][0])}–${fmtP(Z[k][1])}</td></tr>`).join('')}</table>`:''}
   <div class="lbl" style="margin-top:12px">Forma × fadiga · 180 dias</div>${pmcSvg(S,180)}</div>`;
+  const k4=h.length;
   const z=run.hr_zones||[148,157,166,175,180,185,194],zn=['Z1 Recuperação','Z2 Aeróbico','Z3 Tempo','Z4 Sub-limiar','Z5a Limiar','Z5b Capacidade','Z5c Anaeróbico'];
   h+=`<div class="sec">PARÂMETROS FISIOLÓGICOS<small>DO INTERVALS.ICU</small></div><div class="card"><div class="grid g3"><div class="cell"><div class="lbl">FC máx</div><span class="num">${run.max_hr||CFG.fcmax}</span></div><div class="cell"><div class="lbl">FC limiar</div><span class="num">${run.lthr||'--'}</span></div><div class="cell"><div class="lbl">FC repouso</div><span class="num">${a.rhr||CFG.fcrep}</span></div></div>
   <table style="margin-top:10px"><tr><th>Zona</th><th class="r">FC</th></tr>${z.map((v,i)=>`<tr><td style="font-family:var(--f)">${zn[i]}</td><td class="r">${i?z[i-1]+1:0}–${v}</td></tr>`).join('')}</table>
   <p class="empty" style="margin-top:8px">As zonas vêm do Intervals.icu. Para mudar, edite lá (Configurações → Corrida) e sincronize.</p></div>`;
-  if(SIMPLES())h=h.slice(0,mA);
+  {const sM=semSec(h.slice(k1,k2)),sB=semSec(h.slice(k2,mA)),sX=semSec(h.slice(mA,k4)),sF=semSec(h.slice(k4));
+    const ini=h.slice(0,k1),p10=V?predict(V.v,10000):null;
+    h=ini+blk('modo','Modo do app',linhaI(icoC('modo'),SIMPLES()?'Simples':'Completo',SIMPLES()?'Só o essencial na tela':'Todas as métricas na tela',''),sM)
+      +blk('bib','Biblioteca de treinos',linhaI(icoC('bib'),BIBL.length+' treinos prontos','Rodagens, fartlek, tiros, HIIT, testes…',''),sB);
+    var mA2=h.length;
+    h+=blk('met','Métricas avançadas',linhaI(icoC('vdot'),'VDOT',V?(V.est?'Estimado pelo questionário':'Pelas suas corridas'):'Sem dados ainda',V?V.v.toFixed(1):'--')+linhaI(icoC('prova'),'Projeção de 10 km','Condicionamento atual',p10?fmtT(p10):'--'),sX)
+      +blk('fis','Parâmetros fisiológicos',linhaI(icoC('fc','red'),'FC máxima','Do Intervals.icu',(run.max_hr||CFG.fcmax)+' bpm')+linhaI(icoC('fc','red'),'FC limiar','',(run.lthr||'--')+' bpm'),sF);
+  }
+  if(SIMPLES())h=h.slice(0,mA2);
   h+=`<div class="sec">CONEXÃO</div><div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?(LS.get('authRuim',0)?'<span class="tag bad">SEM ACESSO</span>':'<span class="tag ok">CONECTADO</span>'):'<span class="tag bad">NÃO CONECTADO</span>'}</div>
   <p class="empty" style="margin-top:6px">${CFG.token?(LS.get('authRuim',0)?'Este aparelho perdeu o acesso, provavelmente porque você entrou em outro. Toque em Reconectar.':'Conectado pelo login do Intervals. O app não guarda a sua senha.'):CFG.key?'Conectado pelo ID e pela chave de API.':'Entre com a sua conta do Intervals para o app ler as suas corridas e mandar os treinos.'}</p>
   ${CFG.token?(LS.get('authRuim',0)?btnEntrar('margin-top:10px','Reconectar'):''):btnEntrar('margin-top:10px')}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
@@ -1298,6 +1323,32 @@ function blocoConq(B,on){
   const ok=B.filter(b=>b.on),top=[...ok].reverse().slice(0,3);
   return `<div class="card blc" onclick="${on}"><div class="blh"><b>Conquistas</b><span>${ok.length}/${B.length} ›</span></div>${top.map(b=>linhaM(1,mTxt(b[1]),cx(b[1]),b[2],'')).join('')||'<p class="empty">Corra a primeira vez para ganhar a primeira conquista.</p>'}</div>`;
 }
+
+/* ---------- blocos com resumo: título, linhas com ícone e a página completa ao tocar ---------- */
+const BLK={};
+const IC={
+ modo:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+ bib:'<path d="M5 4h4v16H5zM11 4h4v16h-4zM17 5l3 .8-3.6 14.5-3-.8"/>',
+ vdot:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>',
+ prova:'<path d="M6 21V4M6 4h11l-2 4 2 4H6"/>',
+ fc:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M5 12h3l2-3 3 6 2-3h4"/>',
+ sono:'<path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/>',
+ vo2:'<path d="M12 4v8M8 8c-3 1-4 5-4 8 0 2 2 3 4 2l2-2V9M16 8c3 1 4 5 4 8 0 2-2 3-4 2l-2-2V9"/>',
+ forma:'<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>',
+ fadiga:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+ equil:'<path d="M12 4v16M5 8h14M5 8l-3 6h6zM19 8l-3 6h6z"/>',
+ corrida:'<circle cx="14.5" cy="4.5" r="2"/><path d="M9 21l3-6 3 2v5M7.5 11.5l2.5-3.5 4 1 2.5 3.5 2.5 1M10 8l-1.5 5.5L5 15"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>'};
+const icoC=(k,cls)=>`<span class="li-ic ${cls||''}"><svg viewBox="0 0 24 24">${IC[k]||''}</svg></span>`;
+const linhaI=(ic,tit,sub,dir,on)=>`<div class="mrow"${on?` onclick="event.stopPropagation();${on}"`:''}>${ic}<div class="mt"><b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>${dir!=null&&dir!==''?`<span class="mv">${dir}</span>`:''}${on?'<span class="li-ch">›</span>':''}</div>`;
+// tira o título antigo da seção ("sec") do começo do trecho
+const semSec=s=>s.replace(/^\s*<div class="sec">[\s\S]*?<\/div>/,'');
+function blk(key,tit,linhas,full,extra){
+  if(full!=null)BLK[key]={t:tit,h:full};
+  return `<div class="card blc"${full!=null?` onclick="openBlk('${key}')"`:''}><div class="blh"><b>${tit}</b><span>${extra||''}${full!=null?' ›':''}</span></div>${linhas}</div>`;
+}
+window.openBlk=(k,manter)=>{const B=BLK[k];if(!B)return;const sb=$('#sbox'),top=sb.scrollTop;
+  openSheet(`<div class="hd"><b>${B.t}</b><button class="b sm" onclick="closeSheet()">✕</button></div>${B.h}`);sb.dataset.blk=k;if(manter)sb.scrollTop=top};
 let PT=LS.get('pt','prog'),FLIM=6;
 window.pTab=v=>{PT=v;LS.set('pt',v);render();$('#v-perf').scrollTop=0};
 const PTI={prog:'<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 16v-3M12 16v-6M15 16v-4"/></svg>',ativ:'<svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>',gal:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M9.5 4v16M14.5 4v16"/></svg>'};
@@ -1524,7 +1575,7 @@ window.openAct=async id=>{
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
   openSheet(h);$('#sbox').dataset.act=id;fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
-function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;$('#sheet').classList.add('on');drawMaps()}
+function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;$('#sheet').classList.add('on');drawMaps()}
 (()=>{const bx=$('#sbox');let y0=null,dy=0;
   bx.addEventListener('touchstart',e=>{y0=bx.scrollTop<=0?e.touches[0].clientY:null;dy=0;bx.style.transition='none'},{passive:true});
   bx.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>0)bx.style.transform=`translateY(${dy}px)`},{passive:true});
@@ -2584,7 +2635,8 @@ $('#sync').onclick=()=>sync(0);
 // junta cada título de seção (.sec) com o conteúdo dele num bloco, para as colunas não cortarem uma seção ao meio
 function groupBlocks(el){const K=[...el.children];if(!K.length||K[0].classList.contains('blk'))return;let b=null;
   for(const k of K){if(!b||k.classList.contains('sec')){b=document.createElement('div');b.className='blk';el.insertBefore(b,k)}b.appendChild(k)}}
-function render(){
+function render(){render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
+function render2(){
   const ob=needOB();document.body.classList.toggle('ob',ob);
   const fab=$('#recfab');fab.classList.toggle('on',!ob&&temConta()&&(VIEW==='ini'||recLive())&&!$('#rec').classList.contains('on'));fab.classList.toggle('live',recLive());
   if(ob){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-ini'));$('#ttl').textContent='BOAS-VINDAS';rOB();return}
