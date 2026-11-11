@@ -217,7 +217,7 @@ a.b{display:flex;align-items:center;justify-content:center;text-decoration:none}
 }
 @media (min-width:1500px){#mais,#perf{columns:3}}
 @keyframes sp{to{transform:rotate(360deg)}}
-body.ob #tabbar,body.ob #sync,body.ob #av{display:none}
+body.ob #tabbar,body.ob #sync,body.ob #menu{display:none}
 body.ob .view{bottom:0}
 .obh{font-size:22px;color:var(--hi);line-height:1.25;margin:4px 0 6px}
 .obp{color:var(--dim);font-size:14px;line-height:1.5;margin-bottom:16px}
@@ -393,6 +393,13 @@ body.ob .view{padding-bottom:30px}
 
 .desemb{flex:none}.fdes{display:flex;align-items:center;gap:8px;background:rgba(240,194,75,.12);border:1px solid rgba(240,194,75,.35);color:#f6d27a;border-radius:12px;padding:7px 10px;margin:-2px 0 10px;font-size:13px}.fdes b{color:#ffe08a}
 :root[data-theme="light"] .fdes{color:#7a5a08}:root[data-theme="light"] .fdes b{color:#5c4204}
+
+/* topo: três tracinhos abrem Mais; barra de baixo: a foto abre o Perfil */
+#menu svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+:root:not([data-theme="light"]) #top .gb#menu{color:var(--vidro-ic)}
+.tabav{position:relative;width:26px;height:26px;display:block}.tabav img{width:26px;height:26px;border-radius:50%;object-fit:cover;display:block;border:1.5px solid transparent;background:var(--cell)}
+#tabbar button.on .tabav img{border-color:var(--blue)}
+.tabav i{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:var(--dim);border:2px solid var(--bg)}.tabav i.on{background:var(--ok)}.tabav i.off{background:var(--red)}
 </style>
 </head>
 <body>
@@ -400,7 +407,7 @@ body.ob .view{padding-bottom:30px}
   <button id="tema" class="gb" onclick="togTema()" aria-label="Trocar tema"></button>
   <b id="ttl" hidden></b><span class="tsp"></span>
   <button id="sync" class="b sm gb" title="Sincronizar" aria-label="Sincronizar"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/></svg></button>
-  <button id="av" class="gb" aria-label="Perfil"><img id="avimg" src="logo.svg" alt=""><i id="avst"></i></button>
+  <button id="menu" class="gb" aria-label="Mais"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </header>
 
 <main>
@@ -417,7 +424,7 @@ body.ob .view{padding-bottom:30px}
   <button data-v="cal"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
   <button data-v="des"><svg viewBox="0 0 24 24"><path d="M6 3v18M6 4h11l-2 4 2 4H6"/></svg>Desafios</button>
   <button data-v="comp"><svg viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Mapa</button>
-  <button data-v="mais"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Mais</button>
+  <button data-v="perf"><span class="tabav"><img id="avimg" src="logo.svg" alt=""><i id="avst"></i></span>Perfil</button>
 </nav>
 
 <div id="sheet"><div class="box" id="sbox"></div></div>
@@ -2705,7 +2712,7 @@ let VIEW='ini';
 function go2(v){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 function go(v){VIEW=v;go2(v);render()}
 document.querySelectorAll('#tabbar button').forEach(b=>b.onclick=()=>go(b.dataset.v));
-$('#av').onclick=()=>go(VIEW==='perf'?'ini':'perf');
+$('#menu').onclick=()=>go(VIEW==='mais'?'ini':'mais');
 $('#sync').onclick=()=>sync(0);
 // junta cada título de seção (.sec) com o conteúdo dele num bloco, para as colunas não cortarem uma seção ao meio
 function groupBlocks(el){const K=[...el.children];if(!K.length||K[0].classList.contains('blk'))return;let b=null;
