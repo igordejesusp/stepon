@@ -390,6 +390,9 @@ body.ob .view{padding-bottom:30px}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
+
+.desemb{flex:none}.fdes{display:flex;align-items:center;gap:8px;background:rgba(240,194,75,.12);border:1px solid rgba(240,194,75,.35);color:#f6d27a;border-radius:12px;padding:7px 10px;margin:-2px 0 10px;font-size:13px}.fdes b{color:#ffe08a}
+:root[data-theme="light"] .fdes{color:#7a5a08}:root[data-theme="light"] .fdes b{color:#5c4204}
 </style>
 </head>
 <body>
@@ -1168,16 +1171,10 @@ function rDes(){
   ];
   let h=`<div class="sec">PROGRESSO</div>`;
   h+=ch.map(c=>{const v=clamp(c[2],0,1);return `<div class="card ${v>=1?'cur':''}"><div class="row" style="justify-content:space-between"><span class="lbl" style="color:var(--txt)">${c[0]}</span><span class="num ${v>=1?'ok':''}" style="font-size:12px">${Math.round(v*100)}%</span></div><div class="meta" style="margin-top:3px">${c[1]}</div><div class="bar"><i style="width:${v*100}%"></i></div></div>`}).join('');
-  h+=`<div class="sec"><span>METAS</span><button class="b sm pri" onclick="openMeta()">+ NOVA META</button></div>`;
-  const MT=metas();
-  if(!MT.length)h+=`<div class="card"><p class="empty">Nenhuma meta ainda. Toque em <b style="color:var(--hi)">+ Nova meta</b> para criar a sua: uma prova, uma distância nova ou um volume de km no mês.</p></div>`;
-  // metas são lista de tarefas: caixinha marcada quando cumprida, sem barra de progresso
-  h+=MT.map(mt=>{const s=metaStatus(mt),vol=mt.tipo==='volume',br=x=>x.split('-').reverse().join('/');
-    const st=s.ok?(vol?'':'Feita em '+fmtD(s.best.a.date)+(mt.tempo?' · '+fmtT(s.best.t):'')):s.fora?'Era até '+br(mt.fim):s.antes?'Começa em '+fmtD(mt.ini):'Até '+br(mt.fim)+' · faltam '+s.dias+' '+(s.dias===1?'dia':'dias');
-    return `<div class="card ${s.ok?'cur':s.fora?'alert':''}" onclick="openMeta('${esc(mt.id)}')"><div class="row" style="flex-wrap:nowrap;gap:12px;align-items:flex-start"><span class="ck ${s.ok?'on':''}">${s.ok?'✓':''}</span><span style="flex:1;min-width:0"><span class="lbl" style="color:var(--txt)">${esc(mt.nome)}</span><div class="meta" style="margin-top:4px;color:var(--txt)">${esc(metaTxt(mt))}</div><div class="meta" style="margin-top:6px">${s.ok?`<span class="tag ok">✓ CUMPRIDA</span> `:s.fora?`<span class="tag bad">PRAZO ENCERRADO</span> `:''}${esc(st)}</div></span><span class="dim" style="font-size:14px">✎</span></div></div>`}).join('');
+  h+=blocoDes(D.acts.filter(isRun),TODAY(),"openDesafios()");
   const M=PF&&META[PF.meta];
   h+=`<div class="sec">OBJETIVO DO PLANO</div><div class="card"><p class="empty" style="color:var(--txt)">${PF?`Seus treinos seguem o objetivo <b style="color:var(--hi)">${M?M.n:'do questionário'}</b>, com os dias e o volume que você informou.`:'Seus treinos seguem o plano de novembro montado pelo Coach.'}</p>
-    <p class="empty" style="margin-top:6px">Mudou de objetivo, de dias ou de ritmo? Responda o questionário de novo e o app refaz o plano. A meta do objetivo aparece aqui sozinha.</p>
+    <p class="empty" style="margin-top:6px">Mudou de objetivo, de dias ou de ritmo? Responda o questionário de novo e o app refaz o plano.</p>
     <button class="b full" style="margin-top:10px" onclick="redoPlan()">Mudar meu objetivo</button></div>`;
   $('#des').innerHTML=h;
 }
@@ -1298,8 +1295,8 @@ function rPerf(){
     h+=blocoMarcas(marcasTodas(),'openMarcas()');
     h+=blocoConq(badgeList(),'openBadges()');
   }else if(PT==='ativ'){
-    SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM);
-    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:x.src,cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1})).join('')||'<p class="empty">Sem atividades.</p>';
+    SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM),DPA=desPorAtiv(D.acts.filter(isRun));
+    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:x.src,cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id]})).join('')||'<p class="empty">Sem atividades.</p>';
     if(D.acts.length>FLIM)h+=`<button class="b more" onclick="FLIM+=6;render()">Ver mais (${D.acts.length-FLIM} restantes)</button>`;
     setTimeout(()=>socLoad(L.map(x=>CFG.athlete+':'+x.id)),0);
   }else{
@@ -1445,6 +1442,55 @@ window.apagaFoto=async pid=>{if(!confirm('Remover esta foto do treino?'))return;
   try{const r=await fetch(PUBURL+'/foto',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'apagar',pid})}),j=await r.json();if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));FOT[CFG.athlete]=j.lista;closeSheet();toast('Foto removida');render()}
   catch(e){toast('Não deu para remover: '+e.message,4000)}};
 const fotosTira=(dono,act)=>{const L=fotosDe(dono,act);return L.length?`<div class="fph" onclick="event.stopPropagation()">${L.map(f=>`<img src="${fotoUrl(dono,f)}" alt="" loading="lazy" onclick="verFoto('${dono}','${act}','${f.p}')">`).join('')}</div>`:''};
+
+/* ---------- desafios do mês: o app confere sozinho pelas corridas e marca a atividade que concluiu ---------- */
+// tipo: um = numa corrida só; soma = somando o mês (campo); conta = número de corridas (filtro)
+const DESAF=[
+  {k:'5k',ic:'5K',n:'5K do mês',d:'Correr 5 km numa corrida',tipo:'um',alvo:5000},
+  {k:'10k',ic:'10K',n:'10K do mês',d:'Correr 10 km numa corrida',tipo:'um',alvo:10000},
+  {k:'21k',ic:'21K',n:'Meia do mês',d:'Correr 21,1 km numa corrida',tipo:'um',alvo:21097},
+  {k:'25km',ic:'25',n:'25 km no mês',d:'Somar 25 km de corrida no mês',tipo:'soma',campo:'dist',alvo:25000},
+  {k:'50km',ic:'50',n:'50 km no mês',d:'Somar 50 km de corrida no mês',tipo:'soma',campo:'dist',alvo:50000},
+  {k:'100km',ic:'100',n:'100 km no mês',d:'Somar 100 km de corrida no mês',tipo:'soma',campo:'dist',alvo:100000},
+  {k:'5h',ic:'5h',n:'5 horas correndo',d:'Somar 5 horas de corrida no mês',tipo:'soma',campo:'mov',alvo:18000},
+  {k:'subida',ic:'500',n:'Subida do mês',d:'Somar 500 m de subida no mês',tipo:'soma',campo:'elev',alvo:500},
+  {k:'12x',ic:'12x',n:'12 corridas',d:'Fazer 12 corridas no mês (3 por semana)',tipo:'conta',alvo:12},
+  {k:'cedo',ic:'☀',n:'Madrugador',d:'5 corridas começando antes das 7h',tipo:'conta',alvo:5,filtro:r=>+String(r.date).slice(11,13)<7}];
+const MESC=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+// resultado dos desafios de um mês a partir de uma lista de corridas {id,date,dist,mov,elev}
+function desafiosMes(runs,ano,mes){
+  const pre=ano+'-'+String(mes+1).padStart(2,'0'),R=runs.filter(r=>String(r.date).slice(0,7)===pre&&(r.dist||0)>=1000).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  return DESAF.map(c=>{let v=0,act=null,data=null;
+    if(c.tipo==='um'){for(const r of R){v=Math.max(v,r.dist||0);if(!act&&(r.dist||0)>=c.alvo*0.99){act=r.id;data=r.date}}}
+    else if(c.tipo==='soma'){for(const r of R){v+=(r[c.campo]||0);if(!act&&v>=c.alvo){act=r.id;data=r.date}}}
+    else{for(const r of R){if(c.filtro&&!c.filtro(r))continue;v++;if(!act&&v>=c.alvo){act=r.id;data=r.date}}}
+    return {...c,v,ok:!!act,act,data,p:clamp(v/c.alvo,0,1),ano,mes}});
+}
+const desTxt=(c)=>c.tipo==='um'?`Maior corrida: ${km(c.v).replace('.',',')} de ${km(c.alvo).replace('.',',')} km`:c.campo==='dist'?`${km(c.v).replace('.',',')} de ${c.alvo/1000} km`:c.campo==='mov'?`${tempoCart(c.v)} de 5h`:c.campo==='elev'?`${Math.round(c.v)} de ${c.alvo} m`:`${c.v} de ${c.alvo} corridas`;
+// emblema do desafio: anel dourado que enche com o progresso; concluído fica dourado cheio
+function desEmb(c,sz=46){const r=20,L=2*Math.PI*r,fs=String(c.ic).length>2?11:13;
+  return `<svg class="desemb" viewBox="0 0 48 48" style="width:${sz}px;height:${sz}px"><circle cx="24" cy="24" r="${c.ok?22:r}" fill="${c.ok?'#f0c24b':'rgba(240,194,75,.12)'}"/>${c.ok?'':`<circle cx="24" cy="24" r="${r}" fill="none" stroke="#f0c24b" stroke-width="3.5" stroke-dasharray="${(L*c.p).toFixed(1)} ${L.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 24 24)"/>`}<text x="24" y="${24+fs*.36}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${c.ok?'#3a2a05':'#f0c24b'}">${c.ic}</text></svg>`}
+const desLinha=c=>`<div class="mrow">${desEmb(c)}<div class="mt"><b>${c.n}</b><span>${c.ok?'Concluído em '+fmtD(String(c.data).slice(0,10)):desTxt(c)}</span>${c.ok?'':`<div class="bar" style="margin-top:6px;height:4px"><i style="width:${c.p*100}%;background:#f0c24b"></i></div>`}</div><span class="mv"${c.ok?' style="color:#f0c24b"':''}>${c.ok?'✓':Math.round(c.p*100)+'%'}</span></div>`;
+function blocoDes(runs,t,on){
+  const L=desafiosMes(runs,t.getFullYear(),t.getMonth()),feitos=L.filter(c=>c.ok).length;
+  const top=[...L].sort((a,b)=>(a.ok-b.ok)||(b.p-a.p)).slice(0,3);
+  return `<div class="card blc" onclick="${on}"><div class="blh"><b>Desafios de ${MESC[t.getMonth()]}</b><span>${feitos}/${L.length} ›</span></div>${top.map(desLinha).join('')}</div>`;
+}
+window.openDesafios=()=>{
+  const runs=D.acts.filter(isRun),t=TODAY(),L=desafiosMes(runs,t.getFullYear(),t.getMonth()),fim=new Date(t.getFullYear(),t.getMonth()+1,0),falta=Math.round((fim-t)/864e5);
+  let h=`<div class="hd"><b>Desafios de ${MESC[t.getMonth()]}</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="meta" style="margin-bottom:8px">O app confere sozinho pelas suas corridas do mês. ${falta>0?`Faltam ${falta} ${falta===1?'dia':'dias'} para o mês acabar.`:'Último dia do mês.'}</p>`;
+  h+=`<div class="card blc">${[...L.filter(c=>!c.ok).sort((a,b)=>b.p-a.p),...L.filter(c=>c.ok)].map(desLinha).join('')}</div>`;
+  const ant=[];for(let k=1;k<=6;k++){const d=new Date(t.getFullYear(),t.getMonth()-k,1),M=desafiosMes(runs,d.getFullYear(),d.getMonth()).filter(c=>c.ok);if(M.length)ant.push([d,M])}
+  if(ant.length)h+=`<div class="sec">Concluídos nos meses anteriores</div>`+ant.map(([d,M])=>`<div class="card blc"><div class="blh"><b>${MESC[d.getMonth()].replace(/^./,c=>c.toUpperCase())} de ${d.getFullYear()}</b><span>${M.length}</span></div>${M.map(desLinha).join('')}</div>`).join('');
+  openSheet(h);
+};
+// desafios que cada atividade concluiu (para o selo amarelo no cartão)
+function desPorAtiv(runs){
+  const o={},meses=new Set(runs.map(r=>String(r.date).slice(0,7)));
+  meses.forEach(m=>desafiosMes(runs,+m.slice(0,4),+m.slice(5,7)-1).filter(c=>c.ok).forEach(c=>{(o[c.act]=o[c.act]||[]).push(c)}));
+  return o;
+}
+const seloDes=L=>L&&L.length?L.map(c=>`<div class="fdes">${desEmb(c,26)}<span>${L.length&&c===L[0]?'Concluiu o desafio':'E também'} <b>${c.n}</b> de ${MESC[c.mes]}</span></div>`).join(''):'';
 /* ---------- atividades no estilo de feed: curtir, comentar e compartilhar ---------- */
 const diaTxt=ds=>{const d=ds.slice(0,10),h=ds.slice(11,16),hoje=ymd(TODAY()),ont=ymd(addD(TODAY(),-1));return (d===hoje?'Hoje':d===ont?'Ontem':DOW[parseD(d).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+', '+fmtD(d)+(d.slice(0,4)!==String(TODAY().getFullYear())?'/'+d.slice(2,4):''))+(h?' às '+h:'')};
 const nomeHora=ds=>{const h=+String(ds).slice(11,13);return isNaN(h)?'Corrida':h<12?'Corrida da manhã':h<18?'Corrida da tarde':'Corrida da noite'};
@@ -1455,7 +1501,7 @@ function feedCard(o){
   const mapa=o.map==='own'?mapBox(o.id,190):o.map?`<div class="froute">${rotaSvg(o.map,600,300)}</div>`:'';
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:''}>
   <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src==='MANUAL'?'Marcado à mão':o.src):''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div></div>
-  <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2>
+  <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2>${seloDes(o.des)}
   <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
 }
@@ -1588,7 +1634,7 @@ window.openAct=async id=>{
   if(a.dist&&!AX[id]&&!isMan(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
   if(isRun(a)&&!isMan(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
   const x=AX[id]||{},pace=a.dist?a.mov/a.dist*1000:null;
-  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(a.src||'')}</div>${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
+  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(a.src||'')}</div>${isRun(a)?seloDes(desPorAtiv(D.acts.filter(isRun))[id]):''}${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
   <div class="grid g3" style="margin-top:10px"><div class="cell"><div class="lbl">Dist.</div><span class="num">${km(a.dist)}<small> km</small></span></div><div class="cell"><div class="lbl">Tempo</div><span class="num">${fmtT(a.mov)}</span></div><div class="cell"><div class="lbl">Ritmo</div><span class="num">${fmtP(pace)}</span></div><div class="cell"><div class="lbl">FC méd</div><span class="num">${a.hr||'--'}</span></div><div class="cell"><div class="lbl">FC máx</div><span class="num">${a.hrmax||'--'}</span></div><div class="cell"><div class="lbl">Carga</div><span class="num">${Math.round(loadOf(a))}</span></div><div class="cell"><div class="lbl">Altimetria</div><span class="num">${a.elev!=null?Math.round(a.elev)+'<small> m</small>':'--'}</span></div><div class="cell"><div class="lbl">Cadência</div><span class="num">${a.cad?Math.round(a.cad*2):'--'}</span></div><div class="cell"><div class="lbl">Deriva FC</div><span class="num">${x.dec!=null?x.dec+'%':'--'}</span></div></div>`;
   if(x.chart&&x.chart.p.length>3){const ch=x.chart,len=ch.p.length,TT=ch.t&&ch.t.length===len?ch.t:ch.p.map((_,i)=>Math.round((i+1)/len*(a.mov||len)));
     const P=ch.p.map(v=>v&&v<600?v:null),pv=P.filter(Boolean).sort((u,w)=>u-w),hv=ch.h.filter(Boolean),pAvg=pace&&pace<600?pace:null;
@@ -2258,8 +2304,8 @@ window.openPerfilAmigo=(id,tab)=>{
       if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div><div class="grid g3 bgrid">${[...med].reverse().slice(0,3).map(m=>`<div class="badge">${hex(1)}<b>${esc(m)}</b></div>`).join('')}</div></div>`;
       if(lid.length)h+=`<div class="sec">Locais que lidera</div><div class="card" style="padding:4px 12px">${lid.slice(0,6).map(p=>`<div class="row tap" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2)" onclick="openPlace(${p.i})"><span>${esc(PN[p.key]||'Local '+(p.i+1))}</span><span class="meta">${CDIST.find(([x])=>x===p.ref)?CDIST.find(([x])=>x===p.ref)[1]:''} ›</span></div>`).join('')}</div>`;
     }else if(FT==='ativ'){
-      const L=ord.slice(0,15);fotosPede(id,()=>openPerfilAmigo(id));
-      h+=L.map(r=>feedCard({id:r.id,dono:id,nome:frNome(id),pic:frPic(id),date:r.date,titulo:r.name,dist:r.dist,mov:r.mov,run:1,map:r.map})).join('');
+      const L=ord.slice(0,15),DPA=desPorAtiv(runs);fotosPede(id,()=>openPerfilAmigo(id));
+      h+=L.map(r=>feedCard({id:r.id,dono:id,nome:frNome(id),pic:frPic(id),date:r.date,titulo:r.name,dist:r.dist,mov:r.mov,run:1,map:r.map,des:DPA[r.id]})).join('');
       setTimeout(()=>socLoad(L.map(r=>id+':'+r.id)),0);
     }else{fotosPede(id,()=>openPerfilAmigo(id));h+=galeria(id)}
     h+=`<p class="meta" style="margin-top:8px">Só aparece o que a pessoa publicou no ranking: as corridas com GPS mais recentes.</p>`;
