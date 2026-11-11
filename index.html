@@ -353,6 +353,12 @@ body.ob .view{padding-bottom:30px}
 .fa svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}.fa .fcur.on{color:#ff5a6e}.fa .fcur.on svg{fill:#ff5a6e;stroke:#ff5a6e}
 .gal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.gi{background:var(--cell);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--dim);font-size:10px}.gi svg{width:100%;aspect-ratio:1/1}
 .coms .cm{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)}.cm p{margin:3px 0 0;color:var(--txt);font-size:14px;line-height:1.4;word-break:break-word}
+
+/* blocos no estilo de lista: medalha à esquerda, texto ao lado */
+.blc{padding:14px 16px;cursor:pointer}.blh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.blh b{font-size:16px;color:var(--hi)}.blh span{color:var(--dim);font-size:14px}
+.mrow{display:flex;align-items:center;gap:14px;padding:9px 0}.mrow+.mrow{border-top:1px solid var(--line2)}.medal{width:46px;height:46px;flex:none}
+.mt{flex:1;min-width:0}.mt b{display:block;font-size:16px;font-weight:500;color:var(--hi)}.mt span{display:block;font-size:13px;color:var(--txt);opacity:.85}.mv{font-family:var(--m);font-size:18px;color:var(--hi)}
+.mrow.sec2 .mt b,.mrow.sec2 .mv{color:var(--dim)}.mrow.sec2 .mt span{opacity:.6}
 </style>
 </head>
 <body>
@@ -407,7 +413,7 @@ const fmtSleep=s=>s?Math.floor(s/3600)+'h'+pad(Math.round(s%3600/60)):'--';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 /* caixa normal: troca textos TODOS EM MAIÚSCULAS por "Primeira letra maiúscula", mantendo siglas (FC, GPS, VO2...) e nomes próprios */
-const CX_SIG=new Set(['FC','VO2','GPS','CTL','ATL','TSB','VDOT','PR','ID','API','HIIT','RPE','LTHR','LGPD','OK','PKCE','GPX','PNG','VFC','IA','REM','HRV','SPO2','PDF','URL','QR','UTC','ICU']);
+const CX_SIG=new Set(['RP','FC','VO2','GPS','CTL','ATL','TSB','VDOT','PR','ID','API','HIIT','RPE','LTHR','LGPD','OK','PKCE','GPX','PNG','VFC','IA','REM','HRV','SPO2','PDF','URL','QR','UTC','ICU']);
 const CX_NOM={INTERVALS:'Intervals','INTERVALS.ICU':'Intervals.icu',GARMIN:'Garmin',STRAVA:'Strava',STEPON:'StepOn',POLAR:'Polar',AMAZFIT:'Amazfit',SUUNTO:'Suunto',COROS:'Coros',APPLE:'Apple',WATCH:'Watch',UBERLÂNDIA:'Uberlândia',DANIELS:'Daniels',COOPER:'Cooper',IGOR:'Igor'};
 const cxCaps=w=>/[A-ZÀ-ÖØ-Þ]/.test(w)&&!/[a-zß-öø-ÿ]/.test(w);
 function cx(s){
@@ -418,7 +424,7 @@ function cx(s){
     let j=i,forte=false;
     while(j<tk.length&&(cxCaps(tk[j])||!/[A-Za-zÀ-ÿ]/.test(tk[j]))){const w=tk[j].replace(/[^A-Za-zÀ-ÿ0-9.]/g,'');if(cxCaps(tk[j])&&w.replace(/[^A-Za-zÀ-ÿ]/g,'').length>=2&&!CX_SIG.has(w))forte=true;j++}
     if(forte)for(let k=i;k<j;k++){if(!cxCaps(tk[k]))continue;const core=tk[k].replace(/^[^A-Za-zÀ-ÿ0-9]+|[^A-Za-zÀ-ÿ0-9.]+$/g,'').replace(/\.$/,'');
-      tk[k]=CX_SIG.has(core)?tk[k]:CX_NOM[core]?tk[k].replace(core,CX_NOM[core]):tk[k].toLowerCase()}
+      tk[k]=CX_SIG.has(core)||/^\d+K$/.test(core)?tk[k]:CX_NOM[core]?tk[k].replace(core,CX_NOM[core]):tk[k].toLowerCase()}
     i=j}
   let r=tk.join('').replace(/ \/\/ /g,' · ');
   r=r.replace(/(^|[.!?]\s+|\n)(\s*)([a-zà-ÿ])/g,(m,a,b,c)=>a+b+c.toUpperCase());
@@ -1228,7 +1234,7 @@ const hex=on=>`<svg class="hx" viewBox="0 0 44 44"><polygon points="22,2 40,12 4
 const badgeHtml=b=>`<div class="badge ${b.on?'':'lock'}">${hex(b.on)}<b>${b[1]}</b><small>${b[2]}</small></div>`;
 function badgeList(){const runs=D.acts.filter(isRun),L=Math.max(0,...runs.map(r=>r.dist||0))/1000;return BADGES.map(b=>{const x=[...b];if(x[1]==='30K'&&!isIgor())x[2]='Correr 30 km';return Object.assign(x,{on:!!b[3](runs,L)})})}
 window.openBadges=()=>{const B=badgeList();let h=`<div class="hd"><b>CONQUISTAS · ${B.filter(b=>b.on).length}/${B.length}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  for(const g of ['CORRIDA','RITMO','CONSTÂNCIA','TRILHA'])h+=`<div class="sec">${g}</div><div class="grid g3">${B.filter(b=>b[0]===g).map(badgeHtml).join('')}</div>`;
+  for(const g of ['CORRIDA','RITMO','CONSTÂNCIA','TRILHA'])h+=`<div class="sec">${g}</div><div class="card blc">${B.filter(b=>b[0]===g).sort((u,v)=>v.on-u.on).map(b=>linhaM(b.on?1:0,mTxt(b[1]),cx(b[1]),b[2],b.on?'✓':'')).join('')}</div>`;
   openSheet(h)};
 let LIM=8;
 window.verMais=()=>{LIM+=8;render()};
@@ -1239,9 +1245,8 @@ function rPerf(){
   h+=pTabs('PT',PT,'pTab');
   if(PT==='prog'){
     h+=progBox('me',semanas(D.acts.filter(isRun).map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))));
-    h+=`<div class="sec">Melhores marcas<small>Por distância</small></div><div class="card"><table><tr><th>Distância</th><th class="r">Tempo</th><th class="r">Ritmo</th><th class="r">Data</th></tr>${BE.map(([d,n])=>{const b=B[d];return `<tr ${b?`onclick="openAct('${b.id}')"`:''}><td>${n}</td><td class="r">${b?fmtT(b.t):'--'}</td><td class="r">${b?fmtP(b.t/d*1000):'--'}</td><td class="r dim">${b?b.date.slice(8,10)+'/'+b.date.slice(5,7)+'/'+b.date.slice(2,4):''}</td></tr>`}).join('')}</table><p class="empty" style="margin-top:6px">Melhor trecho de cada distância dentro das suas corridas (trilhas ficam de fora por causa do GPS). No 1 km, tempo e ritmo são o mesmo número, porque ritmo é o tempo por km.</p></div>`;
-    const BL=badgeList(),sorted=[...BL.filter(b=>b.on),...BL.filter(b=>!b.on)];
-    h+=`<div class="sec">Conquistas<small>${BL.filter(b=>b.on).length}/${BL.length}</small></div><div class="grid g3">${sorted.slice(0,6).map(badgeHtml).join('')}</div><button class="b more" onclick="openBadges()">Ver todas as conquistas</button>`;
+    h+=blocoMarcas(marcasTodas(),'openMarcas()');
+    h+=blocoConq(badgeList(),'openBadges()');
   }else if(PT==='ativ'){
     SOCV=null;const L=D.acts.slice(0,FLIM);
     h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:x.src,cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1})).join('')||'<p class="empty">Sem atividades.</p>';
@@ -1252,6 +1257,39 @@ function rPerf(){
   }
   if(temConta())h+=`<button class="b red full" style="margin-top:18px" onclick="sairConta()">Sair da conta</button>`;
   $('#perf').innerHTML=h;
+}
+
+/* ---------- blocos de melhores marcas e conquistas (ícone à esquerda, texto ao lado, toque abre a página) ---------- */
+const dK=d=>d===21097.5?'Meia':d===42195?'Maratona':(d/1000)+'K';
+const dataLonga=ds=>{const d=parseD(String(ds).slice(0,10));return `${d.getDate()} de ${MES3[d.getMonth()]}. de ${d.getFullYear()}`};
+// medalha: dourada (RP), prata (2º) ou bronze (3º); para conquistas leva o rótulo curto
+const MEDC={1:['#f0c24b','#3a2a05'],2:['#a3abb5','#1d2228'],3:['#c98a52','#2e1a08'],0:['#2a313b','#6c7682']};
+function medalha(n,txt){const [bg,fg]=MEDC[n]||MEDC[1],tx=String(txt).slice(0,5),fs=tx.length>3?7.5:tx.length>2?9:11;
+  return `<svg class="medal" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="${bg}"/><path d="M15 10h18l-4 9h-10z" fill="${fg}"/><path d="M19 10l5 9 5-9" fill="none" stroke="${bg}" stroke-width="1.8"/><circle cx="24" cy="29" r="10.5" fill="${fg}"/><text x="24" y="${29+fs*.36}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${bg}">${esc(tx)}</text></svg>`}
+const linhaM=(n,txt,tit,sub,dir,on)=>`<div class="mrow${n===2||n===3?' sec2':''}"${on?` onclick="event.stopPropagation();${on}"`:''}>${medalha(n,txt)}<div class="mt"><b>${tit}</b><span>${sub}</span></div>${dir?`<span class="mv">${dir}</span>`:''}</div>`;
+// todas as marcas por distância: uma por corrida, da melhor para a pior (trilhas ficam de fora)
+function marcasTodas(){
+  const M={};BE.forEach(([d])=>M[d]=[]);
+  for(const a of D.acts){if(!isRun(a)||a.type==='TrailRun'||/trilha|trail/i.test(a.name||''))continue;const x=AX[a.id]||{};
+    for(const [d] of BE){let tt=x.best&&x.best[d]?x.best[d]:null;if(a.dist>=d*0.99&&a.dist<=d*1.05&&a.mov){const e=Math.round(a.mov*d/a.dist);if(!tt||e<tt)tt=e}if(tt)M[d].push({t:tt,id:a.id,date:a.date})}}
+  BE.forEach(([d])=>M[d].sort((u,v)=>u.t-v.t));return M;
+}
+function blocoMarcas(M,on){
+  const rp=BE.filter(([d])=>M[d]&&M[d].length).map(([d])=>({d,...M[d][0]})).sort((u,v)=>String(v.date).slice(0,10).localeCompare(String(u.date).slice(0,10))||v.d-u.d).slice(0,2);
+  return `<div class="card blc" onclick="${on}"><div class="blh"><b>Melhores marcas</b><span>›</span></div>${rp.map(x=>linhaM(1,'RP','RP de '+dK(x.d),dataLonga(x.date),fmtT(x.t))).join('')||'<p class="empty">As suas melhores marcas aparecem aqui depois das primeiras corridas com GPS.</p>'}</div>`;
+}
+window.openMarcas=(M,volta)=>{
+  M=M||marcasTodas();
+  let h=`<div class="hd"><b>Melhores marcas</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="meta" style="margin-bottom:8px">Melhor trecho de cada distância dentro das corridas. Trilhas ficam de fora por causa do GPS.</p>`;
+  for(const [d,n] of BE){const L=M[d]||[];if(!L.length)continue;
+    h+=`<div class="card blc">${L.slice(0,3).map((x,i)=>linhaM(i+1,i?String(i+1):'RP',i?`${i+1}º ${dK(d)} mais rápido`:`RP de ${dK(d)}`,dataLonga(x.date)+' · '+fmtP(x.t/d*1000)+'/km',fmtT(x.t),x.id?`openAct('${x.id}')`:'')).join('')}</div>`}
+  if(volta)h+=`<button class="b full" style="margin-top:8px" onclick="${volta}">◀ Voltar</button>`;
+  openSheet(h);
+};
+const mTxt=s=>{s=String(s);const m=s.match(/^(\d+[ªº]?K?)/);return m?m[1]:s.slice(0,4)};
+function blocoConq(B,on){
+  const ok=B.filter(b=>b.on),top=[...ok].reverse().slice(0,3);
+  return `<div class="card blc" onclick="${on}"><div class="blh"><b>Conquistas</b><span>${ok.length}/${B.length} ›</span></div>${top.map(b=>linhaM(1,mTxt(b[1]),cx(b[1]),b[2],'')).join('')||'<p class="empty">Corra a primeira vez para ganhar a primeira conquista.</p>'}</div>`;
 }
 let PT=LS.get('pt','prog'),FLIM=6;
 window.pTab=v=>{PT=v;LS.set('pt',v);render();$('#v-perf').scrollTop=0};
@@ -2079,7 +2117,7 @@ window.frAcao=async(acao,id)=>{
   openAmigos(1);rComp();
 };
 // perfil do amigo, montado com o que ele publicou (corridas com GPS)
-let FT='prog';
+let FT='prog',FMARC=null;
 window.openPerfilAmigo=(id,tab)=>{
   if(tab)FT=tab;SOCV=`openPerfilAmigo('${id}')`;
   const u=PUBL.find(x=>x.id===id),runs=(u&&u.runs)||[],ds=r=>String(r.date).slice(0,10),tot=runs.reduce((t,r)=>t+(r.dist||0),0),
@@ -2095,8 +2133,9 @@ window.openPerfilAmigo=(id,tab)=>{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
     if(FT==='prog'){
       h+=progBox('fr',semanas(runs));
-      if(med.length)h+=`<div class="sec">Conquistas</div><div class="row" style="gap:6px">${med.map(m=>`<span class="tag ok">🏅 ${m}</span>`).join('')}</div>`;
-      if(rec.length)h+=`<div class="sec">Melhores marcas</div><div class="card" style="padding:4px 12px">${rec.map(([d,nm,b])=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line2)"><span class="lbl" style="color:var(--txt)">${nm}</span><span><span class="num">${fmtT(b.t)}</span> <span class="meta">${fmtP(b.t/d*1000)}/km · ${dd(b.date)}</span></span></div>`).join('')}</div>`;
+      const MF={};BE.forEach(([d])=>{MF[d]=runs.filter(r=>r.best&&r.best[d]).map(r=>({t:r.best[d],date:ds(r)})).sort((u,v)=>u.t-v.t)});FMARC=MF;
+      h+=blocoMarcas(MF,`openMarcas(FMARC,&quot;openPerfilAmigo('${id}')&quot;)`);
+      if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div>${[...med].reverse().slice(0,3).map(m=>linhaM(1,m.match(/\d+|Meia/)?m.match(/\d+|Meia/)[0]:'★',m,'','')).join('')}</div>`;
       if(lid.length)h+=`<div class="sec">Locais que lidera</div><div class="card" style="padding:4px 12px">${lid.slice(0,6).map(p=>`<div class="row tap" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2)" onclick="openPlace(${p.i})"><span>${esc(PN[p.key]||'Local '+(p.i+1))}</span><span class="meta">${CDIST.find(([x])=>x===p.ref)?CDIST.find(([x])=>x===p.ref)[1]:''} ›</span></div>`).join('')}</div>`;
     }else if(FT==='ativ'){
       const L=ord.slice(0,15);
