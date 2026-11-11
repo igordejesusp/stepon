@@ -2238,20 +2238,19 @@ function laços(tr){
       path=path.slice(0,hit.k+1);acc=acc.slice(0,hit.k+1);path.push([hit.x,hit.y]);acc.push(acc[hit.k]+H(hit.x-path[hit.k][0],hit.y-path[hit.k][1]))}
     else{path.push(b);acc.push(ac)}
   }
-  // trajeto publicado sem os 200 m do começo e do fim: se o começo e o fim ficam a até 450 m um do outro, o circuito também conta
-  if(path.length>5&&acc[acc.length-1]>=700&&H(path[0][0]-path[path.length-1][0],path[0][1]-path[path.length-1][1])<=450&&ok(path))volta(path.slice());
-  return out.map(r=>simp(r.map(q=>[la0+q[1]/ky,lo0+q[0]/kx]),48));
+  // só conta o que o próprio trajeto fechou: começo e fim perto um do outro NÃO fecham nada sozinhos (ida e volta de casa não vira área)
+  return out.map(r=>simp(r.map(q=>[la0+q[1]/ky,lo0+q[0]/kx]),64));
 }
 // simplifica o contorno (Douglas-Peucker) até caber em n pontos
 function simp(pts,n){
   let tol=3;const dp=(a,tol)=>{if(a.length<3)return a;const A=a[0],B=a[a.length-1],cs=Math.cos(A[0]*Math.PI/180);let m=0,ix=0;
     for(let i=1;i<a.length-1;i++){const dx=(B[1]-A[1])*cs,dy=B[0]-A[0],L=dx*dx+dy*dy,t=L?clamp((((a[i][1]-A[1])*cs)*dx+(a[i][0]-A[0])*dy)/L,0,1):0,d=Math.hypot(((a[i][1]-A[1])*cs-t*dx)*111320,(a[i][0]-A[0]-t*dy)*111320);if(d>m){m=d;ix=i}}
     return m>tol?[...dp(a.slice(0,ix+1),tol).slice(0,-1),...dp(a.slice(ix),tol)]:[A,B]};
-  let r=dp(pts,tol);while(r.length>n&&tol<400){tol*=1.5;r=dp(pts,tol)}return r;
+  let r=dp(pts,tol);while(r.length>n&&tol<25){tol*=1.4;r=dp(pts,tol)}if(r.length>n){const st=r.length/n;r=[...Array(n)].map((_,i)=>r[Math.floor(i*st)])}return r;
 }
 // as áreas de todas as corridas do Igor (calculadas no aparelho, com o trajeto sem os 200 m do começo e do fim)
 function meusLacos(){
-  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|v1';
+  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|v2';
   const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v;
   const v=[];for(const a of runs.slice(0,200)){const tr=trimTrack(AX[a.id].map,1);if(!tr)continue;for(const p of laços(tr))v.push({d:a.date.slice(0,10),p})}
   v.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);const R=v.slice(0,160);LS.set('terrc',{sig,v:R});return R;
@@ -2273,6 +2272,8 @@ function terrData(){
     try{if(!pc)throw 0;for(const k in G)if(k!==id&&G[k].length)G[k]=pc.difference(G[k],[[ring]]);G[id]=G[id]&&G[id].length?pc.union(G[id],[[ring]]):[[ring]]}
     catch(e){(G[id]=G[id]||[]).push([ring])}
   }
+  // tira lascas muito pequenas que sobram da junção das áreas (menos de 0,3 ha)
+  for(const k in G)G[k]=(G[k]||[]).filter(poly=>ringKm2(poly[0])>=0.003);
   TD=P.map(u=>{const g=G[u.id]||[],pr=(PUBL.find(x=>x.id===u.id)||{});return {u,geom:g,km2:geoKm2(g),n:n[u.id]||0,last:last[u.id]||null,cor:u.me?minhaCor():corDe(u.id,pr.cor)}}).filter(o=>o.geom.length);
   return TD;
 }
