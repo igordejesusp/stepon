@@ -6,7 +6,7 @@
 const OAUTH_ID = '1688'; // ID público do app no Intervals (não é segredo)
 const ORIGENS = ['https://igordejesusp.github.io', 'http://localhost:8768'];
 const MAXPED = 100; // pedidos pendentes por pessoa
-const LIMITE = 400_000; // tamanho máximo do resumo de um atleta (bytes)
+const LIMITE = 700_000; // tamanho máximo do resumo de um atleta (bytes)
 
 const cors = (req) => {
   const o = req.headers.get('Origin') || '';
@@ -161,7 +161,14 @@ export default {
       // foto: a escolhida no app (JPEG pequeno) ou a do Intervals; "/no-profile-pic.png" (sem foto) vira vazio
       const foto = typeof b.foto === 'string' && b.foto.length < 40000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(b.foto) ? b.foto : '';
       const doIcu = /^https:\/\//.test(a.profile_medium || '') ? a.profile_medium : '';
-      const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
+      // cor escolhida no mapa e áreas dominadas (polígonos fechados pelas corridas): validados e limitados
+      const cor = /^#[0-9a-fA-F]{6}$/.test(String(b.cor || '')) ? String(b.cor).toLowerCase() : '';
+      const terr = (Array.isArray(b.terr) ? b.terr : []).slice(0, 160).map((z) => {
+        if (!z || !/^\d{4}-\d{2}-\d{2}$/.test(String(z.d || '')) || !Array.isArray(z.p)) return null;
+        const p = z.p.slice(0, 64).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]);
+        return p.length >= 3 ? { d: z.d, p } : null;
+      }).filter(Boolean);
+      const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));
       return json(req, { ok: true, runs: runs.length });
     }
