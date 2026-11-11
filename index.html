@@ -384,6 +384,12 @@ body.ob .view{padding-bottom:30px}
 .dica{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}.dica p{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--txt)}
 .li-t{font-family:var(--m);font-size:13px;font-weight:800;color:var(--blue)}.li-dot{width:14px;height:14px;border-radius:50%;display:block}.mt b:empty{display:none}
 .vo2b{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.vo2b b{font-size:44px;font-family:var(--m);color:var(--hi);line-height:1}.vo2b span{color:var(--dim);font-size:13px}.vo2b i{font-style:normal;margin-left:auto;background:rgba(74,158,255,.16);color:var(--blue);border-radius:99px;padding:5px 12px;font-size:13px;font-weight:600}
+
+/* emblemas das conquistas um pouco maiores */
+.badge .hx{width:52px;height:52px}.badge b{font-size:12px;color:var(--hi)}.badge small{font-size:10px}.bgrid{margin-top:4px}.bgrid .badge{background:var(--cell)}
+/* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
+.sec:before{display:none}
+.sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
 </style>
 </head>
 <body>
@@ -1278,7 +1284,7 @@ const hex=on=>`<svg class="hx" viewBox="0 0 44 44"><polygon points="22,2 40,12 4
 const badgeHtml=b=>`<div class="badge ${b.on?'':'lock'}">${hex(b.on)}<b>${b[1]}</b><small>${b[2]}</small></div>`;
 function badgeList(){const runs=D.acts.filter(isRun),L=Math.max(0,...runs.map(r=>r.dist||0))/1000;return BADGES.map(b=>{const x=[...b];if(x[1]==='30K'&&!isIgor())x[2]='Correr 30 km';return Object.assign(x,{on:!!b[3](runs,L)})})}
 window.openBadges=()=>{const B=badgeList();let h=`<div class="hd"><b>CONQUISTAS · ${B.filter(b=>b.on).length}/${B.length}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  for(const g of ['CORRIDA','RITMO','CONSTÂNCIA','TRILHA'])h+=`<div class="sec">${g}</div><div class="card blc">${B.filter(b=>b[0]===g).sort((u,v)=>v.on-u.on).map(b=>linhaM(b.on?1:0,mTxt(b[1]),cx(b[1]),b[2],b.on?'✓':'')).join('')}</div>`;
+  for(const g of ['CORRIDA','RITMO','CONSTÂNCIA','TRILHA'])h+=`<div class="sec">${g}</div><div class="grid g3">${B.filter(b=>b[0]===g).map(badgeHtml).join('')}</div>`;
   openSheet(h)};
 let LIM=8;
 window.verMais=()=>{LIM+=8;render()};
@@ -1333,7 +1339,7 @@ window.openMarcas=(M,volta)=>{
 const mTxt=s=>{s=String(s);const m=s.match(/^(\d+[ªº]?K?)/);return m?m[1]:s.slice(0,4)};
 function blocoConq(B,on){
   const ok=B.filter(b=>b.on),top=[...ok].reverse().slice(0,3);
-  return `<div class="card blc" onclick="${on}"><div class="blh"><b>Conquistas</b><span>${ok.length}/${B.length} ›</span></div>${top.map(b=>linhaM(1,mTxt(b[1]),cx(b[1]),b[2],'')).join('')||'<p class="empty">Corra a primeira vez para ganhar a primeira conquista.</p>'}</div>`;
+  return `<div class="card blc" onclick="${on}"><div class="blh"><b>Conquistas</b><span>${ok.length}/${B.length} ›</span></div>${top.length?`<div class="grid g3 bgrid">${top.map(badgeHtml).join('')}</div>`:'<p class="empty">Corra a primeira vez para ganhar a primeira conquista.</p>'}</div>`;
 }
 
 
@@ -2249,7 +2255,7 @@ window.openPerfilAmigo=(id,tab)=>{
       h+=progBox('fr',semanas(runs));
       const MF={};BE.forEach(([d])=>{MF[d]=runs.filter(r=>r.best&&r.best[d]).map(r=>({t:r.best[d],date:ds(r)})).sort((u,v)=>u.t-v.t)});FMARC=MF;
       h+=blocoMarcas(MF,`openMarcas(FMARC,&quot;openPerfilAmigo('${id}')&quot;)`);
-      if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div>${[...med].reverse().slice(0,3).map(m=>linhaM(1,m.match(/\d+|Meia/)?m.match(/\d+|Meia/)[0]:'★',m,'','')).join('')}</div>`;
+      if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div><div class="grid g3 bgrid">${[...med].reverse().slice(0,3).map(m=>`<div class="badge">${hex(1)}<b>${esc(m)}</b></div>`).join('')}</div></div>`;
       if(lid.length)h+=`<div class="sec">Locais que lidera</div><div class="card" style="padding:4px 12px">${lid.slice(0,6).map(p=>`<div class="row tap" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2)" onclick="openPlace(${p.i})"><span>${esc(PN[p.key]||'Local '+(p.i+1))}</span><span class="meta">${CDIST.find(([x])=>x===p.ref)?CDIST.find(([x])=>x===p.ref)[1]:''} ›</span></div>`).join('')}</div>`;
     }else if(FT==='ativ'){
       const L=ord.slice(0,15);fotosPede(id,()=>openPerfilAmigo(id));
