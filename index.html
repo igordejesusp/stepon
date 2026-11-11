@@ -408,10 +408,38 @@ body.ob .view{padding-bottom:30px}
 
 .pin{border:3px solid #4a9eff}.swc{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:6px}.swc button{aspect-ratio:1/1;border-radius:50%;border:3px solid transparent;padding:0}.swc button.on{border-color:var(--hi);box-shadow:0 0 0 2px var(--bg) inset}
 .terrdot{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.15)}
+
+/* ================= computador (tela grande e mouse): barra no topo, painel em colunas ================= */
+.dbrand{display:none}
+body.desk #top,:root[data-theme="light"] body.desk #top{position:fixed;top:0;left:0;right:0;height:64px;padding:0 24px;background:var(--panel);border-bottom:1px solid var(--line);pointer-events:auto;gap:12px;z-index:12}
+body.desk .dbrand{display:flex;align-items:center;gap:10px;cursor:pointer;order:0}body.desk .dbrand img{height:30px}body.desk .dbrand b{font-size:20px;font-weight:800;color:var(--hi);letter-spacing:-.01em}
+body.desk #top .tsp{order:2}body.desk #tema{order:3}body.desk #sync{order:4}body.desk #menu{order:5}
+body.desk #top .gb{width:40px;height:40px;min-width:40px;background:transparent;border:1px solid var(--line);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--txt)}
+body.desk #top .gb:hover{background:var(--cell)}
+:root body.desk #tabbar,:root[data-theme="light"] body.desk #tabbar{position:fixed;top:0;bottom:auto;left:50%;right:auto;transform:translateX(-50%);width:auto;height:64px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;z-index:13;gap:4px}
+body.desk #tabbar button{flex:none;flex-direction:row;gap:8px;padding:0 16px;height:64px;border-radius:0;font-size:14px;font-weight:600;opacity:1;color:var(--dim);border-bottom:3px solid transparent}
+body.desk #tabbar button:hover{color:var(--hi)}body.desk #tabbar button.on{background:transparent;color:var(--hi);border-bottom-color:var(--blue)}
+body.desk #tabbar svg{width:20px;height:20px}body.desk .tabav,body.desk .tabav img{width:24px;height:24px}
+body.desk .view{top:64px;bottom:0;padding:24px 32px 40px}body.desk #v-comp{padding:0}
+body.desk #v-comp .cbar{top:16px}body.desk #v-comp .fab{bottom:24px}body.desk #v-comp .maplibregl-ctrl-bottom-left,body.desk #v-comp .maplibregl-ctrl-bottom-right{bottom:0}
+body.desk #recfab{display:none!important}
+body.desk #toast{top:80px}
+body.desk .wrap{max-width:1280px;margin:0 auto}
+body.desk:not(.ob) #ini{columns:auto}
+body.desk #perf{columns:auto;max-width:900px}body.desk #mais{max-width:1100px}
+body.desk #sheet .box{width:min(760px,92vw)}
+body.desk .pgc{max-height:250px}
+.dgrid{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;gap:24px;align-items:start}
+.dgrid aside{position:sticky;top:0;display:flex;flex-direction:column;gap:0}.dgrid .dc{min-width:0}.dgrid .dc>.sec:first-child,.dgrid .dc>.card:first-child{margin-top:0}
+.dperf{padding:18px}.dperf-top{display:flex;align-items:center;gap:12px;cursor:pointer}.dperf-top>div{flex:1;min-width:0}.dperf-top h2{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}.dstat span{display:block;font-size:11px;color:var(--dim)}.dstat b{display:block;font-size:22px;font-family:var(--m);color:var(--hi)}.dstat small{font-size:10px;color:var(--dim)}
+.dsem{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--cell)}.dsem span{font-size:12px;color:var(--dim)}.dsem b{font-family:var(--m);color:var(--hi)}
+body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card.blc:hover,body.desk .fcard:hover{border-color:#3a4654}
 </style>
 </head>
 <body>
 <header id="top">
+  <div class="dbrand" onclick="go('ini')"><img src="logo.svg" alt=""><b>StepOn</b></div>
   <button id="tema" class="gb" onclick="togTema()" aria-label="Trocar tema"></button>
   <b id="ttl" hidden></b><span class="tsp"></span>
   <button id="sync" class="b sm gb" title="Sincronizar" aria-label="Sincronizar"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/></svg></button>
@@ -1043,9 +1071,32 @@ function rIni(){
     const bP=h.slice(mP,mE); // a próxima atividade fica como cartão completo: um toque já manda ao relógio
     const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
   }
+  if(DESK()){el.innerHTML=painelDesk(h.slice(0,mU),h.slice(mU,mD2),SIMPLES()?'':h.slice(mD2,mC2),SIMPLES()?'':h.slice(mC2,mV2),h.slice(mP2,mE2),h.slice(mE2));return}
   if(SIMPLES())h=h.slice(0,mU)+h.slice(mP2,mE2)+h.slice(mU,mD2)+h.slice(mE2); // treino de hoje primeiro
   el.innerHTML=h;
 }
+/* ================= computador: identifica tela grande com mouse e monta o painel ================= */
+const DESK=()=>matchMedia('(min-width:1100px) and (hover:hover) and (pointer:fine)').matches;
+function painelDesk(avisos,ultimo,disp,vit,prox,rodape){
+  const a=D.athlete||{},runs=D.acts.filter(isRun),yr=String(TODAY().getFullYear()),noAno=runs.filter(x=>x.date.slice(0,4)===yr);
+  const kmAno=noAno.reduce((s,x)=>s+(x.dist||0),0),nv=nivelXp(meuXp()),m=monday(TODAY());
+  let seq=0;for(let i=0;i<52;i++){const ini=addD(m,-7*i),n=runs.filter(x=>x.date.slice(0,10)>=ymd(ini)&&x.date.slice(0,10)<=ymd(addD(ini,6))).length;if(n>=1)seq++;else if(i>0)break}
+  const tm=(TD||[]).find(x=>x.u.me),semana=runs.filter(x=>x.date.slice(0,10)>=ymd(m)).reduce((s,x)=>s+(x.dist||0),0);
+  const perfil=`<div class="card dperf"><div class="dperf-top" onclick="go('perf')">${avatar({pic:myPic(),me:1},72)}<div><h2>${esc(a.name||'Atleta')}</h2><div class="meta">${esc(a.city||'')}</div></div>${escudo(nv,"openNiveis()")}</div>
+    <div class="dstat"><div><span>Corridas</span><b>${noAno.length}</b><small>em ${yr}</small></div><div><span>Km</span><b>${Math.round(kmAno/1000)}</b><small>em ${yr}</small></div><div><span>Semanas</span><b>${seq}</b><small>seguidas</small></div></div>
+    <div class="dsem"><span>Esta semana</span><b>${km(semana).replace('.',',')} km</b></div>
+    <button class="b full" style="margin-top:10px" onclick="go('perf')">Ver meu perfil</button></div>`;
+  const terr=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${tm?linhaI(`<span class="li-ic" style="background:${tm.cor}33"><span class="li-dot" style="background:${tm.cor}"></span></span>`,fmtKm2(tm.km2),tm.n+' '+(tm.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo','')}</div>`;
+  const L=D.acts.slice(0,4),DPA=desPorAtiv(runs);
+  const feed=L.length?`<div class="sec">Atividades recentes<small><a onclick="PT='ativ';go('perf')" style="cursor:pointer;color:var(--blue)">Ver todas</a></small></div>`+L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id]})).join(''):'';
+  if(L.length)setTimeout(()=>{socLoad(L.map(x=>CFG.athlete+':'+x.id));fotosPede(CFG.athlete,render)},0);
+  return `<div class="dgrid"><aside class="dl">${perfil}${terr}${blocoDes(runs,TODAY(),"openDesafios()")}</aside>
+    <section class="dc">${avisos}${prox}${ultimo}${feed}${rodape}</section>
+    <aside class="dr">${disp}${vit}</aside></div>`;
+}
+let _desk=null;
+function marcaDesk(){const d=DESK();document.body.classList.toggle('desk',d);if(_desk!==null&&_desk!==d){CM=null;const c=$('#comp');if(c)c.innerHTML='';render()}_desk=d}
+window.addEventListener('resize',()=>{clearTimeout(marcaDesk._t);marcaDesk._t=setTimeout(marcaDesk,250)});
 window.checkin=n=>{const c=LS.get('ck',{});c[ymd(TODAY())]=n;LS.set('ck',c);render()};
 window.acceptAdj=ds=>{const p=planOn(ds),a=adjust(p,readiness(TODAY()));if(!a)return;const ov=LS.get('ov',{});ov[ds]={...(ov[ds]||{}),...a.new,why:a.why};LS.set('ov',ov);toast('AJUSTE APLICADO // REENVIE AO RELÓGIO');render()};
 
@@ -1466,7 +1517,8 @@ window.pTab=v=>{PT=v;LS.set('pt',v);render();$('#v-perf').scrollTop=0};
 const PTI={prog:'<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 16v-3M12 16v-6M15 16v-4"/></svg>',ativ:'<svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>',gal:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M9.5 4v16M14.5 4v16"/></svg>'};
 const pTabs=(_,cur,fn)=>`<div class="ptabs">${[['prog','Progresso'],['ativ','Atividades'],['gal','Galeria']].map(([k,n])=>`<button class="${cur===k?'on':''}" onclick="${fn}('${k}')">${PTI[k]}<span>${n}</span></button>`).join('')}</div>`;
 // escudo com o número do nível
-const escudo=(nv,on)=>`<button class="escudo" onclick="${on}" aria-label="Nível ${nv.L}"><svg viewBox="0 0 40 46"><defs><linearGradient id="esg${nv.L}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4e9ff"/><stop offset=".3" stop-color="#4a9eff"/><stop offset="1" stop-color="#1f6fe0"/></linearGradient></defs><path d="M20 2 36 8v13c0 11-7 19-16 23C11 40 4 32 4 21V8z" fill="url(#esg${nv.L})"/><text x="20" y="29" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">${nv.L}</text></svg><small>${FAIXA[nv.faixa]}</small></button>`;
+let _esq=0;
+const escudo=(nv,on)=>{const gid='esg'+(++_esq);return `<button class="escudo" onclick="${on}" aria-label="Nível ${nv.L}"><svg viewBox="0 0 40 46"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4e9ff"/><stop offset=".3" stop-color="#4a9eff"/><stop offset="1" stop-color="#1f6fe0"/></linearGradient></defs><path d="M20 2 36 8v13c0 11-7 19-16 23C11 40 4 32 4 21V8z" fill="url(#${gid})"/><text x="20" y="29" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">${nv.L}</text></svg><small>${FAIXA[nv.faixa]}</small></button>`};
 
 /* ---------- progresso: as últimas 12 semanas ---------- */
 const MES3=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -2831,7 +2883,7 @@ $('#sync').onclick=()=>sync(0);
 function groupBlocks(el){const K=[...el.children];if(!K.length||K[0].classList.contains('blk'))return;let b=null;
   for(const k of K){if(!b||k.classList.contains('sec')){b=document.createElement('div');b.className='blk';el.insertBefore(b,k)}b.appendChild(k)}}
 function render(){render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
-function render2(){
+function render2(){if(_desk===null)marcaDesk();
   const ob=needOB();document.body.classList.toggle('ob',ob);
   const fab=$('#recfab');fab.classList.toggle('on',!ob&&temConta()&&(VIEW==='ini'||recLive())&&!$('#rec').classList.contains('on'));fab.classList.toggle('live',recLive());
   if(ob){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-ini'));$('#ttl').textContent='BOAS-VINDAS';rOB();return}
@@ -2840,7 +2892,7 @@ function render2(){
   $('#avimg').src=myPic();
   $('#avst').className=D.at&&Date.now()-D.at<864e5?'on':D.at?'off':'';
   ({ini:rIni,cal:rCal,des:rDes,comp:rComp,mais:rMais,perf:rPerf})[VIEW]();
-  if(['ini','des','mais','perf'].includes(VIEW))groupBlocks($('#'+VIEW));
+  if(['ini','des','mais','perf'].includes(VIEW)&&!(VIEW==='ini'&&DESK()))groupBlocks($('#'+VIEW));
   drawMaps();
 }
 window.sync=sync;window.sendWatch=sendWatch;
