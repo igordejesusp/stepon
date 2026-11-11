@@ -435,6 +435,10 @@ body.desk .pgc{max-height:250px}
 .dstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}.dstat span{display:block;font-size:11px;color:var(--dim)}.dstat b{display:block;font-size:22px;font-family:var(--m);color:var(--hi)}.dstat small{font-size:10px;color:var(--dim)}
 .dsem{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--cell)}.dsem span{font-size:12px;color:var(--dim)}.dsem b{font-family:var(--m);color:var(--hi)}
 body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card.blc:hover,body.desk .fcard:hover{border-color:#3a4654}
+
+.fjunto{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);margin:-4px 0 10px}.fjunto:empty{display:none}
+.fjav{display:flex}.fjav img{width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--panel);margin-left:-6px;background:var(--cell)}.fjav img:first-child{margin-left:0}
+.mkck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex:none}.mkck.on{background:var(--blue);border-color:var(--blue)}
 </style>
 </head>
 <body>
@@ -564,12 +568,18 @@ let D=LS.get('data',{athlete:null,acts:[],well:[],at:0});
 // treinos marcados como feitos à mão que não chegaram a ser gravados no Intervals
 let MAN=LS.get('man',[]);
 const isMan=a=>String(a.id).startsWith('man-');
-const withMan=acts=>acts.filter(a=>!isMan(a)).concat(MAN).sort((a,b)=>a.date<b.date?1:-1);
+// corridas em que um amigo marcou você: entram como se você tivesse corrido (contam para mapa, ranking, nível e desafios)
+let MARC=LS.get('marc',[]);
+const isMk=a=>String(a.id).startsWith('mk-');
+function marcActs(){return MARC.filter(e=>e&&e.date).map(e=>{const id=('mk-'+e.de+'-'+e.act).slice(0,40);
+  if(!AX[id]||AX[id].mk!==e.em)AX[id]={map:e.map&&e.map.length>2?e.map:null,terr:e.terr||[],tv:3,mk:e.em,splits:[],best:{}};
+  return {id,type:'Run',date:e.date+':00',name:e.name,dist:e.dist,mov:e.mov,elev:e.elev,src:'MARCADO',dev:e.dev,por:e.nome,de:e.de,oact:e.act}})}
+const withMan=acts=>acts.filter(a=>!isMan(a)&&!isMk(a)).concat(MAN,marcActs()).sort((a,b)=>a.date<b.date?1:-1);
 D.acts=withMan(D.acts||[]);
 let AX=LS.get('ax5',{}); // análise por atividade: splits, best efforts, deriva, trajeto
 // de onde veio a atividade: o relógio (ex.: Garmin Forerunner 935), o próprio app ou o nome do serviço
 const FONTES={GARMIN_CONNECT:'Garmin Connect',STRAVA:'Strava',UPLOAD:'Arquivo enviado',POLAR:'Polar',SUUNTO:'Suunto',COROS:'Coros',WAHOO:'Wahoo',ZWIFT:'Zwift'};
-function devNome(x){if(!x)return '';const d=String(x.dev||'');
+function devNome(x){if(!x)return '';const d=String(x.dev||'');if(x.src==='MARCADO')return (d?d+' · ':'')+'marcado por '+(x.por||'um amigo');
   if(String(x.oc||'')==='1688'||/stepon/i.test(d))return 'StepOn App';if(x.src==='MANUAL')return 'Marcado à mão';
   if(d)return d.replace(/^garmin\s+/i,m=>'Garmin ').replace(/\s+/g,' ').trim();
   const s=String(x.src||'').toUpperCase();return FONTES[s]||(s?s.toLowerCase().replace(/_/g,' ').replace(/^./,c=>c.toUpperCase()):'')}
@@ -589,6 +599,7 @@ async function sync(full){
       at:Date.now()};
     LS.set('data',D);LS.set('authRuim',0);
     await analyzeRuns(full);
+    await puxaMarcados().catch(()=>{});
     publishMine().catch(()=>{}); // corrida nova entra no ranking público (só para quem aceitou)
     toast('SINCRONIZADO // '+D.acts.length+' ATIVIDADES');
   }catch(e){const neg=/HTTP 40[13]/.test(e.message);LS.set('authRuim',neg?1:0);toast(e.message==='SEM CHAVE'?'CONECTE O INTERVALS EM MAIS':neg?(CFG.token?'ESTE APARELHO PERDEU O ACESSO. TOQUE EM RECONECTAR':'O INTERVALS NÃO ACEITOU A CONEXÃO. TOQUE EM ENTRAR COM O INTERVALS'):'FALHA NA SINCRONIZAÇÃO // '+e.message,4500)}
@@ -598,9 +609,9 @@ async function sync(full){
 /* streams → parciais por km, melhores esforços, deriva cardíaca */
 const BE=[[1000,'1 KM'],[3000,'3 KM'],[5000,'5 KM'],[10000,'10 KM'],[21097.5,'21 KM'],[30000,'30 KM'],[42195,'42 KM']];
 async function analyzeRuns(full){
-  const runs=D.acts.filter(isRun).filter(a=>!isMan(a)&&(full||!AX[a.id])).slice(0,60);
+  const runs=D.acts.filter(isRun).filter(a=>!isMan(a)&&!isMk(a)&&(full||!AX[a.id])).slice(0,60);
   // corridas com trajeto analisadas antes das áreas completas: refaz até 10 por sincronização
-  const velhas=D.acts.filter(a=>isRun(a)&&!isMan(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].tv!==3&&!runs.includes(a)).slice(0,10);runs.push(...velhas);
+  const velhas=D.acts.filter(a=>isRun(a)&&!isMan(a)&&!isMk(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].tv!==3&&!runs.includes(a)).slice(0,10);runs.push(...velhas);
   for(const a of runs){
     try{await loadAX(a.id)}catch(e){AX[a.id]={err:1}}
   }
@@ -1088,8 +1099,8 @@ function painelDesk(avisos,ultimo,disp,vit,prox,rodape){
     <button class="b full" style="margin-top:10px" onclick="go('perf')">Ver meu perfil</button></div>`;
   const terr=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${tm?linhaI(`<span class="li-ic" style="background:${tm.cor}33"><span class="li-dot" style="background:${tm.cor}"></span></span>`,fmtKm2(tm.km2),tm.n+' '+(tm.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo','')}</div>`;
   const L=D.acts.slice(0,4),DPA=desPorAtiv(runs);
-  const feed=L.length?`<div class="sec">Atividades recentes<small><a onclick="PT='ativ';go('perf')" style="cursor:pointer;color:var(--blue)">Ver todas</a></small></div>`+L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id]})).join(''):'';
-  if(L.length)setTimeout(()=>{socLoad(L.map(x=>CFG.athlete+':'+x.id));fotosPede(CFG.athlete,render)},0);
+  const feed=L.length?`<div class="sec">Atividades recentes<small><a onclick="PT='ativ';go('perf')" style="cursor:pointer;color:var(--blue)">Ver todas</a></small></div>`+L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id],com:isMk(x)?[x.de]:null})).join(''):'';
+  if(L.length)setTimeout(()=>{const K=L.map(x=>CFG.athlete+':'+x.id);socLoad(K);juntosLoad(K);fotosPede(CFG.athlete,render)},0);
   return `<div class="dgrid"><aside class="dl">${perfil}${terr}${blocoDes(runs,TODAY(),"openDesafios()")}</aside>
     <section class="dc">${avisos}${prox}${ultimo}${feed}${rodape}</section>
     <aside class="dr">${disp}${vit}</aside></div>`;
@@ -1433,9 +1444,9 @@ function rPerf(){
     h+=blocoConq(badgeList(),'openBadges()');
   }else if(PT==='ativ'){
     SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM),DPA=desPorAtiv(D.acts.filter(isRun));
-    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id]})).join('')||'<p class="empty">Sem atividades.</p>';
+    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id],com:isMk(x)?[x.de]:null})).join('')||'<p class="empty">Sem atividades.</p>';
     if(D.acts.length>FLIM)h+=`<button class="b more" onclick="FLIM+=6;render()">Ver mais (${D.acts.length-FLIM} restantes)</button>`;
-    setTimeout(()=>socLoad(L.map(x=>CFG.athlete+':'+x.id)),0);
+    setTimeout(()=>{const K=L.map(x=>CFG.athlete+':'+x.id);socLoad(K);juntosLoad(K)},0);
   }else{
     fotosPede(CFG.athlete,render);h+=galeria(CFG.athlete);
   }
@@ -1630,6 +1641,43 @@ function desPorAtiv(runs){
 }
 const TROFEU='<svg viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v4M9 20h6M10 16h4v4h-4z"/></svg>';
 const seloDes=L=>L&&L.length?`<div class="fdesw">${L.map(c=>`<span class="fdes"><i>${TROFEU}</i>Desafio concluído: <b>${c.n}</b></span>`).join('')}</div>`:'';
+
+/* ---------- correu junto: marcar amigos numa corrida e receber as corridas em que fui marcado ---------- */
+let JUNTOS={};
+async function puxaMarcados(){
+  if(!temConta())return;
+  const r=await fetch(PUBURL+'/marcados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(credSrv())}),j=await r.json();
+  if(r.ok&&Array.isArray(j.lista)){MARC=j.lista;LS.set('marc',MARC);D.acts=withMan(D.acts);LS.set('data',D)}
+}
+async function juntosLoad(keys){keys=keys.filter(k=>!String(k).includes(':mk-'));if(!keys.length)return;
+  try{const r=await fetch(PUBURL+'/juntos?k='+encodeURIComponent(keys.join(',')));if(r.ok){const j=await r.json();keys.forEach(k=>JUNTOS[k]=j[k]||[])}}catch(e){}
+  keys.forEach(pintaJuntos)}
+function pintaJuntos(k){document.querySelectorAll(`.fjunto[data-jk="${k}"]`).forEach(el=>{const L=JUNTOS[k]||[];el.innerHTML=L.length?comTxt(L):''})}
+const comTxt=ids=>`<span class="fjav">${ids.slice(0,4).map(id=>`<img src="${esc(frPic(id))}" alt="">`).join('')}</span>Com ${esc(ids.map(id=>frNome(id).split(' ')[0]).join(', ').replace(/, ([^,]*)$/,' e $1'))}`;
+let MK={id:null,sel:[]};
+window.openMarcar=id=>{
+  const a=D.acts.find(x=>x.id===id);if(!a)return;const k=CFG.athlete+':'+id;MK={id,sel:[...(JUNTOS[k]||[])]};
+  const L=FR.friends||[];
+  openSheet(`<div class="hd"><b>Quem correu junto</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <p class="meta" style="margin-bottom:10px">Marque os amigos que correram com você. A corrida entra na conta deles como se tivessem gravado: conta para o mapa, o ranking, o nível e os desafios.</p>
+  ${L.length?`<div class="card blc">${L.map(f=>`<div class="mrow" onclick="mkTog('${esc(f)}')">${avatar({pic:frPic(f)},42)}<div class="mt"><b>${esc(frNome(f))}</b><span>${esc(f)}</span></div><span class="mkck ${MK.sel.includes(f)?'on':''}" id="mk-${esc(f)}">${MK.sel.includes(f)?'✓':''}</span></div>`).join('')}</div>
+  <button class="b pri full" style="margin-top:12px" onclick="mkSalvar()">Salvar</button>`:`<p class="empty">Você ainda não tem amigos no app. Adicione pelo Mapa, em Amigos.</p><button class="b full" style="margin-top:10px" onclick="openAmigos()">Adicionar amigos</button>`}`);
+};
+window.mkTog=f=>{MK.sel=MK.sel.includes(f)?MK.sel.filter(x=>x!==f):[...MK.sel,f];const e=$('#mk-'+f);if(e){e.classList.toggle('on',MK.sel.includes(f));e.textContent=MK.sel.includes(f)?'✓':''}};
+window.mkSalvar=async()=>{
+  const a=D.acts.find(x=>x.id===MK.id);if(!a)return;const x=AX[a.id]||{};
+  const terr=x.tv===3&&Array.isArray(x.terr)?x.terr:(x.map?(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr):[]})():[]);
+  const resumo={date:a.date.slice(0,16),name:a.name,dev:devNome(a),dist:a.dist,mov:a.mov,elev:a.elev,map:x.map?trimTrack(x.map):[],terr};
+  try{const r=await fetch(PUBURL+'/marcar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),act:a.id,amigos:MK.sel,resumo})}),j=await r.json();
+    if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));JUNTOS[CFG.athlete+':'+a.id]=j.amigos||[];toast(j.amigos.length?'Amigos marcados na corrida':'Marcações removidas');openAct(a.id)}
+  catch(e){toast('Não deu para salvar: '+e.message,4000)}
+};
+window.tiraMarcada=async id=>{
+  const a=D.acts.find(x=>x.id===id);if(!a||!confirm('Tirar esta corrida da sua conta? Ela continua na conta de quem marcou.'))return;
+  try{const r=await fetch(PUBURL+'/marcados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'remover',de:a.de,act:a.oact})}),j=await r.json();
+    if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));MARC=j.lista||[];LS.set('marc',MARC);D.acts=withMan(D.acts);LS.set('data',D);closeSheet();toast('Corrida tirada da sua conta');render();publishMine(1).catch(()=>{})}
+  catch(e){toast('Não deu para tirar: '+e.message,4000)}
+};
 /* ---------- atividades no estilo de feed: curtir, comentar e compartilhar ---------- */
 const diaTxt=ds=>{const d=ds.slice(0,10),h=ds.slice(11,16),hoje=ymd(TODAY()),ont=ymd(addD(TODAY(),-1));return (d===hoje?'Hoje':d===ont?'Ontem':DOW[parseD(d).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+', '+fmtD(d)+(d.slice(0,4)!==String(TODAY().getFullYear())?'/'+d.slice(2,4):''))+(h?' às '+h:'')};
 const nomeHora=ds=>{const h=+String(ds).slice(11,13);return isNaN(h)?'Corrida':h<12?'Corrida da manhã':h<18?'Corrida da tarde':'Corrida da noite'};
@@ -1640,7 +1688,7 @@ function feedCard(o){
   const mapa=o.map==='own'?mapBox(o.id,190):o.map?`<div class="froute">${rotaSvg(o.map,600,300)}</div>`:'';
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:''}>
   <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div></div>
-  <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2>${seloDes(o.des)}
+  <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2><div class="fjunto" data-jk="${k}">${o.com?comTxt(o.com):''}</div>${seloDes(o.des)}
   <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
 }
@@ -1770,10 +1818,10 @@ function etapasHtml(E,a){
 /* ================= detalhe da atividade ================= */
 window.openAct=async id=>{
   const a=D.acts.find(x=>x.id===id);if(!a)return;
-  if(a.dist&&!AX[id]&&!isMan(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
-  if(isRun(a)&&!isMan(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
+  if(a.dist&&!AX[id]&&!isMan(a)&&!isMk(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
+  if(isRun(a)&&!isMan(a)&&!isMk(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
   const x=AX[id]||{},pace=a.dist?a.mov/a.dist*1000:null;
-  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(devNome(a))}</div>${isRun(a)?seloDes(desPorAtiv(D.acts.filter(isRun))[id]):''}${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
+  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(devNome(a))}</div>${isRun(a)?seloDes(desPorAtiv(D.acts.filter(isRun))[id]):''}${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}${isMk(a)?`<div class="card" style="margin-top:8px"><p class="empty" style="color:var(--txt)">${esc(a.por||'Um amigo')} marcou você nesta corrida. Ela conta para você como se tivesse gravado.</p><button class="b full" style="margin-top:8px" onclick="tiraMarcada('${id}')">Tirar da minha conta</button></div>`:isRun(a)?`<div class="fjunto" data-jk="${CFG.athlete}:${id}" style="margin-top:10px"></div><button class="b full" style="margin-top:8px" onclick="openMarcar('${id}')">Marcar quem correu junto</button>`:''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
   <div class="grid g3" style="margin-top:10px"><div class="cell"><div class="lbl">Dist.</div><span class="num">${km(a.dist)}<small> km</small></span></div><div class="cell"><div class="lbl">Tempo</div><span class="num">${fmtT(a.mov)}</span></div><div class="cell"><div class="lbl">Ritmo</div><span class="num">${fmtP(pace)}</span></div><div class="cell"><div class="lbl">FC méd</div><span class="num">${a.hr||'--'}</span></div><div class="cell"><div class="lbl">FC máx</div><span class="num">${a.hrmax||'--'}</span></div><div class="cell"><div class="lbl">Carga</div><span class="num">${Math.round(loadOf(a))}</span></div><div class="cell"><div class="lbl">Altimetria</div><span class="num">${a.elev!=null?Math.round(a.elev)+'<small> m</small>':'--'}</span></div><div class="cell"><div class="lbl">Cadência</div><span class="num">${a.cad?Math.round(a.cad*2):'--'}</span></div><div class="cell"><div class="lbl">Deriva FC</div><span class="num">${x.dec!=null?x.dec+'%':'--'}</span></div></div>`;
   if(x.chart&&x.chart.p.length>3){const ch=x.chart,len=ch.p.length,TT=ch.t&&ch.t.length===len?ch.t:ch.p.map((_,i)=>Math.round((i+1)/len*(a.mov||len)));
     const P=ch.p.map(v=>v&&v<600?v:null),pv=P.filter(Boolean).sort((u,w)=>u-w),hv=ch.h.filter(Boolean),pAvg=pace&&pace<600?pace:null;
@@ -1787,7 +1835,7 @@ window.openAct=async id=>{
     h+=`${kmT?'<details class="card" style="margin-top:12px"><summary><span>Parciais por km</span></summary>':'<div class="sec">PARCIAIS</div>'}<table><tr><th>KM</th><th class="r">Ritmo</th><th class="r">FC</th><th class="r">Elev.</th></tr>${x.splits.map(s=>{const p=s.part?s.t/s.part*1000:s.t;return `<tr><td>${s.part?s.km.toFixed(2):s.km}</td><td class="r ${!s.part&&s.t===fast?'ok':''}">${fmtP(p)}</td><td class="r">${s.hr||'--'}</td><td class="r dim">${s.el!=null?(s.el>0?'+':'')+s.el:''}</td></tr>`}).join('')}</table>${kmT?'</details>':''}`}
   if(isRun(a))h+=`<div class="coach" style="margin-top:14px"><b>COACH // LEITURA</b>${esc(coachLast(a))}</div>`;
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
-  openSheet(h);$('#sbox').dataset.act=id;fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
+  openSheet(h);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
 function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;$('#sheet').classList.add('on');drawMaps()}
 (()=>{const bx=$('#sbox');let y0=null,dy=0;
@@ -2290,7 +2338,7 @@ function trimTrack(tr,full){
 }
 async function publishMine(force){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
-  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map).slice(0,150).map(a=>({id:a.id,date:a.date.slice(0,10),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,AX[a.id].best),map:trimTrack(AX[a.id].map)})).filter(r=>r.map);
+  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map).slice(0,150).map(a=>({id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,AX[a.id].best),map:trimTrack(AX[a.id].map)})).filter(r=>r.map);
   const foto=await fotoMini();
   const terr=meusLacos().slice(0,160),cor=minhaCor(),xp=meuXp(),sig=runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
@@ -2338,9 +2386,9 @@ function simp(pts,n){
 }
 // as áreas de todas as corridas do Igor (calculadas no aparelho, com o trajeto sem os 200 m do começo e do fim)
 function meusLacos(){
-  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===3).length+'|v3';
+  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===3).length+'|v4';
   const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v;
-  const v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===3&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr):[]})();for(const p of L)v.push({d:a.date.slice(0,10),p})}
+  const v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===3&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr):[]})();for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),p})}
   v.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
   // tira as repetidas: uma área que já está quase toda (95%) dentro das áreas mais novas não muda nada na disputa
   const pc=window.polygonClipping,R=[];let U=null;
@@ -2354,17 +2402,36 @@ const pcLoad=()=>Promise.resolve(); // a biblioteca já vem dentro do app
 const ringKm2=r=>{if(!r||r.length<3)return 0;const la=r[0][1],kx=111320*Math.cos(la*Math.PI/180),ky=111320;let s=0;for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length];s+=(a[0]*kx)*(b[1]*ky)-(b[0]*kx)*(a[1]*ky)}return Math.abs(s)/2/1e6};
 const geoKm2=g=>g.reduce((s,poly)=>s+poly.reduce((t,ring,i)=>t+(i?-1:1)*ringKm2(ring),0),0);
 const fmtKm2=v=>v>=1?v.toFixed(1).replace('.',',')+' km²':Math.round(v*100)+' ha';
-// quem domina o quê: do mais antigo ao mais novo; a área nova pertence a quem correu por último (tira a parte da área dos outros)
+// pontos da temporada (mês) de uma pessoa até a data da corrida: 1 por km e 3 por treino
+function pontosMes(u,ate){const pre=String(ate).slice(0,7),R=(u.runs||[]).filter(r=>String(r.date).slice(0,7)===pre&&String(r.date).slice(0,16)<=String(ate).slice(0,16));
+  return Math.round(R.reduce((s,r)=>s+(r.dist||0),0)/1000)+3*R.filter(r=>(r.dist||0)>=1000).length}
+// quem domina o quê, do mais antigo ao mais novo. Regras:
+// 1) a área nova pertence a quem correu por último (tira a parte dos outros);
+// 2) corrida em grupo (pessoas diferentes que começaram a até 15 min uma da outra no mesmo lugar): onde a área já era de alguém
+//    do grupo, continua dele; onde era de outra pessoa ou de ninguém, fica com quem tem mais pontos na temporada.
 let TD=[];
 function terrData(){
   const P=people(),Z=[];
-  for(const u of P){const L=u.me?meusLacos():((PUBL.find(x=>x.id===u.id)||{}).terr||[]);for(const z of L)Z.push({u,d:z.d,p:z.p})}
-  Z.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
-  const G={},pc=window.polygonClipping,n={},last={};
-  for(const z of Z){
-    const ring=z.p.map(q=>[q[1],q[0]]);ring.push(ring[0]);const id=z.u.id;n[id]=(n[id]||0)+1;last[id]=z.d;
-    try{if(!pc)throw 0;for(const k in G)if(k!==id&&G[k].length)G[k]=pc.difference(G[k],[[ring]]);G[id]=G[id]&&G[id].length?pc.union(G[id],[[ring]]):[[ring]]}
-    catch(e){(G[id]=G[id]||[]).push([ring])}
+  for(const u of P){const L=u.me?meusLacos():((PUBL.find(x=>x.id===u.id)||{}).terr||[]);
+    for(const z of L){const la=z.p.map(q=>q[0]),lo=z.p.map(q=>q[1]);Z.push({u,d:z.d,h:z.h||null,p:z.p,ts:Date.parse(z.d+'T'+(z.h||'12:00')+':00'),b:[Math.min(...la),Math.max(...la),Math.min(...lo),Math.max(...lo)]})}}
+  Z.sort((a,b)=>a.ts-b.ts);
+  const pai=Z.map((_,i)=>i),raiz=i=>pai[i]===i?i:(pai[i]=raiz(pai[i])),cruza=(a,b)=>a[0]<=b[1]&&b[0]<=a[1]&&a[2]<=b[3]&&b[2]<=a[3];
+  for(let i=0;i<Z.length;i++)for(let k=i+1;k<Z.length&&Z[k].ts-Z[i].ts<=15*60e3;k++)
+    if(Z[i].h&&Z[k].h&&Z[i].u.id!==Z[k].u.id&&cruza(Z[i].b,Z[k].b))pai[raiz(k)]=raiz(i);
+  const grupos={};Z.forEach((z,i)=>{(grupos[raiz(i)]=grupos[raiz(i)]||[]).push(z)});
+  const G={},pc=window.polygonClipping,n={},last={},anel=z=>{const r=z.p.map(q=>[q[1],q[0]]);r.push(r[0]);return [[r]]};
+  const dif=(a,b)=>a&&a.length&&b&&b.length?pc.difference(a,b):(a||[]),uni=(a,b)=>a&&a.length?(b&&b.length?pc.union(a,b):a):(b||[]);
+  for(const g of Object.values(grupos).sort((a,b)=>a[0].ts-b[0].ts)){
+    const ids=[...new Set(g.map(z=>z.u.id))];
+    try{
+      if(ids.length===1){for(const z of g){const id=z.u.id,A=anel(z);for(const k in G)if(k!==id)G[k]=dif(G[k],A);G[id]=uni(G[id],A);n[id]=(n[id]||0)+1;last[id]=z.d}continue}
+      const pts={};ids.forEach(id=>pts[id]=pontosMes(g.find(z=>z.u.id===id).u,g[0].d+'T'+(g[0].h||'23:59')));
+      const ordem=[...ids].sort((a,b)=>pts[b]-pts[a]);let protegido=[];for(const id of ids)protegido=uni(protegido,G[id]);
+      let coberto=[];
+      for(const id of ordem){let Pm=[];for(const z of g.filter(z=>z.u.id===id))Pm=uni(Pm,anel(z));
+        const R=dif(dif(Pm,coberto),protegido);coberto=uni(coberto,Pm);n[id]=(n[id]||0)+g.filter(z=>z.u.id===id).length;last[id]=g[0].d;
+        if(!R.length)continue;for(const k in G)if(!ids.includes(k))G[k]=dif(G[k],R);G[id]=uni(G[id],R)}
+    }catch(e){for(const z of g){(G[z.u.id]=G[z.u.id]||[]).push(anel(z)[0])}}
   }
   // tira lascas muito pequenas que sobram da junção das áreas (menos de 0,3 ha)
   for(const k in G)G[k]=(G[k]||[]).filter(poly=>ringKm2(poly[0])>=0.003);

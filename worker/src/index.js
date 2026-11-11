@@ -136,6 +136,36 @@ async function fotos(env, eu, b) {
   return { ok: true, lista };
 }
 
+// ---------- corrida em grupo: o dono marca os amigos que correram junto ----------
+// 'mo:<dono>:<atividade>' = { amigos: [...] } ; 'm:<amigo>' = lista das corridas em que ele foi marcado
+const ATV = /^[A-Za-z0-9_-]{1,40}$/, MAXMARC = 100;
+const resumoOk = (r) => {
+  if (!r || typeof r !== 'object') return null;
+  const num = (x, max) => (Number.isFinite(+x) && +x >= 0 && +x <= max ? Math.round(+x) : 0);
+  const pts = (L, n) => (Array.isArray(L) ? L.slice(0, n).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]) : []);
+  return {
+    date: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(r.date || '')) ? String(r.date).slice(0, 16) : '',
+    name: String(r.name || 'Corrida').slice(0, 60), dev: String(r.dev || '').slice(0, 40),
+    dist: num(r.dist, 300000), mov: num(r.mov, 86400), elev: num(r.elev, 9000),
+    map: pts(r.map, 120), terr: (Array.isArray(r.terr) ? r.terr : []).slice(0, 8).map((p) => pts(p, 150)).filter((p) => p.length >= 3),
+  };
+};
+async function marcar(env, a, b) {
+  if (!ATV.test(String(b.act || ''))) return { erro: 'atividade inválida' };
+  const dono = b.athlete, k = 'mo:' + dono + ':' + b.act, f = await lerF(env, dono);
+  const novos = [...new Set((Array.isArray(b.amigos) ? b.amigos : []).filter((id) => f.friends.includes(id)))].slice(0, 10);
+  const res = resumoOk(b.resumo);
+  if (novos.length && (!res || !res.date)) return { erro: 'resumo da corrida inválido' };
+  const antes = ((await env.BR.get(k, 'json')) || {}).amigos || [];
+  for (const id of new Set([...antes, ...novos])) {
+    const L = ((await env.BR.get('m:' + id, 'json')) || []).filter((e) => !(e.de === dono && e.act === b.act));
+    if (novos.includes(id)) L.unshift({ de: dono, nome: a.name || dono, act: b.act, ...res, em: Date.now() });
+    await env.BR.put('m:' + id, JSON.stringify(L.slice(0, MAXMARC)));
+  }
+  if (novos.length) await env.BR.put(k, JSON.stringify({ amigos: novos })); else await env.BR.delete(k);
+  return { ok: true, amigos: novos };
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -166,7 +196,8 @@ export default {
       const terr = (Array.isArray(b.terr) ? b.terr : []).slice(0, 160).map((z) => {
         if (!z || !/^\d{4}-\d{2}-\d{2}$/.test(String(z.d || '')) || !Array.isArray(z.p)) return null;
         const p = z.p.slice(0, 150).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]);
-        return p.length >= 3 ? { d: z.d, p } : null;
+        const h = /^\d{2}:\d{2}$/.test(String(z.h || '')) ? z.h : undefined;
+        return p.length >= 3 ? { d: z.d, h, p } : null;
       }).filter(Boolean);
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));
@@ -226,6 +257,31 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
+    if (req.method === 'POST' && (url.pathname === '/marcar' || url.pathname === '/marcados')) {
+      const txt = await req.text();
+      if (txt.length > 120000) return json(req, { erro: 'pedido grande demais' }, 413);
+      let b;
+      try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      if (url.pathname === '/marcar') { const r = await marcar(env, a, b); return json(req, r, r.erro ? 400 : 200); }
+      // marcados: a lista de corridas em que a pessoa foi marcada; acao 'remover' tira uma delas
+      let L = (await env.BR.get('m:' + b.athlete, 'json')) || [];
+      if (b.acao === 'remover' && ATV.test(String(b.act || ''))) {
+        L = L.filter((e) => !(e.de === b.de && e.act === b.act)); await env.BR.put('m:' + b.athlete, JSON.stringify(L));
+        const k = 'mo:' + b.de + ':' + b.act, o = await env.BR.get(k, 'json');
+        if (o) { o.amigos = (o.amigos || []).filter((x) => x !== b.athlete); if (o.amigos.length) await env.BR.put(k, JSON.stringify(o)); else await env.BR.delete(k); }
+      }
+      return json(req, { ok: true, lista: L });
+    }
+
+    if (req.method === 'GET' && url.pathname === '/juntos') {
+      const ks = [...new Set(String(url.searchParams.get('k') || '').split(',').filter((k) => /^i\d{1,12}:[A-Za-z0-9_-]{1,40}$/.test(k)))].slice(0, 60);
+      const out = {};
+      await Promise.all(ks.map(async (k) => { const v = await env.BR.get('mo:' + k, 'json'); if (v && v.amigos && v.amigos.length) out[k] = v.amigos; }));
+      return json(req, out, 200, { 'Cache-Control': 'no-store' });
+    }
+
     if (req.method === 'POST' && url.pathname === '/amigos') {
       let b;
       try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
@@ -235,6 +291,6 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'GET /fotos', 'GET /foto', 'POST /foto', 'POST /oauth/token'] });
+    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'GET /fotos', 'GET /foto', 'POST /foto', 'POST /marcar', 'POST /marcados', 'GET /juntos', 'POST /oauth/token'] });
   },
 };
