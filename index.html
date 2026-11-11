@@ -630,6 +630,10 @@ function bests(days){
     for(const [dist] of BE){if(a.dist>=dist*0.99&&a.dist<=dist*1.05&&a.mov){const tt=Math.round(a.mov*dist/a.dist);if(!B[dist]||tt<B[dist].t)B[dist]={t:tt,id:a.id,date:a.date}}}}
   return B;
 }
+// histórico dos testes: {ds, V (depois), Va (antes), d, t}; o mais recente, se tiver até 90 dias, define o condicionamento
+const vHist=()=>LS.get('vhist',[]);
+function vTeste(){const H=vHist(),u=H.length?H[H.length-1]:null;return u&&Date.now()-parseD(u.ds)<90*864e5?u:null}
+function vAtual(){const u=vTeste();if(u)return {v:u.V,teste:u.ds,dist:u.d,t:u.t};const c=curVdot();if(c)return c;return PF?{v:PF.V,est:1}:null}
 function curVdot(){const B=bests(90);let best=null;for(const k in B){const dist=+k;if(dist<1500)continue;const v=vdot(dist,B[k].t);if(!best||v>best.v)best={v,dist,t:B[k].t}}return best}
 function paceZones(V){ // ritmos de treino a partir do VDOT (% do VO2 máx)
   const vv=(v)=>{let lo=100,hi=500;for(let i=0;i<40;i++){const mid=(lo+hi)/2;(-4.6+0.182258*mid+0.000104*mid*mid)<v?lo=mid:hi=mid}return lo};
@@ -773,10 +777,17 @@ function genPlan(pf){
 const baseTemplate=()=>PF?genPlan(PF):isIgor()?planIgor():[];
 // treinos criados ou editados à mão ficam em 'extra' e substituem o do dia ({off:1} = dia sem treino)
 let _pk='',_pv=[];
+const rT=V=>{const z=paceZones(V).T;return (z[0]+z[1])/2};
 function plan(){
-  const ov=LS.get('ov',{}),ex=LS.get('extra',{}),key=CFG.athlete+JSON.stringify(PF)+JSON.stringify(ov)+JSON.stringify(ex);
+  const ov=LS.get('ov',{}),ex=LS.get('extra',{}),key=CFG.athlete+JSON.stringify(PF)+JSON.stringify(ov)+JSON.stringify(ex)+JSON.stringify(vHist());
   if(key===_pk)return _pv;
   _pv=baseTemplate().filter(p=>!ex[p.date]).concat(Object.values(ex).filter(x=>!x.off)).map(p=>ov[p.date]?{...p,...ov[p.date]}:p).sort((a,b)=>a.date<b.date?-1:1);
+  // depois de cada teste, os treinos seguintes ganham os ritmos do novo condicionamento
+  // (o plano gerado pelo questionário já é refeito com o VDOT novo; o plano fixo e os treinos agendados à mão são ajustados aqui)
+  const H=vHist().filter(x=>x.Va&&x.V&&Math.abs(x.V-x.Va)>=0.1);
+  if(H.length)_pv=_pv.map(p=>{if(PF&&!p.custom)return p;const T=H.filter(x=>x.ds<p.date&&(!p.criado||p.criado<=x.ds));if(!T.length)return p;
+    const f=T.reduce((r,x)=>r*rT(x.V)/rT(x.Va),1);if(Math.abs(f-1)<0.004)return p;
+    return {...p,aj:T[T.length-1].ds,steps:(p.steps||[]).map(s=>{const c=[...s];if(Array.isArray(c[2]))c[2]=[Math.round(c[2][0]*f),Math.round(c[2][1]*f)];return c})}});
   _pk=key;return _pv;
 }
 const planOn=ds=>plan().find(p=>p.date===ds);
@@ -1145,7 +1156,7 @@ window.calGo=n=>{if(!n)calRef=TODAY();else if(calMode==='sem')calRef=addD(calRef
 window.openDay=ds=>{
   const p=planOn(ds),ex=actsOn(ds),w=W(ds)||{},d=parseD(ds);
   let h=`<div class="hd"><b>${DOW[d.getDay()]} ${ds.split('-').reverse().join('/')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
+  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}${p.aj?' · ritmos ajustados pelo teste de '+fmtD(p.aj):''}</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
     ${ds>=ymd(TODAY())?`<button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${ds}')">▶ Fazer treino agora</button>`:''}
     <div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
   ex.forEach(a=>h+=`<div class="card" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
@@ -1241,7 +1252,7 @@ window.delMeta=id=>{if(!confirm('Apagar esta meta?'))return;LS.set('metas',metas
 
 /* ================= MAIS ================= */
 function rMais(){
-  const a=D.athlete||{},run=a.run||{},V=curVdot()||(!isIgor()&&PF?{v:PF.V,est:1}:null),Z=V&&paceZones(V.v),S=pmc(),cur=S[S.length-1];
+  const a=D.athlete||{},run=a.run||{},V=vAtual(),Z=V&&paceZones(V.v),S=pmc(),cur=S[S.length-1];
   const lastRun=D.acts.find(isRun),ramp=Math.round((cur.ctl-S[S.length-8].ctl)*10)/10||0;
   const wellOn=D.well.some(w=>w.d>=ymd(addD(TODAY(),-3))&&(w.rhr||w.sleep));
   const flag=(on,t)=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line2)"><span style="font-size:12px">${t}</span><span class="tag ${on?'ok':'bad'}">${on?'LIGADO':'DESLIGADO'}</span></div>`;
@@ -1260,7 +1271,7 @@ function rMais(){
   const mA=h.length;
   h+=`<div class="sec">Condição atual</div>`+condPag(S,cur);
   const kM=h.length;
-  h+=`<div class="sec">Métricas avançadas</div>`+stc([['VDOT '+qb('vdot'),V?V.v.toFixed(1):'--',V?(V.est?'Estimado pelo questionário':'Base: '+(V.dist/1000)+' km em '+fmtT(V.t)):'Sem esforço de 1,5 km ou mais'],['Rampa 7 dias '+qb('rampa'),(ramp>0?'+':'')+ramp.toFixed(1),'Seguro: até +5 por semana',ramp>8?'bad':ramp>5?'warn':'']])
+  h+=`<div class="sec">Métricas avançadas</div>`+stc([['VDOT '+qb('vdot'),V?V.v.toFixed(1):'--',V?(V.teste?'Teste de '+(V.dist/1000)+' km'+(V.t?' em '+fmtT(V.t):'')+' · '+fmtD(V.teste):V.est?'Estimado pelo questionário':'Base: '+(V.dist/1000)+' km em '+fmtT(V.t)):'Sem esforço de 1,5 km ou mais'],['Rampa 7 dias '+qb('rampa'),(ramp>0?'+':'')+ramp.toFixed(1),'Seguro: até +5 por semana',ramp>8?'bad':ramp>5?'warn':'']])
   +(V?gc('Projeção de prova',[[5000,'5K','5 km'],[10000,'10K','10 km'],[21097.5,'21K','Meia maratona'],[42195,'42K','Maratona']].map(([d,ic,n])=>{const s=predict(V.v,d);return linhaI(icoT(ic),n,fmtP(s/d*1000)+' /km',fmtT(s))}).join(''),'Condicionamento atual')
     +gc('Ritmos de treino',[['E','Leve / rodagem','#4a9eff'],['M','Maratona','#7cc4ff'],['T','Limiar','#f0c24b'],['I','Intervalado','#ff8a3d'],['R','Repetição','#e0442f']].map(([k,n,c])=>linhaI(icoT(k,c),n,'',fmtP(Z[k][0])+'–'+fmtP(Z[k][1]))).join(''),'Método Daniels'):'')
   +gc('Forma × fadiga · 180 dias',pmcSvg(S,180));
@@ -1275,7 +1286,7 @@ function rMais(){
       +blk('bib','Biblioteca de treinos',linhaI(icoC('bib'),BIBL.length+' treinos prontos','Rodagens, fartlek, tiros, HIIT, testes…',''),sB);
     var mA2=h.length;
     h+=blk('cond','Condição atual',linhaI(icoC('forma'),'Forma','CTL',cur.ctl.toFixed(1))+linhaI(icoC('fadiga','red'),'Fadiga','ATL',cur.atl.toFixed(1))+linhaI(icoC('equil'),'Equilíbrio',tsbTxt(cur.tsb).split(':')[0],sgn(cur.tsb)),sCo);
-    h+=blk('met','Métricas avançadas',linhaI(icoC('vdot'),'VDOT',V?(V.est?'Estimado pelo questionário':'Pelas suas corridas'):'Sem dados ainda',V?V.v.toFixed(1):'--')+linhaI(icoC('prova'),'Projeção de 10 km','Condicionamento atual',p10?fmtT(p10):'--'),sX)
+    h+=blk('met','Métricas avançadas',linhaI(icoC('vdot'),'VDOT',V?(V.teste?'Pelo teste de '+fmtD(V.teste):V.est?'Estimado pelo questionário':'Pelas suas corridas'):'Sem dados ainda',V?V.v.toFixed(1):'--')+linhaI(icoC('prova'),'Projeção de 10 km','Condicionamento atual',p10?fmtT(p10):'--'),sX)
       +blk('fis','Parâmetros fisiológicos',linhaI(icoC('fc','red'),'FC máxima','Do Intervals.icu',(run.max_hr||CFG.fcmax)+' bpm')+linhaI(icoC('fc','red'),'FC limiar','',(run.lthr||'--')+' bpm'),sF);
   }
   if(SIMPLES())h=h.slice(0,mA2);
@@ -1940,7 +1951,7 @@ function testeAchado(){
   return {date:p.date,d,t:ts.length?Math.min(...ts):null};
 }
 // condicionamento novo pelo teste: se o anterior vinha do histórico real, não deixa pular mais de 5 pontos
-function testeNovoV(t,d){const ant=PF?PF.V:(curV()||32),V=vdot(d,t),hist=PF?PF.Vsrc==='historico':true;return Math.round((hist?clamp(V,ant-5,ant+5):V)*10)/10}
+function testeNovoV(t,d){const ant=curV()||32,V=vdot(d,t),hist=PF?PF.Vsrc==='historico':true;return Math.round((hist?clamp(V,ant-5,ant+5):V)*10)/10}
 let TEST={ds:null,d:1000};
 window.abrirTeste=(ds,t,d)=>{
   TEST={ds,d:d===5000?5000:1000};const k=TEST.d/1000;
@@ -1955,16 +1966,17 @@ window.abrirTeste=(ds,t,d)=>{
 window.testePrev=()=>{
   const v=$('#t-t').value,t=parseT(v),d=TEST.d,lim=d===1000?[150,600]:[720,2400],ok=!!t&&t>=lim[0]&&t<=lim[1],b=$('#t-ok'),el=$('#t-prev');b.disabled=!ok;
   if(!ok){el.innerHTML=v?`<p class="empty bad" style="margin-top:8px">Tempo fora do esperado: use entre ${fmtT(lim[0])} e ${fmtT(lim[1])}.</p>`:'';return}
-  const ant=PF?PF.V:(curV()||32),V=testeNovoV(t,d),A=zonesFor(ant),B=zonesFor(V),f=z=>fmtP(z[0])+'–'+fmtP(z[1]);
+  const ant=curV()||32,V=testeNovoV(t,d),A=zonesFor(ant),B=zonesFor(V),f=z=>fmtP(z[0])+'–'+fmtP(z[1]);
   el.innerHTML=`<div class="card" style="margin-top:10px"><table><tr><th></th><th class="r">Antes</th><th class="r">Depois</th></tr>
   <tr><td style="font-family:var(--f)">Condicionamento (VDOT)</td><td class="r">${Math.round(ant*10)/10}</td><td class="r ok">${V}</td></tr>
   <tr><td style="font-family:var(--f)">Ritmo leve</td><td class="r">${f(A.E)}</td><td class="r ok">${f(B.E)}</td></tr>
   <tr><td style="font-family:var(--f)">Ritmo de limiar</td><td class="r">${f(A.T)}</td><td class="r ok">${f(B.T)}</td></tr>
-  <tr><td style="font-family:var(--f)">Tiros fortes</td><td class="r">${f(A.I)}</td><td class="r ok">${f(B.I)}</td></tr></table></div>${PF?'':'<p class="empty" style="margin-top:8px">Vale para os treinos da biblioteca e do criador. O seu plano atual já tem ritmos próprios e não muda.</p>'}`;
+  <tr><td style="font-family:var(--f)">Tiros fortes</td><td class="r">${f(A.I)}</td><td class="r ok">${f(B.I)}</td></tr></table></div><p class="empty" style="margin-top:8px">Os treinos depois deste teste passam a usar os ritmos novos, e as métricas (condicionamento, projeção de prova e ritmos de treino) também. Se o teste for pior, os ritmos ficam mais leves.</p>`;
 };
 window.aplicaTeste=()=>{
   const t=parseT($('#t-t').value),d=TEST.d,lim=d===1000?[150,600]:[720,2400];if(!(t>=lim[0]&&t<=lim[1]))return;
-  const V=testeNovoV(t,d);
+  const V=testeNovoV(t,d),Va=curV()||null;
+  LS.set('vhist',[...vHist().filter(x=>x.ds!==TEST.ds),{ds:TEST.ds,V,Va,d,t:Math.round(t)}].sort((a,b)=>a.ds<b.ds?-1:1));
   if(PF){PF.V=V;PF.Vsrc='teste';PF.tests={...(PF.tests||{}),[TEST.ds]:Math.round(t)};LS.set('pf',PF)}
   else{LS.set('vt',{V,ds:TEST.ds});LS.set('vtests',{...LS.get('vtests',{}),[TEST.ds]:Math.round(t)})}
   closeSheet();toast('RITMOS ATUALIZADOS');render();
@@ -2046,7 +2058,7 @@ window.bibAgendar=mode=>{
   if(!ds)return toast('ESCOLHA O DIA');if(ds<hoje)return toast('ESCOLHA UM DIA A PARTIR DE HOJE');
   const p=bibSessao(BIBL[BIB.i]),ant=planOn(ds);
   if(ant&&!confirm(`Já existe "${ant.titulo}" ${ds===hoje?'hoje':'neste dia'}. Trocar pelo treino da biblioteca?`))return;
-  p.date=ds;p.custom=1;const ex=LS.get('extra',{}),ov=LS.get('ov',{});ex[ds]=p;delete ov[ds];LS.set('extra',ex);LS.set('ov',ov);
+  p.date=ds;p.custom=1;p.criado=hoje;const ex=LS.get('extra',{}),ov=LS.get('ov',{});ex[ds]=p;delete ov[ds];LS.set('extra',ex);LS.set('ov',ov);
   BIB.ds=ds;closeSheet();toast('TREINO AGENDADO');render();
   if(mode===1)sendWatch(ds);if(mode===2)openRec(ds);
 };
@@ -2058,7 +2070,7 @@ window.bibAjustar=()=>{
 };
 
 /* ================= marcar como feito ================= */
-const curV=()=>{if(PF)return PF.V;const vt=LS.get('vt');return vt&&Date.now()-new Date(vt.ds)<90*864e5?vt.V:(curVdot()||{}).v};
+const curV=()=>{const u=vTeste();if(u)return u.V;if(PF)return PF.V;return (curVdot()||{}).v};
 window.markDone=ds=>{
   const p=planOn(ds),E=zonesFor(curV()).E,mins=p?Math.round(p.km*(E[0]+E[1])/120):'';
   openSheet(`<div class="hd"><b>MARCAR COMO FEITO</b><button class="b sm" onclick="closeSheet()">✕</button></div>
@@ -2109,7 +2121,7 @@ window.bDel=i=>{BD.steps.splice(i,1);drawB()};
 function bPlan(){
   const Z=zonesFor(curV());
   const steps=BD.steps.filter(s=>s.v>0).map(s=>{const a=[s.et,String(s.v)+s.u,s.z?Z[s.z]:null];if(s.r>1)a[3]=Math.round(s.r);a[4]=s.z;return a});
-  return {date:BD.date,tipo:BD.tipo,titulo:BD.titulo.trim()||'Treino livre',km:r5(steps.reduce((t,s)=>t+stepKm(s),0))||1,steps,custom:1};
+  return {date:BD.date,tipo:BD.tipo,titulo:BD.titulo.trim()||'Treino livre',km:r5(steps.reduce((t,s)=>t+stepKm(s),0))||1,steps,custom:1,criado:ymd(TODAY())};
 }
 const bTot=()=>'≈ '+kmTxt(bPlan().km)+' km';
 function drawB(){
@@ -2761,6 +2773,7 @@ function render2(){
   drawMaps();
 }
 window.sync=sync;window.sendWatch=sendWatch;
+if(!LS.get('vhist')){const vt=LS.get('vt');if(vt&&vt.V){const Va=(curVdot()||{}).v||null;LS.set('vhist',[{ds:vt.ds,V:vt.V,Va,d:1000,t:(LS.get('vtests',{})[vt.ds])||null}])}else if(PF&&PF.Vsrc==='teste'){const ks=Object.keys(PF.tests||{}).filter(k=>PF.tests[k]).sort(),k=ks[ks.length-1];if(k)LS.set('vhist',[{ds:k,V:PF.V,Va:null,d:1000,t:PF.tests[k]}])}}
 if(isIgor()&&!LS.get('fix0711')){const ex=LS.get('extra',{}),b=baseTemplate().find(p=>p.date==='2026-11-08');
   if(b&&!ex['2026-11-07']){ex['2026-11-07']={...b,date:'2026-11-07'};if(!ex['2026-11-08'])ex['2026-11-08']={date:'2026-11-08',off:1};LS.set('extra',ex)}LS.set('fix0711',1)}
 render();
