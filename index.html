@@ -359,6 +359,13 @@ body.ob .view{padding-bottom:30px}
 .mrow{display:flex;align-items:center;gap:14px;padding:9px 0}.mrow+.mrow{border-top:1px solid var(--line2)}.medal{width:46px;height:46px;flex:none}
 .mt{flex:1;min-width:0}.mt b{display:block;font-size:16px;font-weight:500;color:var(--hi)}.mt span{display:block;font-size:13px;color:var(--txt);opacity:.85}.mv{font-family:var(--m);font-size:18px;color:var(--hi)}
 .mrow.sec2 .mt b,.mrow.sec2 .mv{color:var(--dim)}.mrow.sec2 .mt span{opacity:.6}
+
+.fph{display:flex;gap:8px;overflow-x:auto;margin:0 0 10px;scroll-snap-type:x mandatory}.fph img{height:200px;max-width:85%;object-fit:cover;border-radius:12px;flex:none;scroll-snap-align:start}
+.gal .gi{padding:0;overflow:hidden;aspect-ratio:1/1}.gal .gi img{width:100%;height:100%;object-fit:cover;display:block}
+
+.ucomp{cursor:pointer;padding:14px 16px}.uc-t{font-size:15px;color:var(--txt);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.uc-b{display:flex;align-items:center;gap:14px}
+.uc-ic{width:46px;height:46px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}.uc-ic svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.uc-ic svg circle{fill:#fff;stroke:none}
+.uc-n{flex:1;min-width:0}.uc-n b{display:block;font-size:24px;color:var(--hi);font-family:var(--m)}.uc-n span{font-size:13px;color:var(--dim)}.uc-r{width:96px;height:78px;flex:none}.uc-r svg{width:100%;height:100%}
 </style>
 </head>
 <body>
@@ -887,9 +894,9 @@ function rIni(){
   const mU=h.length;
   // último treino
   h+=`<div class="sec">ÚLTIMO TREINO<small>${last?DOW[parseD(last.date).getDay()]+' '+last.date.slice(8,10)+'/'+last.date.slice(5,7):''}</small></div>`;
-  if(last){const pace=last.mov/last.dist*1000;
-    h+=`<div class="card cur" onclick="openAct('${last.id}')"><h2>${esc(last.name)}</h2><div class="meta">${last.date.slice(11,16)} · ${fmtT(last.mov)} em movimento</div>${(AX[last.id]||{}).map?mapBox(last.id,170):''}
-    <div class="grid g4" style="margin-top:10px"><div class="cell"><div class="lbl">Dist.</div><span class="num">${km(last.dist)}<small> km</small></span></div><div class="cell"><div class="lbl">Ritmo</div><span class="num">${fmtP(pace)}<small>/km</small></span></div><div class="cell"><div class="lbl">FC méd/máx</div><span class="num">${last.hr||'--'}<small>/${last.hrmax||'--'}</small></span></div><div class="cell"><div class="lbl">Esforço</div><span class="num">${last.rpe?last.rpe+'<small>/10</small>':Math.round(loadOf(last))+'<small> carga</small>'}</span></div></div></div>`}
+  if(last){const pace=last.dist?fmtP(last.mov/last.dist*1000)+' /km':'',rt=(AX[last.id]||{}).map;
+    h+=`<div class="card ucomp" onclick="openAct('${last.id}')"><div class="uc-t">${esc(last.name)}</div><div class="uc-b"><span class="uc-ic"><svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M9 21l3-6 3 2v5M7.5 11.5l2.5-3.5 4 1 2.5 3.5 2.5 1M10 8l-1.5 5.5L5 15"/></svg></span><div class="uc-n"><b>${km(last.dist).replace('.',',')} km</b><span>${fmtT(last.mov)}${pace?' · '+pace:''}</span></div>${rt?`<div class="uc-r">${rotaSvg(rt,200,160)}</div>`:''}</div></div>`;
+    h+=progBox('ini',semanas(D.acts.filter(isRun).map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))))}
   else h+=`<div class="card"><p class="empty">Nenhuma corrida registrada ainda.</p></div>`;
   const mD=h.length;
   // disposição
@@ -1248,12 +1255,12 @@ function rPerf(){
     h+=blocoMarcas(marcasTodas(),'openMarcas()');
     h+=blocoConq(badgeList(),'openBadges()');
   }else if(PT==='ativ'){
-    SOCV=null;const L=D.acts.slice(0,FLIM);
+    SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM);
     h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:x.src,cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1})).join('')||'<p class="empty">Sem atividades.</p>';
     if(D.acts.length>FLIM)h+=`<button class="b more" onclick="FLIM+=6;render()">Ver mais (${D.acts.length-FLIM} restantes)</button>`;
     setTimeout(()=>socLoad(L.map(x=>CFG.athlete+':'+x.id)),0);
   }else{
-    h+=galeria(D.acts.filter(x=>isRun(x)&&(AX[x.id]||{}).map).map(x=>({pts:AX[x.id].map,date:x.date,dist:x.dist,on:`openAct('${x.id}')`})));
+    fotosPede(CFG.athlete,render);h+=galeria(CFG.athlete);
   }
   if(temConta())h+=`<button class="b red full" style="margin-top:18px" onclick="sairConta()">Sair da conta</button>`;
   $('#perf').innerHTML=h;
@@ -1327,10 +1334,41 @@ function progIn(id){
 window.pgMet=(id,k)=>{PG[id].met=k;$('#pg-'+id).innerHTML=progIn(id)};
 window.pgMove=(e,id)=>{const sv=e.currentTarget,r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,i=clamp(Math.round((x-16)/(462/11)),0,11);if(i!==PG[id].sel){PG[id].sel=i;$('#pg-'+id).innerHTML=progIn(id)}};
 
+
+/* ---------- fotos dos treinos: tiradas na hora e adicionadas à atividade; aparecem no cartão e na galeria ---------- */
+const FOT={};// dono -> lista [{a,p,t}]
+const fotoUrl=(dono,f)=>PUBURL+'/foto?k='+dono+':'+f.a+':'+f.p;
+const fotosDe=(dono,act)=>(FOT[dono]||[]).filter(f=>f.a===act);
+async function fotosLoad(dono,depois){
+  if(FOT[dono]&&!depois)return FOT[dono];
+  try{const r=await fetch(PUBURL+'/fotos?dono='+dono);if(r.ok){const j=await r.json();if(Array.isArray(j))FOT[dono]=j}}catch(e){}
+  FOT[dono]=FOT[dono]||[];return FOT[dono];
+}
+// carrega as fotos uma vez e redesenha a tela que pediu
+function fotosPede(dono,redesenha){if(dono in FOT)return;FOT[dono]=null;fotosLoad(dono,1).then(()=>redesenha&&redesenha())}
+function jpegDe(file){return new Promise((ok,erro)=>{const u=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{let q=.8,mx=1400,out='';for(let k=0;k<5;k++){const s=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);out=c.toDataURL('image/jpeg',q);if(out.length<850000)break;q-=.12;mx=Math.round(mx*.85)}URL.revokeObjectURL(u);ok(out)};
+  im.onerror=()=>{URL.revokeObjectURL(u);erro(new Error('não deu para abrir a imagem'))};im.src=u})}
+window.addFoto=act=>{
+  if(!temConta())return toast('Entre com o Intervals para adicionar fotos');
+  const i=document.createElement('input');i.type='file';i.accept='image/*';
+  i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;toast('Enviando a foto…',8000);
+    try{const img=await jpegDe(f),r=await fetch(PUBURL+'/foto',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),act,img})}),j=await r.json();
+      if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));FOT[CFG.athlete]=j.lista;toast('Foto adicionada ao treino');render();if($('#sheet').classList.contains('on')&&$('#sbox').dataset.act===act)openAct(act)}
+    catch(e){toast('Não deu para enviar: '+e.message,4000)}};
+  i.click();
+};
+window.verFoto=(dono,act,pid)=>{const f=(FOT[dono]||[]).find(x=>x.p===pid);if(!f)return;
+  openSheet(`<div class="hd"><b>Foto do treino</b><button class="b sm" onclick="closeSheet()">✕</button></div><img src="${fotoUrl(dono,f)}" alt="" style="width:100%;border-radius:14px;display:block">
+  <div class="grid g2" style="margin-top:10px">${dono===CFG.athlete&&D.acts.some(a=>a.id===act)?`<button class="b" onclick="openAct('${act}')">Ver o treino</button><button class="b red" onclick="apagaFoto('${pid}')">Remover foto</button>`:SOCV?`<button class="b" onclick="${SOCV}">◀ Voltar</button>`:''}</div>`)};
+window.apagaFoto=async pid=>{if(!confirm('Remover esta foto do treino?'))return;
+  try{const r=await fetch(PUBURL+'/foto',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'apagar',pid})}),j=await r.json();if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));FOT[CFG.athlete]=j.lista;closeSheet();toast('Foto removida');render()}
+  catch(e){toast('Não deu para remover: '+e.message,4000)}};
+const fotosTira=(dono,act)=>{const L=fotosDe(dono,act);return L.length?`<div class="fph" onclick="event.stopPropagation()">${L.map(f=>`<img src="${fotoUrl(dono,f)}" alt="" loading="lazy" onclick="verFoto('${dono}','${act}','${f.p}')">`).join('')}</div>`:''};
 /* ---------- atividades no estilo de feed: curtir, comentar e compartilhar ---------- */
 const diaTxt=ds=>{const d=ds.slice(0,10),h=ds.slice(11,16),hoje=ymd(TODAY()),ont=ymd(addD(TODAY(),-1));return (d===hoje?'Hoje':d===ont?'Ontem':DOW[parseD(d).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+', '+fmtD(d)+(d.slice(0,4)!==String(TODAY().getFullYear())?'/'+d.slice(2,4):''))+(h?' às '+h:'')};
 const nomeHora=ds=>{const h=+String(ds).slice(11,13);return isNaN(h)?'Corrida':h<12?'Corrida da manhã':h<18?'Corrida da tarde':'Corrida da noite'};
-const ICO={cur:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',com:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',sha:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></svg>'};
+const ICO={cur:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',com:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',sha:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></svg>',fot:'<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'};
 function feedCard(o){
   const k=o.dono+':'+o.id,pace=o.run&&o.dist?fmtP(o.mov/o.dist*1000)+' /km':null;
   const st=[['Distância',o.dist?km(o.dist).replace('.',',')+' km':'--'],pace?['Ritmo',pace]:['FC média',o.hr?o.hr+' bpm':'--'],['Tempo',tempoCart(o.mov)]];
@@ -1338,8 +1376,8 @@ function feedCard(o){
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:''}>
   <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src==='MANUAL'?'Marcado à mão':o.src):''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div></div>
   <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2>
-  <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${mapa}
-  <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
+  <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
+  <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
 }
 // traçado da corrida desenhado à mão (para os amigos e a galeria): pontos [lat, lng]
 function rotaSvg(pts,W,H){
@@ -1349,9 +1387,11 @@ function rotaSvg(pts,W,H){
   const d=Q.map((q,i)=>(i?'L':'M')+(ox+(q[0]-x0)*sc).toFixed(1)+' '+(oy+(q[1]-y0)*sc).toFixed(1)).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"><path d="${d}" fill="none" stroke="#4a9eff" stroke-width="${Math.max(3,W/90)}" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
-function galeria(L){
-  if(!L.length)return '<p class="empty">Os traçados das suas corridas com GPS aparecem aqui.</p>';
-  return `<div class="gal">${L.slice(0,60).map(x=>`<button class="gi" ${x.on?`onclick="${x.on}"`:''}>${rotaSvg(x.pts,200,200)}<span>${fmtD(String(x.date).slice(0,10))} · ${km(x.dist)} km</span></button>`).join('')}</div><p class="meta" style="margin-top:8px">O Intervals não guarda fotos, então a galeria mostra o traçado de cada corrida.</p>`;
+function galeria(dono,L){
+  if(FOT[dono]===undefined||FOT[dono]===null)return '<p class="empty">Carregando as fotos…</p>';
+  const F=[...(FOT[dono]||[])].sort((u,v)=>v.t-u.t);
+  if(!F.length)return `<p class="empty">${dono===CFG.athlete?'Ainda não há fotos. Em Atividades, toque em <b>Foto</b> num treino para adicionar a foto que você tirou na hora.':'Ainda não há fotos nos treinos.'}</p>`;
+  return `<div class="gal">${F.map(f=>`<button class="gi" onclick="verFoto('${dono}','${f.a}','${f.p}')"><img src="${fotoUrl(dono,f)}" alt="" loading="lazy"></button>`).join('')}</div>`;
 }
 let SOC={};
 async function socLoad(keys){
@@ -1468,7 +1508,7 @@ window.openAct=async id=>{
   if(a.dist&&!AX[id]&&!isMan(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
   if(isRun(a)&&!isMan(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
   const x=AX[id]||{},pace=a.dist?a.mov/a.dist*1000:null;
-  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(a.src||'')}</div>${x.map?mapBox(id,220)+`<button class="b full" style="margin-top:8px" onclick="openCartao('${id}')">Compartilhar treino</button>`:''}
+  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(a.src||'')}</div>${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
   <div class="grid g3" style="margin-top:10px"><div class="cell"><div class="lbl">Dist.</div><span class="num">${km(a.dist)}<small> km</small></span></div><div class="cell"><div class="lbl">Tempo</div><span class="num">${fmtT(a.mov)}</span></div><div class="cell"><div class="lbl">Ritmo</div><span class="num">${fmtP(pace)}</span></div><div class="cell"><div class="lbl">FC méd</div><span class="num">${a.hr||'--'}</span></div><div class="cell"><div class="lbl">FC máx</div><span class="num">${a.hrmax||'--'}</span></div><div class="cell"><div class="lbl">Carga</div><span class="num">${Math.round(loadOf(a))}</span></div><div class="cell"><div class="lbl">Altimetria</div><span class="num">${a.elev!=null?Math.round(a.elev)+'<small> m</small>':'--'}</span></div><div class="cell"><div class="lbl">Cadência</div><span class="num">${a.cad?Math.round(a.cad*2):'--'}</span></div><div class="cell"><div class="lbl">Deriva FC</div><span class="num">${x.dec!=null?x.dec+'%':'--'}</span></div></div>`;
   if(x.chart&&x.chart.p.length>3){const ch=x.chart,len=ch.p.length,TT=ch.t&&ch.t.length===len?ch.t:ch.p.map((_,i)=>Math.round((i+1)/len*(a.mov||len)));
     const P=ch.p.map(v=>v&&v<600?v:null),pv=P.filter(Boolean).sort((u,w)=>u-w),hv=ch.h.filter(Boolean),pAvg=pace&&pace<600?pace:null;
@@ -1482,9 +1522,9 @@ window.openAct=async id=>{
     h+=`${kmT?'<details class="card" style="margin-top:12px"><summary><span>Parciais por km</span></summary>':'<div class="sec">PARCIAIS</div>'}<table><tr><th>KM</th><th class="r">Ritmo</th><th class="r">FC</th><th class="r">Elev.</th></tr>${x.splits.map(s=>{const p=s.part?s.t/s.part*1000:s.t;return `<tr><td>${s.part?s.km.toFixed(2):s.km}</td><td class="r ${!s.part&&s.t===fast?'ok':''}">${fmtP(p)}</td><td class="r">${s.hr||'--'}</td><td class="r dim">${s.el!=null?(s.el>0?'+':'')+s.el:''}</td></tr>`}).join('')}</table>${kmT?'</details>':''}`}
   if(isRun(a))h+=`<div class="coach" style="margin-top:14px"><b>COACH // LEITURA</b>${esc(coachLast(a))}</div>`;
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
-  openSheet(h);
+  openSheet(h);$('#sbox').dataset.act=id;fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
-function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;$('#sheet').classList.add('on');drawMaps()}
+function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;$('#sheet').classList.add('on');drawMaps()}
 (()=>{const bx=$('#sbox');let y0=null,dy=0;
   bx.addEventListener('touchstart',e=>{y0=bx.scrollTop<=0?e.touches[0].clientY:null;dy=0;bx.style.transition='none'},{passive:true});
   bx.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>0)bx.style.transform=`translateY(${dy}px)`},{passive:true});
@@ -2138,10 +2178,10 @@ window.openPerfilAmigo=(id,tab)=>{
       if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div>${[...med].reverse().slice(0,3).map(m=>linhaM(1,m.match(/\d+|Meia/)?m.match(/\d+|Meia/)[0]:'★',m,'','')).join('')}</div>`;
       if(lid.length)h+=`<div class="sec">Locais que lidera</div><div class="card" style="padding:4px 12px">${lid.slice(0,6).map(p=>`<div class="row tap" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2)" onclick="openPlace(${p.i})"><span>${esc(PN[p.key]||'Local '+(p.i+1))}</span><span class="meta">${CDIST.find(([x])=>x===p.ref)?CDIST.find(([x])=>x===p.ref)[1]:''} ›</span></div>`).join('')}</div>`;
     }else if(FT==='ativ'){
-      const L=ord.slice(0,15);
+      const L=ord.slice(0,15);fotosPede(id,()=>openPerfilAmigo(id));
       h+=L.map(r=>feedCard({id:r.id,dono:id,nome:frNome(id),pic:frPic(id),date:r.date,titulo:r.name,dist:r.dist,mov:r.mov,run:1,map:r.map})).join('');
       setTimeout(()=>socLoad(L.map(r=>id+':'+r.id)),0);
-    }else h+=galeria(ord.filter(r=>r.map).map(r=>({pts:r.map,date:r.date,dist:r.dist})));
+    }else{fotosPede(id,()=>openPerfilAmigo(id));h+=galeria(id)}
     h+=`<p class="meta" style="margin-top:8px">Só aparece o que a pessoa publicou no ranking: as corridas com GPS mais recentes.</p>`;
   }
   h+=`<div class="grid g2" style="margin-top:14px"><button class="b" onclick="openAmigos(1)">◀ Voltar</button>${eAmigo?`<button class="b red" onclick="frAcao('remover','${esc(id)}')">Remover amigo</button>`:'<span></span>'}</div>`;

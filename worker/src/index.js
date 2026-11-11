@@ -111,6 +111,31 @@ async function social(env, a, b) {
   return { ok: true, k, s };
 }
 
+// ---------- fotos dos treinos ----------
+// a foto fica em 'p:<dono>:<atividade>:<foto>' (JPEG) e a lista do atleta em 'g:<dono>'
+const ACT = /^[A-Za-z0-9_-]{1,40}$/, PID = /^[a-z0-9]{4,16}$/, MAXFOTOS = 300, MAXIMG = 900_000;
+async function fotos(env, eu, b) {
+  const lista = (await env.BR.get('g:' + eu, 'json')) || [];
+  if (b.acao === 'apagar') {
+    const f = lista.find((x) => x.p === b.pid);
+    if (!f) return { erro: 'foto não encontrada' };
+    await env.BR.delete('p:' + eu + ':' + f.a + ':' + f.p);
+    const nova = lista.filter((x) => x.p !== b.pid);
+    await env.BR.put('g:' + eu, JSON.stringify(nova));
+    return { ok: true, lista: nova };
+  }
+  if (!ACT.test(b.act || '')) return { erro: 'atividade inválida' };
+  const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(b.img || ''));
+  if (!m || m[1].length > MAXIMG) return { erro: 'imagem inválida ou grande demais' };
+  if (lista.length >= MAXFOTOS) return { erro: 'limite de fotos' };
+  const bin = Uint8Array.from(atob(m[1]), (c) => c.charCodeAt(0));
+  const pid = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  await env.BR.put('p:' + eu + ':' + b.act + ':' + pid, bin);
+  lista.push({ a: b.act, p: pid, t: Date.now() });
+  await env.BR.put('g:' + eu, JSON.stringify(lista));
+  return { ok: true, lista };
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -169,6 +194,31 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
+    if (req.method === 'GET' && url.pathname === '/fotos') {
+      const dono = url.searchParams.get('dono') || '';
+      if (!/^i\d{1,12}$/.test(dono)) return json(req, { erro: 'atleta inválido' }, 400);
+      return json(req, (await env.BR.get('g:' + dono, 'json')) || [], 200, { 'Cache-Control': 'no-store' });
+    }
+
+    if (req.method === 'GET' && url.pathname === '/foto') {
+      const [dono, act, pid] = String(url.searchParams.get('k') || '').split(':');
+      if (!/^i\d{1,12}$/.test(dono || '') || !ACT.test(act || '') || !PID.test(pid || '')) return json(req, { erro: 'foto inválida' }, 400);
+      const v = await env.BR.get('p:' + dono + ':' + act + ':' + pid, 'arrayBuffer');
+      if (!v) return json(req, { erro: 'foto não encontrada' }, 404);
+      return new Response(v, { headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable', ...cors(req) } });
+    }
+
+    if (req.method === 'POST' && url.pathname === '/foto') {
+      const txt = await req.text();
+      if (txt.length > MAXIMG + 2000) return json(req, { erro: 'foto grande demais' }, 413);
+      let b;
+      try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      const r = await fotos(env, b.athlete, b);
+      return json(req, r, r.erro ? 400 : 200);
+    }
+
     if (req.method === 'POST' && url.pathname === '/amigos') {
       let b;
       try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
@@ -178,6 +228,6 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'POST /oauth/token'] });
+    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'GET /fotos', 'GET /foto', 'POST /foto', 'POST /oauth/token'] });
   },
 };
