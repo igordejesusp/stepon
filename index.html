@@ -400,6 +400,11 @@ body.ob .view{padding-bottom:30px}
 .tabav{position:relative;width:26px;height:26px;display:block}.tabav img{width:26px;height:26px;border-radius:50%;object-fit:cover;display:block;border:1.5px solid transparent;background:var(--cell)}
 #tabbar button.on .tabav img{border-color:var(--blue)}
 .tabav i{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:var(--dim);border:2px solid var(--bg)}.tabav i.on{background:var(--ok)}.tabav i.off{background:var(--red)}
+
+.fdesw{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 10px}
+.fdes{display:inline-flex;align-items:center;gap:6px;background:rgba(240,194,75,.10);border:1px solid rgba(240,194,75,.28);color:#e9c766;border-radius:99px;padding:3px 10px 3px 4px;margin:0;font-size:11.5px;line-height:1.3}
+.fdes b{color:#f3d27a;font-weight:700}.fdes i{width:18px;height:18px;border-radius:50%;background:#f0c24b;display:flex;align-items:center;justify-content:center;flex:none}
+.fdes i svg{width:12px;height:12px;fill:none;stroke:#3a2a05;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
 </head>
 <body>
@@ -505,7 +510,13 @@ const isMan=a=>String(a.id).startsWith('man-');
 const withMan=acts=>acts.filter(a=>!isMan(a)).concat(MAN).sort((a,b)=>a.date<b.date?1:-1);
 D.acts=withMan(D.acts||[]);
 let AX=LS.get('ax5',{}); // análise por atividade: splits, best efforts, deriva, trajeto
-const slim=a=>({id:a.id,date:a.start_date_local,type:a.type,name:a.name,dist:a.distance,mov:a.moving_time,el:a.elapsed_time,hr:a.average_heartrate,hrmax:a.max_heartrate,load:a.icu_training_load,trimp:a.trimp,elev:a.total_elevation_gain,cad:a.average_cadence,rpe:a.icu_rpe,feel:a.feel,speed:a.average_speed,src:a.source});
+// de onde veio a atividade: o relógio (ex.: Garmin Forerunner 935), o próprio app ou o nome do serviço
+const FONTES={GARMIN_CONNECT:'Garmin Connect',STRAVA:'Strava',UPLOAD:'Arquivo enviado',POLAR:'Polar',SUUNTO:'Suunto',COROS:'Coros',WAHOO:'Wahoo',ZWIFT:'Zwift'};
+function devNome(x){if(!x)return '';const d=String(x.dev||'');
+  if(String(x.oc||'')==='1688'||/stepon/i.test(d))return 'StepOn App';if(x.src==='MANUAL')return 'Marcado à mão';
+  if(d)return d.replace(/^garmin\s+/i,m=>'Garmin ').replace(/\s+/g,' ').trim();
+  const s=String(x.src||'').toUpperCase();return FONTES[s]||(s?s.toLowerCase().replace(/_/g,' ').replace(/^./,c=>c.toUpperCase()):'')}
+const slim=a=>({id:a.id,date:a.start_date_local,type:a.type,name:a.name,dist:a.distance,mov:a.moving_time,el:a.elapsed_time,hr:a.average_heartrate,hrmax:a.max_heartrate,load:a.icu_training_load,trimp:a.trimp,elev:a.total_elevation_gain,cad:a.average_cadence,rpe:a.icu_rpe,feel:a.feel,speed:a.average_speed,src:a.source,dev:a.device_name||null,oc:a.oauth_client_id||null});
 
 async function sync(full){
   const btn=$('#sync');btn.disabled=true;btn.classList.add('gira');
@@ -1303,7 +1314,7 @@ function rPerf(){
     h+=blocoConq(badgeList(),'openBadges()');
   }else if(PT==='ativ'){
     SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM),DPA=desPorAtiv(D.acts.filter(isRun));
-    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:x.src,cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id]})).join('')||'<p class="empty">Sem atividades.</p>';
+    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id]})).join('')||'<p class="empty">Sem atividades.</p>';
     if(D.acts.length>FLIM)h+=`<button class="b more" onclick="FLIM+=6;render()">Ver mais (${D.acts.length-FLIM} restantes)</button>`;
     setTimeout(()=>socLoad(L.map(x=>CFG.athlete+':'+x.id)),0);
   }else{
@@ -1497,7 +1508,8 @@ function desPorAtiv(runs){
   meses.forEach(m=>desafiosMes(runs,+m.slice(0,4),+m.slice(5,7)-1).filter(c=>c.ok).forEach(c=>{(o[c.act]=o[c.act]||[]).push(c)}));
   return o;
 }
-const seloDes=L=>L&&L.length?L.map(c=>`<div class="fdes">${desEmb(c,26)}<span>${L.length&&c===L[0]?'Concluiu o desafio':'E também'} <b>${c.n}</b> de ${MESC[c.mes]}</span></div>`).join(''):'';
+const TROFEU='<svg viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v4M9 20h6M10 16h4v4h-4z"/></svg>';
+const seloDes=L=>L&&L.length?`<div class="fdesw">${L.map(c=>`<span class="fdes"><i>${TROFEU}</i>Desafio concluído: <b>${c.n}</b></span>`).join('')}</div>`:'';
 /* ---------- atividades no estilo de feed: curtir, comentar e compartilhar ---------- */
 const diaTxt=ds=>{const d=ds.slice(0,10),h=ds.slice(11,16),hoje=ymd(TODAY()),ont=ymd(addD(TODAY(),-1));return (d===hoje?'Hoje':d===ont?'Ontem':DOW[parseD(d).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+', '+fmtD(d)+(d.slice(0,4)!==String(TODAY().getFullYear())?'/'+d.slice(2,4):''))+(h?' às '+h:'')};
 const nomeHora=ds=>{const h=+String(ds).slice(11,13);return isNaN(h)?'Corrida':h<12?'Corrida da manhã':h<18?'Corrida da tarde':'Corrida da noite'};
@@ -1507,7 +1519,7 @@ function feedCard(o){
   const st=[['Distância',o.dist?km(o.dist).replace('.',',')+' km':'--'],pace?['Ritmo',pace]:['FC média',o.hr?o.hr+' bpm':'--'],['Tempo',tempoCart(o.mov)]];
   const mapa=o.map==='own'?mapBox(o.id,190):o.map?`<div class="froute">${rotaSvg(o.map,600,300)}</div>`:'';
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:''}>
-  <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src==='MANUAL'?'Marcado à mão':o.src):''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div></div>
+  <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div></div>
   <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2>${seloDes(o.des)}
   <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
@@ -1641,7 +1653,7 @@ window.openAct=async id=>{
   if(a.dist&&!AX[id]&&!isMan(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
   if(isRun(a)&&!isMan(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
   const x=AX[id]||{},pace=a.dist?a.mov/a.dist*1000:null;
-  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(a.src||'')}</div>${isRun(a)?seloDes(desPorAtiv(D.acts.filter(isRun))[id]):''}${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
+  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(devNome(a))}</div>${isRun(a)?seloDes(desPorAtiv(D.acts.filter(isRun))[id]):''}${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}<div class="grid g2" style="margin-top:8px"><button class="b" onclick="addFoto('${id}')">Adicionar foto</button>${x.map?`<button class="b" onclick="openCartao('${id}')">Compartilhar treino</button>`:'<span></span>'}</div>
   <div class="grid g3" style="margin-top:10px"><div class="cell"><div class="lbl">Dist.</div><span class="num">${km(a.dist)}<small> km</small></span></div><div class="cell"><div class="lbl">Tempo</div><span class="num">${fmtT(a.mov)}</span></div><div class="cell"><div class="lbl">Ritmo</div><span class="num">${fmtP(pace)}</span></div><div class="cell"><div class="lbl">FC méd</div><span class="num">${a.hr||'--'}</span></div><div class="cell"><div class="lbl">FC máx</div><span class="num">${a.hrmax||'--'}</span></div><div class="cell"><div class="lbl">Carga</div><span class="num">${Math.round(loadOf(a))}</span></div><div class="cell"><div class="lbl">Altimetria</div><span class="num">${a.elev!=null?Math.round(a.elev)+'<small> m</small>':'--'}</span></div><div class="cell"><div class="lbl">Cadência</div><span class="num">${a.cad?Math.round(a.cad*2):'--'}</span></div><div class="cell"><div class="lbl">Deriva FC</div><span class="num">${x.dec!=null?x.dec+'%':'--'}</span></div></div>`;
   if(x.chart&&x.chart.p.length>3){const ch=x.chart,len=ch.p.length,TT=ch.t&&ch.t.length===len?ch.t:ch.p.map((_,i)=>Math.round((i+1)/len*(a.mov||len)));
     const P=ch.p.map(v=>v&&v<600?v:null),pv=P.filter(Boolean).sort((u,w)=>u-w),hv=ch.h.filter(Boolean),pAvg=pace&&pace<600?pace:null;
