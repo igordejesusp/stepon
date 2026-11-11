@@ -569,6 +569,7 @@ let D=LS.get('data',{athlete:null,acts:[],well:[],at:0});
 let MAN=LS.get('man',[]);
 const isMan=a=>String(a.id).startsWith('man-');
 // corridas em que um amigo marcou você: entram como se você tivesse corrido (contam para mapa, ranking, nível e desafios)
+let AX=LS.get('ax5',{}); // análise por atividade: splits, best efforts, deriva, trajeto
 let MARC=LS.get('marc',[]);
 const isMk=a=>String(a.id).startsWith('mk-');
 function marcActs(){return MARC.filter(e=>e&&e.date).map(e=>{const id=('mk-'+e.de+'-'+e.act).slice(0,40);
@@ -576,7 +577,6 @@ function marcActs(){return MARC.filter(e=>e&&e.date).map(e=>{const id=('mk-'+e.d
   return {id,type:'Run',date:e.date+':00',name:e.name,dist:e.dist,mov:e.mov,elev:e.elev,src:'MARCADO',dev:e.dev,por:e.nome,de:e.de,oact:e.act}})}
 const withMan=acts=>acts.filter(a=>!isMan(a)&&!isMk(a)).concat(MAN,marcActs()).sort((a,b)=>a.date<b.date?1:-1);
 D.acts=withMan(D.acts||[]);
-let AX=LS.get('ax5',{}); // análise por atividade: splits, best efforts, deriva, trajeto
 // de onde veio a atividade: o relógio (ex.: Garmin Forerunner 935), o próprio app ou o nome do serviço
 const FONTES={GARMIN_CONNECT:'Garmin Connect',STRAVA:'Strava',UPLOAD:'Arquivo enviado',POLAR:'Polar',SUUNTO:'Suunto',COROS:'Coros',WAHOO:'Wahoo',ZWIFT:'Zwift'};
 function devNome(x){if(!x)return '';const d=String(x.dev||'');if(x.src==='MARCADO')return (d?d+' · ':'')+'marcado por '+(x.por||'um amigo');
@@ -600,7 +600,7 @@ async function sync(full){
     LS.set('data',D);LS.set('authRuim',0);
     await analyzeRuns(full);
     await puxaMarcados().catch(()=>{});
-    publishMine().catch(()=>{}); // corrida nova entra no ranking público (só para quem aceitou)
+    LS.set('redeAt',0);rede(); // corrida nova entra no ranking público (só para quem aceitou) e os amigos são atualizados
     toast('SINCRONIZADO // '+D.acts.length+' ATIVIDADES');
   }catch(e){const neg=/HTTP 40[13]/.test(e.message);LS.set('authRuim',neg?1:0);toast(e.message==='SEM CHAVE'?'CONECTE O INTERVALS EM MAIS':neg?(CFG.token?'ESTE APARELHO PERDEU O ACESSO. TOQUE EM RECONECTAR':'O INTERVALS NÃO ACEITOU A CONEXÃO. TOQUE EM ENTRAR COM O INTERVALS'):'FALHA NA SINCRONIZAÇÃO // '+e.message,4500)}
   btn.disabled=false;btn.classList.remove('gira');render();setTimeout(checaNivel,2700);
@@ -2315,9 +2315,10 @@ const cen=tr=>{let a=0,b=0;for(const q of tr){a+=q[0];b+=q[1]}return [a/tr.lengt
 function bestsOf(a,b0){const b={...(b0||{})};for(const [d] of CDIST)if(a.dist>=d*0.99&&a.dist<=d*1.05&&a.mov){const t=Math.round(a.mov*d/a.dist);if(!b[d]||t<b[d])b[d]=t}return b}
 function people(all){
   const me={id:CFG.athlete,name:((D.athlete||{}).name||'Você'),pic:myPic(),me:1,
-    runs:D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map).map(a=>({id:a.id,date:a.date,dist:a.dist,mov:a.mov,elev:a.elev!=null?Math.round(a.elev):null,name:String(a.name||'').slice(0,60),best:bestsOf(a,AX[a.id].best),map:AX[a.id].map}))};
-  return [me,...PUBL.filter(u=>u.id!==CFG.athlete&&u.runs&&u.runs.length&&(all||MODO()==='g'||FR.friends.includes(u.id))).map(u=>({id:u.id,name:u.name||u.id,xp:u.xp,pic:okPic(u.pic),runs:u.runs}))];
+    runs:D.acts.filter(a=>isRun(a)&&!isMan(a)).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date,dist:a.dist,mov:a.mov,elev:a.elev!=null?Math.round(a.elev):null,name:String(a.name||'').slice(0,60),best:bestsOf(a,x.best),map:x.map||null}})};
+  return [me,...PUBL.filter(u=>u.id!==CFG.athlete&&u.runs&&u.runs.length&&(all||MODO()==='g'||FR.friends.includes(u.id))).map(u=>({id:u.id,name:u.name||u.id,xp:u.xp,pic:okPic(u.pic),runs:u.runs,at:u.at}))];
 }
+const atrasoTxt=t=>{if(!t)return '';const m=Math.round((Date.now()-t)/6e4);return m<2?'atualizado agora':m<60?'atualizado há '+m+' min':m<1440?'atualizado há '+Math.round(m/60)+' h':'atualizado há '+Math.round(m/1440)+' d'};
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 // temporada mensal (zera todo dia 1): 1 ponto por km corrido no mês e 3 por treino (a partir de 1 km). Não depende do mapa.
 function ranking(){
@@ -2338,15 +2339,24 @@ function trimTrack(tr,full){
 }
 async function publishMine(force){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
-  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map).slice(0,150).map(a=>({id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,AX[a.id].best),map:trimTrack(AX[a.id].map)})).filter(r=>r.map);
+  const runs=D.acts.filter(a=>isRun(a)&&!isMan(a)).slice(0,150).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null}});
   const foto=await fotoMini();
   const terr=meusLacos().slice(0,160),cor=minhaCor(),xp=meuXp(),sig=runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
   while(terr.length&&JSON.stringify({runs,terr,foto}).length>660000)terr.pop();
   const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor})});
   if(!r.ok)throw new Error('HTTP '+r.status);
-  LS.set('pubh',sig);
+  LS.set('pubh',sig);LS.set('pubErr',null);LS.set('pubOk',Date.now());
 }
+// envio ou leitura falhou: guarda o motivo, avisa uma vez e deixa o ranking mostrar o alerta
+function pubFalha(e){const novo=!LS.get('pubErr',null);LS.set('pubErr',String((e&&e.message)||e||'erro').slice(0,60));if(novo)toast('Suas corridas não chegaram ao ranking. Toque em sincronizar para tentar de novo.',5000)}
+// envia as minhas corridas e puxa as dos amigos (no máximo uma vez por minuto, a não ser que force)
+let REDE=null;
+function rede(force){
+  if(REDE||LS.get('comp',null)!=='sim'||!temConta()||(!force&&Date.now()-LS.get('redeAt',0)<60e3))return REDE||Promise.resolve();
+  LS.set('redeAt',Date.now());
+  REDE=publishMine(force).then(()=>pullAll()).then(()=>frCall('lista').catch(()=>{})).catch(pubFalha).then(()=>{REDE=null;LS.set('pubAt',Date.now());if(typeof VIEW!=='undefined'&&VIEW==='comp')rComp()});
+  return REDE}
 async function pullAll(){
   const r=await fetch(PUBURL+'/all');if(!r.ok)throw new Error('HTTP '+r.status);
   PUBL=(await r.json()).filter(u=>u.id!==CFG.athlete);LS.set('pub',PUBL);LS.set('pubAt',Date.now());
@@ -2482,7 +2492,7 @@ function rComp(){
   }).catch(()=>{$('#c-info').textContent='Mapa indisponível sem internet'});
   $('#c-me').textContent=LS.get('comp',null)==='sim'?'NO RANKING':'SÓ OLHANDO';
   if(LS.get('comp',null)==null&&!$('#sheet').classList.contains('on'))openCompCfg(1);
-  if(Date.now()-LS.get('pubAt',0)>120e3){LS.set('pubAt',Date.now());Promise.all([publishMine().catch(()=>{}),pullAll(),frCall('lista').catch(()=>{})]).then(()=>VIEW==='comp'&&rComp()).catch(()=>{})}
+  if(Date.now()-LS.get('pubAt',0)>120e3)rede();
 }
 // ao abrir, o mapa já vem perto e centrado em você (init); o botão ◎ voltar para você (fly)
 window.locateMe=(fly,init)=>{
@@ -2576,10 +2586,10 @@ window.openTerr=id=>{
   $('#sbox').dataset.terr=eu?'me':'';
 };
 window.openRank=()=>{
-  const {L,mes,dias}=ranking(),M=MODO(),meI=L.findIndex(x=>x.u.me),row=(x,j)=>`<div class="row" ${!x.u.me&&M==='a'?`onclick="openPerfilAmigo('${esc(x.u.id)}')" `:''}style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)"><span class="num" style="width:28px;text-align:center;font-size:${j<3?17:12}px">${medal(j)}</span>${avatar(x.u,34)}<span style="flex:1;min-width:0"><b style="display:block;font-size:14px;${x.u.me?'color:var(--blue)':''}">${esc(x.u.name)}</b><span class="meta">Nível ${nivelXp(x.u.me?meuXp():xpDe(x.u)).L} · ${km(x.km*1000)} km · ${x.tr} ${x.tr===1?'treino':'treinos'}</span></span><span class="num" style="font-size:18px">${x.pts}<small class="dim"> pts</small></span></div>`;
+  const {L,mes,dias}=ranking(),M=MODO(),meI=L.findIndex(x=>x.u.me),row=(x,j)=>`<div class="row" ${!x.u.me&&M==='a'?`onclick="openPerfilAmigo('${esc(x.u.id)}')" `:''}style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)"><span class="num" style="width:28px;text-align:center;font-size:${j<3?17:12}px">${medal(j)}</span>${avatar(x.u,34)}<span style="flex:1;min-width:0"><b style="display:block;font-size:14px;${x.u.me?'color:var(--blue)':''}">${esc(x.u.name)}</b><span class="meta">Nível ${nivelXp(x.u.me?meuXp():xpDe(x.u)).L} · ${km(x.km*1000)} km · ${x.tr} ${x.tr===1?'treino':'treinos'}${!x.u.me&&x.u.at?` · ${atrasoTxt(x.u.at)}`:''}</span></span><span class="num" style="font-size:18px">${x.pts}<small class="dim"> pts</small></span></div>`;
   const vis=L.map((x,j)=>[x,j]).filter(([x,j])=>j<10||x.u.me);
   openSheet(`<div class="hd"><b>${M==='a'?'RANKING DOS AMIGOS':'RANKING GERAL'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="row" style="gap:6px"><span class="tag ok">TEMPORADA DE ${mes.toUpperCase()}</span><span class="tag">ZERA EM ${dias} ${dias===1?'DIA':'DIAS'}</span></div>
+  ${LS.get('pubErr',null)?`<p class="empty" style="color:var(--txt);margin-bottom:8px">Suas corridas mais recentes ainda não chegaram ao servidor (${esc(LS.get('pubErr',''))}). Toque em sincronizar no Início para tentar de novo.</p>`:''}<div class="row" style="gap:6px"><span class="tag ok">TEMPORADA DE ${mes.toUpperCase()}</span><span class="tag">ZERA EM ${dias} ${dias===1?'DIA':'DIAS'}</span></div>
   <p class="empty" style="margin-top:8px">Todo mês o placar volta a zero. Vale 1 ponto por km corrido no mês e 3 por treino (a partir de 1 km). O ranking não depende do mapa. Os pontos não se perdem: no fim do mês eles ficam na conta e sobem o seu nível.</p>
   <div class="card" style="padding:4px 12px;margin-top:10px">${vis.map(([x,j])=>row(x,j)).join('')}</div>
   ${L.length<2?`<p class="empty">Por enquanto só você aparece.${M==='a'?' Siga amigos em "+ AMIGOS" para disputar com eles.':' Quando mais gente entrar no ranking, aparece aqui sozinha.'}</p>`:''}`);
@@ -2967,7 +2977,9 @@ if(!LS.get('vhist')){const vt=LS.get('vt');if(vt&&vt.V){const Va=(curVdot()||{})
 if(isIgor()&&!LS.get('fix0711')){const ex=LS.get('extra',{}),b=baseTemplate().find(p=>p.date==='2026-11-08');
   if(b&&!ex['2026-11-07']){ex['2026-11-07']={...b,date:'2026-11-07'};if(!ex['2026-11-08'])ex['2026-11-08']={date:'2026-11-08',off:1};LS.set('extra',ex)}LS.set('fix0711',1)}
 render();
-voltaOAuth().then(v=>{if(!v&&temConta()&&(!D.at||Date.now()-D.at>30*60e3))sync(0)});
+voltaOAuth().then(v=>{if(!v&&temConta()){if(!D.at||Date.now()-D.at>5*60e3)sync(0);else rede(1)}});
+// voltou para o app (aba ou tela do celular): sincroniza se passou de 5 min, senão só atualiza os amigos
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!temConta()||!D.at)return;if(Date.now()-D.at>5*60e3)sync(0);else rede()});
 </script>
 </body>
 </html>
