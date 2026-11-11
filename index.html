@@ -783,8 +783,25 @@ const planOn=ds=>plan().find(p=>p.date===ds);
 const evOn=ds=>(D.ev||[]).find(e=>e.d===ds);
 const runsOn=ds=>D.acts.filter(a=>isRun(a)&&a.date.slice(0,10)===ds);
 const actsOn=ds=>D.acts.filter(a=>a.date.slice(0,10)===ds);
+// liga cada treino planejado à corrida que o cumpriu: a do próprio dia ou, se não houver, uma corrida até 2 dias
+// antes ou depois feita num dia sem treino (treino adiantado ou adiado), com pelo menos 60% dos km planejados
+let _mk=null,_mv={};
+function casaPlano(){
+  const P=plan(),key=_pk+'|'+(D.at||0)+'|'+D.acts.length;if(key===_mk)return _mv;
+  const rd={};D.acts.filter(isRun).forEach(a=>{const d=a.date.slice(0,10);(rd[d]=rd[d]||[]).push(a)});
+  const comPlano=new Set(P.map(p=>p.date)),orf=Object.keys(rd).filter(d=>!comPlano.has(d)).sort(),usado=new Set(),M={};
+  // primeiro os treinos com corrida no próprio dia; depois os pares mais próximos na data e nos km (adiantado ganha no empate)
+  const pend=[];for(const p of P){if(rd[p.date])M[p.date]={runs:rd[p.date],de:p.date};else pend.push(p)}
+  const par=[];for(const p of pend)for(const d of orf){const df=Math.round((parseD(d)-parseD(p.date))/864e5);if(Math.abs(df)>2)continue;
+    const kr=rd[d].reduce((s,a)=>s+(a.dist||0),0)/1000;if(kr<p.km*0.6)continue;par.push({p,d,df,dk:Math.abs(kr-p.km)})}
+  par.sort((a,b)=>Math.abs(a.df)-Math.abs(b.df)||a.dk-b.dk||a.df-b.df);
+  for(const x of par){if(usado.has(x.d)||M[x.p.date])continue;usado.add(x.d);M[x.p.date]={runs:rd[x.d],de:x.d}}
+  _mk=key;_mv=M;return M;
+}
+// de qual treino planejado esta corrida (dia sem plano) contou
+const contouPara=ds=>{const M=casaPlano();for(const k in M)if(M[k].de===ds&&k!==ds)return k;return null};
 function status(p){
-  const ex=runsOn(p.date),km_=ex.reduce((s,a)=>s+(a.dist||0),0)/1000;
+  const m=casaPlano()[p.date],ex=m?m.runs:[],km_=ex.reduce((s,a)=>s+(a.dist||0),0)/1000;
   if(ex.length)return km_>=p.km*0.8?'cumprido':'parcial';
   if(p.date<ymd(TODAY()))return 'perdido';
   return evOn(p.date)?'enviado':'planejado';
@@ -957,7 +974,7 @@ function rIni(){
   h+=`<div class="sec"><span>CONDIÇÃO ATUAL${qb('carga')}</span><small>TREINO × DESCANSO</small></div><div class="card"><div class="grid g3"><div class="cell"><div class="lbl">Forma</div><span class="num ok">${cur.ctl.toFixed(1)}</span><div class="meta">CTL</div></div><div class="cell"><div class="lbl">Fadiga</div><span class="num bad">${cur.atl.toFixed(1)}</span><div class="meta">ATL</div></div><div class="cell"><div class="lbl">Equilíbrio</div><span class="num ${cur.tsb<-30?'bad':cur.tsb<-10?'warn':'ok'}">${sgn(cur.tsb)}</span><div class="meta">TSB</div></div></div><div style="margin-top:10px">${pmcSvg(S)}</div><p class="empty" style="margin-top:8px">${tsbTxt(cur.tsb)}</p></div>`;
   const mP=h.length;
   // próxima atividade
-  const nx=plan().filter(p=>p.date>=ds&&!runsOn(p.date).length)[0];
+  const nx=plan().filter(p=>p.date>=ds&&!casaPlano()[p.date])[0];
   h+=`<div class="sec">PRÓXIMA ATIVIDADE</div>`;
   if(nx){const adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
     h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagSt[st]}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
@@ -1128,10 +1145,11 @@ window.calGo=n=>{if(!n)calRef=TODAY();else if(calMode==='sem')calRef=addD(calRef
 window.openDay=ds=>{
   const p=planOn(ds),ex=actsOn(ds),w=W(ds)||{},d=parseD(ds);
   let h=`<div class="hd"><b>${DOW[d.getDay()]} ${ds.split('-').reverse().join('/')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
+  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
     ${ds>=ymd(TODAY())?`<button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${ds}')">▶ Fazer treino agora</button>`:''}
     <div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
   ex.forEach(a=>h+=`<div class="card" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
+  if(!p&&ex.some(isRun)&&contouPara(ds))h+=`<p class="meta" style="margin:-4px 0 10px">Esta corrida contou como o treino planejado de ${fmtD(contouPara(ds))}.</p>`;
   if(!p&&!ex.length)h+=`<p class="empty">Dia de descanso.</p>`;
   if(!p&&ds>=ymd(TODAY()))h+=`<button class="b full" style="margin:8px 0" onclick="openBib('${ds}')">+ Treino neste dia</button>`;
   if(!p&&!ex.some(isRun)&&ds<=ymd(TODAY()))h+=`<button class="b full" style="margin:8px 0" onclick="markDone('${ds}')">✓ Registrar corrida feita</button>`;
@@ -2743,6 +2761,8 @@ function render2(){
   drawMaps();
 }
 window.sync=sync;window.sendWatch=sendWatch;
+if(isIgor()&&!LS.get('fix0711')){const ex=LS.get('extra',{}),b=baseTemplate().find(p=>p.date==='2026-11-08');
+  if(b&&!ex['2026-11-07']){ex['2026-11-07']={...b,date:'2026-11-07'};if(!ex['2026-11-08'])ex['2026-11-08']={date:'2026-11-08',off:1};LS.set('extra',ex)}LS.set('fix0711',1)}
 render();
 voltaOAuth().then(v=>{if(!v&&temConta()&&(!D.at||Date.now()-D.at>30*60e3))sync(0)});
 </script>
