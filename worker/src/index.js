@@ -165,7 +165,7 @@ export default {
       const cor = /^#[0-9a-fA-F]{6}$/.test(String(b.cor || '')) ? String(b.cor).toLowerCase() : '';
       const terr = (Array.isArray(b.terr) ? b.terr : []).slice(0, 160).map((z) => {
         if (!z || !/^\d{4}-\d{2}-\d{2}$/.test(String(z.d || '')) || !Array.isArray(z.p)) return null;
-        const p = z.p.slice(0, 64).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]);
+        const p = z.p.slice(0, 150).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]);
         return p.length >= 3 ? { d: z.d, p } : null;
       }).filter(Boolean);
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
