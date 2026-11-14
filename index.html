@@ -387,6 +387,23 @@ body.ob .view{padding-bottom:30px}
 
 /* emblemas das conquistas um pouco maiores */
 .badge .hx{width:52px;height:52px}.badge b{font-size:12px;color:var(--hi)}.badge small{font-size:10px}.bgrid{margin-top:4px}.bgrid .badge{background:var(--cell)}
+/* conquistas: escudos (borda azul, fundo preto, escrita branca); bloqueadas apagadas com cadeado */
+.badge.cq{background:none;border:0;box-shadow:none;padding:6px 2px 4px;gap:4px}.badge.cq.lock{opacity:1}
+.esc{width:76px;height:85px;display:block;overflow:visible}.bgrid .esc{width:62px;height:70px}
+.esc .eb0{stroke:#0a2a52;fill:#050608}.esc .eb1{stroke:var(--blue);fill:none}.esc .eb2{stroke:#4a9eff;opacity:.35}
+.esc.on{filter:drop-shadow(0 4px 10px rgba(74,158,255,.28))}.esc .et1{fill:#fff}.esc .et2{fill:#9fc9ff}.esc .et3{fill:#9fc9ff}
+.esc.off .eb0{stroke:#15191e;fill:#0c0e11}.esc.off .eb1{stroke:#2a3038}.esc.off .eb2{stroke:#3a424c;opacity:.4}.esc.off .et1,.esc.off .et2,.esc.off .et3{fill:#3d454f}
+.esc .ecad{fill:#1b2027;stroke:#2f3640;stroke-width:1}.esc .ecadl{stroke:#8a929e}
+:root[data-theme="light"] .esc.off .eb0{stroke:#dfe5ec;fill:#eef2f6}:root[data-theme="light"] .esc.off .eb1{stroke:#c9d2dc}:root[data-theme="light"] .esc.off .et1,:root[data-theme="light"] .esc.off .et2,:root[data-theme="light"] .esc.off .et3{fill:#b7c1cc}:root[data-theme="light"] .esc .ecad{fill:#fff;stroke:#c9d2dc}:root[data-theme="light"] .esc .ecadl{stroke:#7d8995}
+.badge.cq b{font-size:12.5px;line-height:1.25;color:var(--hi)}.badge.cq small{font-size:11px;line-height:1.3;color:var(--dim)}.badge.cq.lock b{color:var(--dim)}
+.cqh{display:flex;align-items:baseline;justify-content:space-between;margin:18px 2px 6px}.cqh .sec{margin:0}.cqh small{color:var(--dim);font-size:12px;font-weight:600}
+.cqg{gap:10px 6px}.cqmais{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--cell);color:var(--blue);font:600 13px var(--f);cursor:pointer}
+.cqmais svg,.mk2s svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+/* melhores marcas: só o RP aparece; do 2º fica uma pontinha, que abre com um toque */
+.mk2{position:relative;max-height:22px;overflow:hidden;transition:max-height .3s ease;cursor:pointer}
+.mk2:after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;background:linear-gradient(transparent,var(--panel));pointer-events:none;transition:opacity .2s}
+.mk2 .mrow{opacity:.55;transition:opacity .2s}.mk2.on{max-height:240px}.mk2.on:after{opacity:0}.mk2.on .mrow{opacity:1}
+.mk2s{position:absolute;right:2px;bottom:1px;color:var(--dim);z-index:1;display:flex}.mk2.on .mk2s{display:none}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
@@ -1401,35 +1418,58 @@ function rMais(){
 window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();toast('CONECTADO // '+(a.name||''),2500);sync(1)};
 
 /* ================= PERFIL ================= */
-const trilhaKm=()=>Math.max(0,...D.acts.filter(a=>/Walk|Hike/.test(a.type)||a.type==='TrailRun'||/trilha|marcha/i.test(a.name||'')).map(a=>a.dist||0))/1000;
-function semanasSeguidas(){const m=monday(TODAY());let s=0,best=0;for(let i=0;i<60;i++){const a=addD(m,-7*i);const n=D.acts.filter(x=>isRun(x)&&x.date.slice(0,10)>=ymd(a)&&x.date.slice(0,10)<=ymd(addD(a,6))).length;if(n>=2){s++;best=Math.max(best,s)}else if(i>0)s=0}return best}
+function semanasSeguidas(){const m=monday(TODAY());let s=0,best=0;for(let i=0;i<120;i++){const a=addD(m,-7*i);const n=D.acts.filter(x=>isRun(x)&&x.date.slice(0,10)>=ymd(a)&&x.date.slice(0,10)<=ymd(addD(a,6))).length;if(n>=2){s++;best=Math.max(best,s)}else if(i>0)s=0}return best}
 const kmAno=()=>D.acts.filter(x=>isRun(x)&&x.date.slice(0,4)===String(TODAY().getFullYear())).reduce((s,x)=>s+(x.dist||0),0)/1000;
 const BEST=d=>{const b=bests(0)[d];return b?b.t:Infinity};
-const BADGES=[
-  ['CORRIDA','1ª CORRIDA','Primeira corrida registrada',(r)=>r.length>=1],
-  ['CORRIDA','5K','Correr 5 km seguidos',(r,L)=>L>=5],
-  ['CORRIDA','10K','Correr 10 km seguidos',(r,L)=>L>=10],
-  ['CORRIDA','MEIA','Correr 21,1 km',(r,L)=>L>=21.1],
-  ['CORRIDA','30K','Passar os 26 km de vida',(r,L)=>L>=30],
-  ['CORRIDA','MARATONA','Correr 42,2 km',(r,L)=>L>=42.2],
-  ['RITMO','SUB 5:00','Ritmo médio abaixo de 5:00/km em 5 km ou mais',r=>r.some(x=>x.dist>=5000&&x.mov/x.dist*1000<300)],
-  ['RITMO','5K SUB 25','5 km em menos de 25 minutos',()=>BEST(5000)<1500],
-  ['RITMO','10K SUB 50','10 km em menos de 50 minutos',()=>BEST(10000)<3000],
-  ['CONSTÂNCIA','4 SEMANAS','4 semanas seguidas com 2+ corridas',()=>semanasSeguidas()>=4],
-  ['CONSTÂNCIA','12 SEMANAS','12 semanas seguidas com 2+ corridas',()=>semanasSeguidas()>=12],
-  ['CONSTÂNCIA','100 KM','100 km corridos no ano',()=>kmAno()>=100],
-  ['CONSTÂNCIA','500 KM','500 km corridos no ano',()=>kmAno()>=500],
-  ['CONSTÂNCIA','1000 KM','1.000 km corridos no ano',()=>kmAno()>=1000],
-  ['TRILHA','TRILHA 20','Trilha ou marcha de 20 km ou mais',()=>trilhaKm()>=20],
-  ['TRILHA','TRILHA 30','Trilha ou marcha de 30 km ou mais',()=>trilhaKm()>=30],
-  ['TRILHA','TRILHA 50','Trilha ou marcha de 50 km ou mais',()=>trilhaKm()>=50],
-];
-const hex=on=>`<svg class="hx" viewBox="0 0 44 44"><polygon points="22,2 40,12 40,32 22,42 4,32 4,12" style="fill:${on?'var(--sel)':'var(--cell)'};stroke:${on?'var(--blue)':'var(--line)'}" stroke-width="1.5"/><polygon points="22,10 33,16 33,28 22,34 11,28 11,16" fill="none" stroke="${on?'#c9a24a':'#252a31'}" stroke-width="1"/></svg>`;
-const badgeHtml=b=>`<div class="badge ${b.on?'':'lock'}">${hex(b.on)}<b>${b[1]}</b><small>${b[2]}</small></div>`;
-function badgeList(){const runs=D.acts.filter(isRun),L=Math.max(0,...runs.map(r=>r.dist||0))/1000;return BADGES.map(b=>{const x=[...b];if(x[1]==='30K'&&!isIgor())x[2]='Correr 30 km';return Object.assign(x,{on:!!b[3](runs,L)})})}
-window.openBadges=()=>{const B=badgeList();let h=`<div class="hd"><b>CONQUISTAS · ${B.filter(b=>b.on).length}/${B.length}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  for(const g of ['CORRIDA','RITMO','CONSTÂNCIA','TRILHA'])h+=`<div class="sec">${g}</div><div class="grid g3">${B.filter(b=>b[0]===g).map(badgeHtml).join('')}</div>`;
-  openSheet(h)};
+/* ---------- conquistas no estilo coleção de troféus: dois escudos (borda azul, fundo preto, escrita branca) ----------
+   "cmd" = escudo dos Comandos (corridas) ; "fe" = escudo das Forças Especiais (ritmos) ; "her" = brasão (distâncias e constância) */
+const ESC={her:'M11 9H89Q93 9 93 13V57Q93 84 50 106Q7 84 7 57V13Q7 9 11 9Z',cmd:'M7 25Q50 1 93 25L76 99Q50 109 24 99Z',fe:'M7 9Q50 27 93 9L93 61Q93 83 50 107Q7 83 7 61Z'};
+function escConq(b){
+  const p=ESC[b.f],on=b.on,cx='translate(50 58) scale(.84) translate(-50 -58)',ff='font-family:var(--f);font-weight:800';
+  const fs=t=>{const n=String(t).length;return n<=2?34:n===3?(b.f==='cmd'?25:27):n===4?21:n===5?18:15};
+  let tx;
+  if(b.f==='fe')tx=`<text x="50" y="33" text-anchor="middle" font-size="10" style="${ff};letter-spacing:.12em" class="et2">sub</text><text x="50" y="${58+fs(b.k)*.34}" text-anchor="middle" font-size="${fs(b.k)}" style="${ff}" class="et1">${esc(b.k)}</text><text x="50" y="84" text-anchor="middle" font-size="12" style="${ff}" class="et3">${esc(b.t)}</text>`;
+  else tx=`<text x="50" y="${54+fs(b.k)*.34}" text-anchor="middle" font-size="${fs(b.k)}" style="${ff}" class="et1">${esc(b.k)}</text><text x="50" y="82" text-anchor="middle" font-size="10.5" style="${ff};letter-spacing:.04em" class="et3">${esc(b.t)}</text>`;
+  const cad=on?'':`<g transform="translate(86 ${b.f==='cmd'?26:14})"><circle r="10" class="ecad"/><path d="M-3.2 -.5v-2a3.2 3.2 0 0 1 6.4 0v2M-4.2 -.5h8.4v5.5h-8.4z" fill="none" stroke-width="1.5" class="ecadl"/></g>`;
+  return `<svg class="esc ${on?'on':'off'}" viewBox="0 0 100 112"><path d="${p}" class="eb0" stroke-width="10" stroke-linejoin="round"/><path d="${p}" class="eb1" stroke-width="5.5" stroke-linejoin="round"/><path d="${p}" transform="${cx}" fill="none" class="eb2" stroke-width="1"/>${tx}${cad}</svg>`;
+}
+const fmtSub=s=>s>=3600?Math.floor(s/3600)+'h'+(s%3600?String(Math.round(s%3600/60)).padStart(2,'0'):''):String(Math.round(s/60));
+function badgeList(){
+  const R=D.acts.filter(isRun).sort((a,b)=>a.date<b.date?-1:1),n=R.length,M=marcasTodas(),out=[];
+  const add=(g,f,k,t,nome,on,date,dica)=>out.push({g,f,k,t,nome,on:!!on,date:on?date||null:null,dica});
+  // corridas
+  for(const c of [1,10,25,50,100,150,200,300,400,500,750,1000])add('CORRIDAS','cmd',c===1?'1ª':String(c),c===1?'corrida':'corridas',c+'ª corrida',n>=c,n>=c?R[c-1].date:null,n>=c?'':`Faltam ${c-n}`);
+  // distâncias: a primeira corrida que passou da distância
+  const maior=Math.max(0,...R.map(r=>r.dist||0))/1000;
+  for(const [d,k,nome] of [[5,'5','5 km'],[10,'10','10 km'],[15,'15','15 km'],[21.1,'21','Meia maratona'],[30,'30',isIgor()?'Passar os 26 km de vida':'30 km'],[42.2,'42','Maratona']]){
+    const r=R.find(x=>(x.dist||0)/1000>=d);add('DISTÂNCIAS','her',k,'km',nome,r,r&&r.date,`Maior: ${km(maior*1000).replace('.',',')} km`)}
+  // ritmos: o melhor trecho da distância dentro das corridas (como nas melhores marcas)
+  const RIT=[[5000,'5K','5 km',[35,30,25,22,20].map(m=>m*60)],[10000,'10K','10 km',[70,60,55,50,45,40].map(m=>m*60)],[21097.5,'21K','Meia',[150,135,120,105,90].map(m=>m*60)],[42195,'42K','Maratona',[300,270,240,210,180].map(m=>m*60)]];
+  for(const [d,t,nm,L] of RIT){const ms=(M[d]||[]),bt=ms.length?ms[0].t:null;
+    for(const lim of L){const ok=ms.filter(x=>x.t<lim).sort((a,b)=>String(a.date).localeCompare(String(b.date)))[0];
+      add('RITMOS','fe',fmtSub(lim),t,nm+' sub '+fmtSub(lim),ok,ok&&ok.date,bt?'Seu melhor: '+fmtT(bt):'Ainda sem marca')}}
+  for(const p of [390,360,330,300,270,240]){const r=R.find(x=>x.dist>=5000&&x.mov&&x.mov/x.dist*1000<p),pp=Math.floor(p/60)+':'+String(p%60).padStart(2,'0');
+    add('RITMOS','fe',pp,'/km','Ritmo sub '+pp+'/km',r,r&&r.date,'Em corrida de 5 km ou mais')}
+  // constância
+  const sem=semanasSeguidas();for(const w of [2,4,8,12,26,52])add('CONSTÂNCIA','her',String(w),'semanas',w+' semanas seguidas',sem>=w,null,'2+ corridas por semana · melhor: '+sem);
+  const mes={};R.forEach(r=>{const k=r.date.slice(0,7);mes[k]=(mes[k]||0)+(r.dist||0)/1000});const mm=Math.max(0,...Object.values(mes));
+  for(const k of [50,100,150,200,300]){const m0=Object.keys(mes).sort().find(x=>mes[x]>=k);add('CONSTÂNCIA','her',String(k),'km no mês',k+' km num mês',m0,m0?m0+'-28':null,'Melhor mês: '+Math.round(mm)+' km')}
+  const ka=kmAno();for(const k of [100,250,500,1000,1500,2000])add('CONSTÂNCIA','her',String(k),'km no ano',k+' km no ano',ka>=k,null,Math.round(ka)+' de '+k+' km este ano');
+  let ac=0,cr={};R.forEach(r=>{const a0=ac;ac+=(r.dist||0)/1000;for(const k of [250,500,1000,2500,5000])if(a0<k&&ac>=k)cr[k]=r.date});
+  for(const k of [250,500,1000,2500,5000])add('CONSTÂNCIA','her',k>=1000?(k/1000)+' mil':String(k),'km total',(k>=1000?(k/1000).toLocaleString('pt-BR')+' mil':k)+' km no total',cr[k],cr[k],`Faltam ${Math.max(0,Math.ceil(k-ac))} km`);
+  return out;
+}
+const badgeHtml=b=>`<div class="badge cq ${b.on?'':'lock'}">${escConq(b)}<b>${esc(b.nome)}</b><small>${b.on?(b.date&&!/-28$/.test(b.date)?dataLonga(b.date):b.date?MESES[+b.date.slice(5,7)-1]+' de '+b.date.slice(0,4):'Conquistada'):esc(b.dica||'')}</small></div>`;
+// fechado: duas linhas (6), perto de onde a pessoa está — as últimas conquistadas e as próximas
+function cqVisiveis(L){if(L.length<=6)return L;const ult=L.map((b,i)=>b.on?i:-1).filter(i=>i>=0),fal=L.map((b,i)=>b.on?-1:i).filter(i=>i>=0);
+  const nf=Math.min(fal.length,Math.max(3,6-ult.length)),pega=new Set([...ult.slice(-(6-nf)),...fal.slice(0,nf)]);const V=L.filter((_,i)=>pega.has(i));return [...V.filter(b=>b.on),...V.filter(b=>!b.on)]}
+let CQX={};
+window.cqTog=g=>{CQX[g]=!CQX[g];openBadges()};
+window.openBadges=()=>{const B=badgeList();
+  let h=`<div class="hd"><b>Conquistas · ${B.filter(b=>b.on).length}/${B.length}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
+  for(const g of ['CORRIDAS','DISTÂNCIAS','RITMOS','CONSTÂNCIA']){const L=B.filter(b=>b.g===g),V=CQX[g]?L:cqVisiveis(L),ok=L.filter(b=>b.on).length;
+    h+=`<div class="cqh"><span class="sec">${g.charAt(0)+g.slice(1).toLowerCase()}</span><small>${ok}/${L.length}</small></div><div class="grid g3 cqg">${V.map(badgeHtml).join('')}</div>${L.length>6?`<button class="cqmais" onclick="cqTog('${g}')">${CQX[g]?'Ver menos':'Ver todas ('+L.length+')'}<svg viewBox="0 0 24 24" style="transform:rotate(${CQX[g]?180:0}deg)"><path d="M6 9l6 6 6-6"/></svg></button>`:''}`}
+  openSheet(h)}; // a folha já aberta mantém a rolagem
 let LIM=8;
 window.verMais=()=>{LIM+=8;render()};
 function rPerf(){
@@ -1477,13 +1517,16 @@ window.openMarcas=(M,volta)=>{
   M=M||marcasTodas();
   let h=`<div class="hd"><b>Melhores marcas</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="meta" style="margin-bottom:8px">Melhor trecho de cada distância dentro das corridas. Trilhas ficam de fora por causa do GPS.</p>`;
   for(const [d,n] of BE){const L=M[d]||[];if(!L.length)continue;
-    h+=`<div class="card blc">${L.slice(0,3).map((x,i)=>linhaM(i+1,i?String(i+1):'RP',i?`${i+1}º ${dK(d)} mais rápido`:`RP de ${dK(d)}`,dataLonga(x.date)+' · '+fmtP(x.t/d*1000)+'/km',fmtT(x.t),x.id?`openAct('${x.id}')`:'')).join('')}</div>`}
+    const lin=(x,i)=>linhaM(i+1,i?String(i+1):'RP',i?`${i+1}º ${dK(d)} mais rápido`:`RP de ${dK(d)}`,dataLonga(x.date)+' · '+fmtP(x.t/d*1000)+'/km',fmtT(x.t),x.id?(i?`mkAbre(this,'${x.id}')`:`openAct('${x.id}')`):(i?'mkAbre(this)':''));
+    h+=`<div class="card blc">${lin(L[0],0)}${L.length>1?`<div class="mk2" onclick="this.classList.toggle('on')">${L.slice(1,3).map((x,i)=>lin(x,i+1)).join('')}<span class="mk2s"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div>`:''}</div>`}
   if(volta)h+=`<button class="b full" style="margin-top:8px" onclick="${volta}">◀ Voltar</button>`;
   openSheet(h);
 };
+// 2º e 3º lugar: fechados mostram só uma pontinha; o primeiro toque abre, o segundo abre a corrida
+window.mkAbre=(el,id)=>{const w=el.closest('.mk2');if(w&&!w.classList.contains('on')){w.classList.add('on');return}if(id)openAct(id)};
 const mTxt=s=>{s=String(s);const m=s.match(/^(\d+[ªº]?K?)/);return m?m[1]:s.slice(0,4)};
 function blocoConq(B,on){
-  const ok=B.filter(b=>b.on),top=[...ok].reverse().slice(0,3);
+  const ok=B.filter(b=>b.on),top=[...ok].sort((u,v)=>String(v.date||'').localeCompare(String(u.date||''))).slice(0,3);
   return `<div class="card blc" onclick="${on}"><div class="blh"><b>Conquistas</b><span>${ok.length}/${B.length} ›</span></div>${top.length?`<div class="grid g3 bgrid">${top.map(badgeHtml).join('')}</div>`:'<p class="empty">Corra a primeira vez para ganhar a primeira conquista.</p>'}</div>`;
 }
 
@@ -2548,7 +2591,7 @@ window.openPerfilAmigo=(id,tab)=>{
   const u=PUBL.find(x=>x.id===id),runs=(u&&u.runs)||[],ds=r=>String(r.date).slice(0,10),tot=runs.reduce((t,r)=>t+(r.dist||0),0),
     maxd=Math.max(0,...runs.map(r=>r.dist||0)),eAmigo=FR.friends.includes(id),nv=u?nivelXp(xpDe(u)):null;
   const rec=CDIST.map(([d,nm])=>{let b=null;for(const r of runs){const t=r.best&&r.best[d];if(t&&(!b||t<b.t))b={t,date:ds(r)}}return [d,nm,b]}).filter(x=>x[2]);
-  const med=[];if(maxd>=5000)med.push('5 km numa corrida');if(maxd>=10000)med.push('10 km numa corrida');if(maxd>=21097)med.push('Meia maratona');
+  const med=[],cmd=(k,t,nome)=>med.push({f:'cmd',k,t,nome,on:true,date:null});[1,10,25,50,100,150,200,300,400,500].filter(c=>runs.length>=c).forEach(c=>cmd(c===1?'1ª':String(c),c===1?'corrida':'corridas',c+'ª corrida'));const her=(k,nome)=>med.push({f:'her',k,t:'km',nome,on:true,date:null});if(maxd>=5000)her('5','5 km');if(maxd>=10000)her('10','10 km');if(maxd>=21097)her('21','Meia maratona');if(maxd>=42195)her('42','Maratona');
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
   let h=`<div class="hd"><b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
@@ -2560,7 +2603,7 @@ window.openPerfilAmigo=(id,tab)=>{
       h+=progBox('fr',semanas(runs));
       const MF={};BE.forEach(([d])=>{MF[d]=runs.filter(r=>r.best&&r.best[d]).map(r=>({t:r.best[d],date:ds(r)})).sort((u,v)=>u.t-v.t)});FMARC=MF;
       h+=blocoMarcas(MF,`openMarcas(FMARC,&quot;openPerfilAmigo('${id}')&quot;)`);
-      if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div><div class="grid g3 bgrid">${[...med].reverse().slice(0,3).map(m=>`<div class="badge">${hex(1)}<b>${esc(m)}</b></div>`).join('')}</div></div>`;
+      if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div><div class="grid g3 bgrid">${[...med].reverse().slice(0,3).map(badgeHtml).join('')}</div></div>`;
       if(tdo)h+=`<div class="card blc" onclick="openTerr('${esc(id)}')"><div class="blh"><b>Área dominada</b><span>›</span></div>${linhaI(`<span class="li-ic" style="background:${tdo.cor}33"><span class="li-dot" style="background:${tdo.cor}"></span></span>`,fmtKm2(tdo.km2),tdo.n+' '+(tdo.n===1?'circuito':'circuitos')+' fechados','')}</div>`;
     }else if(FT==='ativ'){
       const L=ord.slice(0,15),DPA=desPorAtiv(runs);fotosPede(id,()=>openPerfilAmigo(id));
