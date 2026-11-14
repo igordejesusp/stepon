@@ -44,6 +44,21 @@ async function todos(env) {
   return out;
 }
 
+// cópia pronta da lista de todos ('cache:all'): o GET /all lê só ela (1 leitura em vez de listar o banco a cada abertura do mapa).
+// Cada publicação troca só o registro da pessoa na cópia; a cada 15 min a cópia é refeita do zero para corrigir qualquer corrida perdida.
+const SNAP = 'cache:all', SNAPMAX = 15 * 60e3;
+async function refazSnap(env) {
+  const L = await todos(env), txt = JSON.stringify(L);
+  await env.BR.put(SNAP, txt, { metadata: { at: Date.now() } });
+  return txt;
+}
+async function trocaNoSnap(env, id, reg) {
+  const { value, metadata } = await env.BR.getWithMetadata(SNAP);
+  if (!value) return refazSnap(env);
+  let L; try { L = JSON.parse(value); } catch (e) { return refazSnap(env); }
+  L = L.filter((u) => u && u.id !== id); if (reg) L.push(reg);
+  await env.BR.put(SNAP, JSON.stringify(L), { metadata: { at: (metadata && metadata.at) || Date.now() } });
+}
 
 // ---------- amigos ----------
 const vazio = () => ({ friends: [], inc: [], out: [] });
@@ -172,7 +187,10 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(req) });
 
     if (req.method === 'GET' && url.pathname === '/all') {
-      return json(req, await todos(env), 200, { 'Cache-Control': 'public, max-age=60' });
+      const { value, metadata } = await env.BR.getWithMetadata(SNAP);
+      const velho = !value || !metadata || !metadata.at || Date.now() - metadata.at > SNAPMAX;
+      const txt = velho ? await refazSnap(env) : value;
+      return new Response(txt, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=30', ...cors(req) } });
     }
 
     if ((req.method === 'POST' && url.pathname === '/publish') || (req.method === 'DELETE' && url.pathname === '/me')) {
@@ -185,6 +203,7 @@ export default {
 
       if (req.method === 'DELETE') {
         await env.BR.delete('a:' + b.athlete);
+        await trocaNoSnap(env, b.athlete, null);
         return json(req, { ok: true });
       }
       const runs = Array.isArray(b.runs) ? b.runs.slice(0, 200) : [];
@@ -201,6 +220,7 @@ export default {
       }).filter(Boolean);
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));
+      await trocaNoSnap(env, b.athlete, reg);
       return json(req, { ok: true, runs: runs.length });
     }
 
