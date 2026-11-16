@@ -428,6 +428,49 @@ body.ob .view{padding-bottom:30px}
 .spl{margin-top:6px}.spr{display:grid;grid-template-columns:34px 46px 1fr 38px 38px;gap:8px;align-items:center;padding:5px 0;font-size:14px;color:var(--hi);font-variant-numeric:tabular-nums}
 .spr span:nth-child(4),.spr span:nth-child(5){text-align:right}.spr span:nth-child(4){color:var(--dim)}.sph{font-size:12px;color:var(--dim);border-bottom:1px solid var(--line2);padding-bottom:8px;margin-bottom:4px}
 .spr i{display:block;height:20px;border-radius:6px;background:#2f6fc4}.spr i.top{background:var(--blue)}
+/* melhores marcas: página inteira */
+body.vmarc #top{display:none}
+#v-marc .wrap,#v-desaf .wrap{padding-top:calc(env(safe-area-inset-top) + 10px)}
+.mkh{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:4px 0 14px}.mkh b{text-align:center;font-size:19px;font-weight:700;color:var(--hi)}
+.mkb{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0}
+.mkb svg,.mkp svg,.mkt i svg,.mkg svg,.mkl svg,.mki span svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.mkb svg{width:22px;height:22px}
+.mks{display:flex;gap:8px;margin-bottom:12px}.mkp{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:99px;border:1.5px solid var(--line);background:transparent;color:var(--hi);font:500 15px var(--f);cursor:pointer}
+.mkp svg{width:18px;height:18px}.mkp svg:last-child{width:16px;height:16px;opacity:.7;transition:transform .2s}.mkp.on svg:last-child{transform:rotate(180deg)}.mkp.ac{border-color:var(--blue);color:var(--blue)}
+.mkl{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:14px;background:var(--cell)}
+.mkl button{display:flex;align-items:center;gap:10px;padding:14px 16px;border:0;border-bottom:1px solid var(--line2);background:none;color:var(--hi);font:500 16px var(--f);text-align:left;cursor:pointer}.mkl button:last-child{border-bottom:0}
+.mkl button span{flex:1}.mkl button small{color:var(--dim);font-size:14px;font-variant-numeric:tabular-nums}.mkl button i{font-style:normal;color:var(--blue);font-weight:700}.mkl button.on{color:var(--blue)}.mkl button:disabled{opacity:.5}.mkl svg{width:20px;height:20px}
+.mkr{border-radius:18px;background:var(--cell);border:1px solid var(--line);margin-bottom:10px;overflow:hidden}
+.mkt{display:flex;align-items:center;width:100%;gap:12px;padding:14px 16px;border:0;background:none;color:var(--hi);font:500 16px var(--f);text-align:left;cursor:pointer}.mkt>span:first-child:not(.mkc2){flex:1}
+.mkt i{display:grid;place-items:center;color:var(--dim)}.mkt i svg{width:22px;height:22px;transition:transform .2s}.mkr.on .mkt i svg{transform:rotate(180deg)}
+.mkbig{display:none;position:relative;text-align:center;padding:4px 0 18px}.mkr.on .mkbig{display:block}
+.mkray{position:absolute;left:50%;top:6px;width:300px;height:140px;transform:translateX(-50%)}
+.mkmed{width:120px;height:120px;border-radius:50%;background:#f0b72f;margin:14px auto 0;display:grid;place-items:center;position:relative;box-shadow:0 10px 30px rgba(240,183,47,.25)}.mdi{width:64px;height:64px}.mdi.big{width:76px;height:76px}
+.mkt1{display:block;font-size:52px;font-weight:800;color:var(--hi);margin-top:10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}.mkt2{display:block;font-size:20px;color:var(--dim);margin-top:2px}
+.mkd{display:none;border-top:1px solid var(--line2)}.mkr.on .mkd{display:block}
+.mkc{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}.mkm{width:72px;height:72px;flex:none;border-radius:12px;overflow:hidden;background:var(--panel)}.mkm svg{width:100%;height:100%}
+.mki{flex:1;min-width:0}.mki b{display:block;font-size:16px;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mki span{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--txt);margin-top:4px}.mki span svg{width:16px;height:16px}.mki small{display:block;font-size:13px;color:var(--dim);margin-top:3px}
+.mkg{color:var(--dim)}.mkg svg{width:20px;height:20px;transform:rotate(180deg)}
+.mkc2{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;flex:none}.mkc2 .mdi{width:34px;height:34px}
+.mkv{flex:1}.mkv b{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}.mkv small{display:block;font-size:13px;color:var(--dim);margin-top:2px}
+.mke{text-align:center;padding:40px 20px;color:var(--dim)}.mke .mdi{width:80px;height:80px}.mke b{display:block;color:var(--hi);font-size:17px;margin-top:10px}.mke p{margin-top:6px;font-size:14px}
+.mkf{font-size:13px;color:var(--dim);text-align:center;margin:10px 0}
+/* luz azul de fundo */
+.glw{position:relative;height:0;pointer-events:none;z-index:0}.glw i{position:absolute;width:460px;height:460px;top:-240px;border-radius:50%;background:radial-gradient(closest-side,rgba(74,158,255,.95),rgba(58,134,240,.5) 40%,rgba(74,158,255,0));filter:blur(16px)}
+.glw.d i{right:-200px}.glw.e i{left:-200px}.glw.gbx i{top:-160px}
+:root[data-theme="light"] .glw i{background:radial-gradient(closest-side,rgba(42,128,234,.32),rgba(42,128,234,.12) 45%,rgba(42,128,234,0))}
+.view .card,.view .blc{z-index:1}
+/* os blocos ficam opacos, na cor de sempre: a luz só aparece no fundo, onde não tem bloco */
+/* desafios */
+.dsn{display:flex;align-items:center;justify-content:space-between;margin:2px 0 4px}.dsn div{text-align:center}.dsn b{display:block;font-size:22px;color:var(--hi)}.dsn small{font-size:13px;color:var(--dim)}
+.dsn button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0}.dsn button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.dsn button.pr svg{transform:rotate(180deg)}.dsn button:disabled{opacity:.3;cursor:default}
+.dss{text-align:center;font-size:13px;color:var(--dim);margin-bottom:6px}
+.dsb{height:5px;border-radius:99px;background:rgba(127,140,155,.22);overflow:hidden;margin-top:6px;width:100%}.dsb i{display:block;height:100%;background:var(--blue);border-radius:99px}
+.dsg .badge.cq small{min-height:28px}.desi{flex:none;width:48px;display:grid;place-items:center}.desi .esc{width:44px;height:50px}.desi .esc.asa{width:52px}
+/* ícones das linhas: moldura arredondada com degradê da cor do assunto, desenho em duas tonalidades */
+.li-ic.ic2{border-radius:14px;background:linear-gradient(155deg,color-mix(in srgb,var(--c) 30%,transparent),color-mix(in srgb,var(--c) 9%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)}
+.li-ic.ic2 svg{width:26px;height:26px;stroke:none;fill:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35))}
+.li-ic.ic2 .p{fill:var(--c)}.li-ic.ic2 .s{fill:var(--c);opacity:.42}.li-ic.ic2 .l{fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.li-ic.ic2 .k{fill:none;stroke:var(--c);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+:root[data-theme="light"] .li-ic.ic2{background:linear-gradient(155deg,color-mix(in srgb,var(--c) 20%,#fff),color-mix(in srgb,var(--c) 7%,#fff));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 22%,transparent)}:root[data-theme="light"] .li-ic.ic2 svg{filter:none}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
@@ -498,6 +541,8 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
   <section class="view" id="v-comp"><div class="wrap" id="comp"></div></section>
   <section class="view" id="v-mais"><div class="wrap" id="mais"></div></section>
   <section class="view" id="v-perf"><div class="wrap" id="perf"></div></section>
+  <section class="view" id="v-marc"><div class="wrap" id="marc"></div></section>
+  <section class="view" id="v-desaf"><div class="wrap" id="desaf"></div></section>
 </main>
 
 <nav id="tabbar">
@@ -673,11 +718,12 @@ async function sync(full){
 }
 
 /* streams → parciais por km, melhores esforços, deriva cardíaca */
-const BE=[[1000,'1 KM'],[3000,'3 KM'],[5000,'5 KM'],[10000,'10 KM'],[21097.5,'21 KM'],[30000,'30 KM'],[42195,'42 KM']];
+// distâncias das melhores marcas (melhor trecho dentro das corridas)
+const BE=[[400,'400 m'],[804.67,'1/2 milha'],[1000,'1 km'],[1609.34,'1 milha'],[3000,'3 km'],[3218.69,'2 milhas'],[5000,'5 km'],[10000,'10 km'],[15000,'15 km'],[16093.4,'10 milhas'],[20000,'20 km'],[21097.5,'Meia maratona'],[30000,'30 km'],[42195,'Maratona'],[50000,'50 km']];
 async function analyzeRuns(full){
   const runs=D.acts.filter(isRun).filter(a=>!isMan(a)&&!isMk(a)&&(full||!AX[a.id])).slice(0,60);
   // corridas com trajeto analisadas antes das áreas completas: refaz até 10 por sincronização
-  const velhas=D.acts.filter(a=>isRun(a)&&!isMan(a)&&!isMk(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].tv!==3&&!runs.includes(a)).slice(0,10);runs.push(...velhas);
+  const velhas=D.acts.filter(a=>isRun(a)&&!isMan(a)&&!isMk(a)&&AX[a.id]&&AX[a.id].map&&(AX[a.id].tv!==3||AX[a.id].bv!==2)&&!runs.includes(a)).slice(0,10);runs.push(...velhas);
   for(const a of runs){
     try{await loadAX(a.id)}catch(e){AX[a.id]={err:1}}
   }
@@ -696,7 +742,7 @@ function lacosCompletos(ll){
   const t2=trimTrack(tr,1);return t2?laços(t2):[];
 }
 function analyze(t,d,hr,alt,ll,cad){cad=cad||[];
-  const out={splits:[],best:{},dec:null,chart:null};
+  const out={splits:[],best:{},dec:null,chart:null,bv:2};
   if(!t.length||!d.length)return out;
   // saltos de GPS: trecho acima de 6,5 m/s (2:34/km) não conta distância
   const c=[d[0]||0];for(let i=1;i<d.length;i++){const dd=(d[i]||0)-(d[i-1]||0),dt=(t[i]-t[i-1])||1;c.push(c[i-1]+(dd>0&&dd/dt<=6.5?dd:0))}
@@ -1225,7 +1271,7 @@ function rIni(){
     const bD=blk('disp','Disposição',linhaI(`<span class="li-num ${r.cls}">${Math.round(r.sc)}</span>`,r.st,ck?'Você acordou '+['','destruído','cansado','normal','bem','100%'][ck]:'Toque para dizer como você acordou',''),sD);
     const bV=blk('vit','Vitais',linhaI(icoC('sono'),'Sono',w.sleep?'Última noite':'Sem dado de hoje',fmtSleep(w.sleep),"openVital('sono')")+linhaI(icoC('fc','red'),'FC de repouso',r.rb?'Média '+r.rb.toFixed(0)+' bpm':'',(w.rhr||'--')+' bpm',"openVital('fc')")+linhaI(icoC('vo2'),'VO2 máx',vo2?'Garmin '+fmtD(vo2.d):'Sem dado',vo2?vo2.vo2:'--',"openVital('vo2')"),null);
     const bP=h.slice(mP,mE); // a próxima atividade fica como cartão completo: um toque já manda ao relógio
-    const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
+    const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=glw('e',1)+bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
   }
   if(DESK()){el.innerHTML=painelDesk(h.slice(0,mU),h.slice(mU,mD2),SIMPLES()?'':h.slice(mD2,mC2),SIMPLES()?'':h.slice(mC2,mV2),h.slice(mP2,mE2),h.slice(mE2));return}
   if(SIMPLES())h=h.slice(0,mU)+h.slice(mP2,mE2)+h.slice(mU,mD2)+h.slice(mE2); // treino de hoje primeiro
@@ -1496,7 +1542,7 @@ window.saveMeta=id=>{
 window.delMeta=id=>{if(!confirm('Apagar esta meta?'))return;LS.set('metas',metas().filter(x=>x.id!==id));closeSheet();toast('META APAGADA');render()};
 
 /* ================= MAIS ================= */
-function rMais(){
+function rMais(soTres){
   const a=D.athlete||{},run=a.run||{},V=vAtual(),Z=V&&paceZones(V.v),S=pmc(),cur=S[S.length-1];
   const lastRun=D.acts.find(isRun),ramp=Math.round((cur.ctl-S[S.length-8].ctl)*10)/10||0;
   const wellOn=D.well.some(w=>w.d>=ymd(addD(TODAY(),-3))&&(w.rhr||w.sleep));
@@ -1532,9 +1578,10 @@ function rMais(){
     h=ini+blk('modo','Modo do app',linhaI(icoC('modo'),SIMPLES()?'Simples':'Completo',SIMPLES()?'Só o essencial na tela':'Todas as métricas na tela',''),sM)
       +blk('bib','Biblioteca de treinos',linhaI(icoC('bib'),BIBL.length+' treinos prontos','Rodagens, fartlek, tiros, HIIT, testes…',''),sB);
     var mA2=h.length;
-    h+=blk('cond','Condição atual',linhaI(icoC('forma'),'Forma','CTL',cur.ctl.toFixed(1))+linhaI(icoC('fadiga','red'),'Fadiga','ATL',cur.atl.toFixed(1))+linhaI(icoC('equil'),'Equilíbrio',tsbTxt(cur.tsb).split(':')[0],sgn(cur.tsb)),sCo);
-    h+=blk('met','Métricas avançadas',linhaI(icoC('vdot'),'VDOT',V?(V.teste?'Pelo teste de '+fmtD(V.teste):V.est?'Estimado pelo questionário':'Pelas suas corridas'):'Sem dados ainda',V?V.v.toFixed(1):'--')+linhaI(icoC('prova'),'Projeção de 10 km','Condicionamento atual',p10?fmtT(p10):'--'),sX)
+    const tres=blk('cond','Condição atual',linhaI(icoC('forma'),'Forma','CTL',cur.ctl.toFixed(1))+linhaI(icoC('fadiga','red'),'Fadiga','ATL',cur.atl.toFixed(1))+linhaI(icoC('equil'),'Equilíbrio',tsbTxt(cur.tsb).split(':')[0],sgn(cur.tsb)),sCo)
+    +blk('met','Métricas avançadas',linhaI(icoC('vdot'),'VDOT',V?(V.teste?'Pelo teste de '+fmtD(V.teste):V.est?'Estimado pelo questionário':'Pelas suas corridas'):'Sem dados ainda',V?V.v.toFixed(1):'--')+linhaI(icoC('prova'),'Projeção de 10 km','Condicionamento atual',p10?fmtT(p10):'--'),sX)
       +blk('fis','Parâmetros fisiológicos',linhaI(icoC('fc','red'),'FC máxima','Do Intervals.icu',(run.max_hr||CFG.fcmax)+' bpm')+linhaI(icoC('fc','red'),'FC limiar','',(run.lthr||'--')+' bpm'),sF);
+    if(soTres)return tres;;
   }
   if(SIMPLES())h=h.slice(0,mA2);
   h+=`<div class="sec">CONEXÃO</div><div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?(LS.get('authRuim',0)?'<span class="tag bad">SEM ACESSO</span>':'<span class="tag ok">CONECTADO</span>'):'<span class="tag bad">NÃO CONECTADO</span>'}</div>
@@ -1637,9 +1684,10 @@ function rPerf(){
   h+=pTabs('PT',PT,'pTab');
   if(PT==='prog'){
     h+=progBox('me',semanas(D.acts.filter(isRun).map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))));
-    {const me=(TD||[]).find(x=>x.u.me);h+=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${me?linhaI(`<span class="li-ic" style="background:${me.cor}33"><span class="li-dot" style="background:${me.cor}"></span></span>`,fmtKm2(me.km2),me.n+' '+(me.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo para dominar uma área','')}</div>`}
     h+=blocoMarcas(marcasTodas(),'openMarcas()');
-    h+=blocoConq(badgeList(),'openBadges()');
+    h+=glw('d')+blocoConq(badgeList(),'openBadges()');
+    {const me=(TD||[]).find(x=>x.u.me);h+=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${me?linhaI(`<span class="li-ic" style="background:${me.cor}33"><span class="li-dot" style="background:${me.cor}"></span></span>`,fmtKm2(me.km2),me.n+' '+(me.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo para dominar uma área','')}</div>`}
+    if(!SIMPLES()){const tr=rMais(1);const k=tr.lastIndexOf('<div class="card blc"');h+=k>0?tr.slice(0,k)+glw('e')+tr.slice(k):tr}
   }else if(PT==='ativ'){
     SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM),DPA=desPorAtiv(D.acts.filter(isRun));
     h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id],com:isMk(x)?[x.de]:null})).join('')||'<p class="empty">Sem atividades.</p>';
@@ -1653,7 +1701,7 @@ function rPerf(){
 }
 
 /* ---------- blocos de melhores marcas e conquistas (ícone à esquerda, texto ao lado, toque abre a página) ---------- */
-const dK=d=>d===21097.5?'Meia':d===42195?'Maratona':(d/1000)+'K';
+const dK=d=>{const b=BE.find(x=>x[0]===+d);return b?b[1]:(d/1000)+' km'};
 const dataLonga=ds=>{const d=parseD(String(ds).slice(0,10));return `${d.getDate()} de ${MES3[d.getMonth()]}. de ${d.getFullYear()}`};
 // medalha: dourada (RP), prata (2º) ou bronze (3º); para conquistas leva o rótulo curto
 const MEDC={1:['#f0c24b','#3a2a05'],2:['#a3abb5','#1d2228'],3:['#c98a52','#2e1a08'],0:['#2a313b','#6c7682']};
@@ -1671,15 +1719,60 @@ function blocoMarcas(M,on){
   const rp=BE.filter(([d])=>M[d]&&M[d].length).map(([d])=>({d,...M[d][0]})).sort((u,v)=>String(v.date).slice(0,10).localeCompare(String(u.date).slice(0,10))||v.d-u.d).slice(0,2);
   return `<div class="card blc" onclick="${on}"><div class="blh"><b>Melhores marcas</b><span>›</span></div>${rp.map(x=>linhaM(1,'RP','RP de '+dK(x.d),dataLonga(x.date),fmtT(x.t))).join('')||'<p class="empty">As suas melhores marcas aparecem aqui depois das primeiras corridas com GPS.</p>'}</div>`;
 }
-window.openMarcas=(M,volta)=>{
-  M=M||marcasTodas();
-  let h=`<div class="hd"><b>Melhores marcas</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="meta" style="margin-bottom:8px">Melhor trecho de cada distância dentro das corridas. Trilhas ficam de fora por causa do GPS.</p>`;
-  for(const [d,n] of BE){const L=M[d]||[];if(!L.length)continue;
-    const lin=(x,i)=>linhaM(i+1,i?String(i+1):'RP',i?`${i+1}º ${dK(d)} mais rápido`:`RP de ${dK(d)}`,dataLonga(x.date)+' · '+fmtP(x.t/d*1000)+'/km',fmtT(x.t),x.id?(i?`mkAbre(this,'${x.id}')`:`openAct('${x.id}')`):(i?'mkAbre(this)':''));
-    h+=`<div class="card blc">${lin(L[0],0)}${L.length>1?`<div class="mk2" onclick="this.classList.toggle('on')">${L.slice(1,3).map((x,i)=>lin(x,i+1)).join('')}<span class="mk2s"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div>`:''}</div>`}
-  if(volta)h+=`<button class="b full" style="margin-top:8px" onclick="${volta}">◀ Voltar</button>`;
-  openSheet(h);
-};
+/* ---------- MELHORES MARCAS: página inteira (voltar em cima, barra embaixo), seletor de esporte e distância, Top 10 ---------- */
+let MKS={d:null,esp:'run',ab:{0:1},sel:0,selE:0,M:null,volta:null,prev:'perf',fr:0};
+window.openMarcas=(M,volta)=>{MKS={...MKS,M:M||null,volta:volta||null,ab:{0:1},sel:0,selE:0,fr:!!M,prev:VIEW==='marc'?MKS.prev:VIEW};
+  const MM=M||marcasTodas();if(!MKS.d||!(MM[MKS.d]||[]).length)MKS.d=([5000,1000,10000,21097.5,3000].find(d=>(MM[d]||[]).length))||BE[0][0];
+  closeSheet();go('marc');$('#v-marc').scrollTop=0;window.scrollTo(0,0)};
+window.marcVolta=()=>{const v=MKS.volta;go(MKS.prev&&MKS.prev!=='marc'?MKS.prev:'perf');if(v)try{(new Function(v))()}catch(e){}};
+const marcTopo=()=>{const v=$('#v-marc');if(v)v.scrollTop=0;window.scrollTo(0,0)};
+window.marcD=d=>{MKS.d=d;MKS.sel=0;MKS.ab={0:1};render();marcTopo()};
+window.marcAb=i=>{MKS.ab[i]=!MKS.ab[i];const el=document.querySelector(`.mkr[data-i="${i}"]`);if(el)el.classList.toggle('on',!!MKS.ab[i])};
+const MK_ICO={run:'<svg viewBox="0 0 24 24"><path d="M4 16c3 0 5-1 6-3l2-4c1-1 2-1 3 0l1 1c1 1 2 1 3 0M4 16h15c1 0 2 1 2 2H4zM13 6l2 2M11 8l2 2"/></svg>',bike:'<svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M9 8h3M14 8l-4 8"/></svg>',
+  seta:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',baixo:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
+// ícone da medalha da marca (fita + medalha), usado no RP grande e nas posições 2 a 10
+const medIco=(n,cor,tinta,cls)=>`<svg viewBox="0 0 48 48" class="mdi ${cls||''}"><path d="M12 7h24l-6 13H18z" fill="${cor}"/><path d="M17 7l7 13 7-13" fill="none" stroke="${tinta}" stroke-width="3"/><circle cx="24" cy="30" r="12.5" fill="${cor}"/><text x="24" y="${n==='RP'?34.4:35}" text-anchor="middle" font-size="${n==='RP'?11.5:14}" font-weight="900" fill="${tinta}" font-family="var(--f)">${n}</text></svg>`;
+const MED_COR=i=>i===0?['#f0b72f','#1a1305']:i===1?['#b9c2cd','#20262e']:i===2?['#cf9562','#2a1a0c']:['#3a424d','#c6ced8'];
+// a corrida em que a marca foi feita (mapa pequeno, nome, distância, subida, tempo e data)
+function marcCorrida(x){
+  const a=x.id?D.acts.find(q=>q.id===x.id):null,r=a||x,mp=a?(AX[a.id]||{}).map:x.map,nome=(a&&a.name)||x.name||'Corrida',h=String((a&&a.date)||x.date||'').slice(11,16);
+  const det=[r.dist?km(r.dist).replace('.',',')+' km':null,r.elev!=null?Math.round(r.elev)+' m':null,r.mov?fmtTempo(r.mov):null].filter(Boolean).join(' · ');
+  return `<div class="mkc"${a&&!MKS.fr?` onclick="openAct('${a.id}')"`:''}><div class="mkm">${mp&&mp.length>2?rotaSvg(mp,120,120):''}</div><div class="mki"><b>${esc(nome)}</b><span>${MK_ICO.run}${det}</span><small>${dataLonga(x.date)}${h?' às '+h:''}</small></div>${a&&!MKS.fr?`<i class="mkg">${MK_ICO.seta}</i>`:''}</div>`;
+}
+const fmtTempo=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;return h?`${h}h ${m}min`:`${m}min ${ss}s`};
+function rMarc(){
+  const M=MKS.M||marcasTodas(),d=MKS.d,L=(M[d]||[]).slice(0,10),nomeD=dK(d);
+  let h=`<div class="mkh"><button class="mkb" onclick="marcVolta()" aria-label="Voltar">${MK_ICO.seta}</button><b>Melhores marcas</b><span></span></div>`;
+  // seletores: esporte e distância (abrem uma lista ali mesmo, sem folha por cima)
+  h+=`<div class="mks"><button class="mkp ac ${MKS.sel?'on':''}" onclick="MKS.sel=!MKS.sel;render();marcTopo()">${nomeD}${MK_ICO.baixo}</button></div>`;
+  if(MKS.sel)h+=`<div class="mkl">${BE.map(([dd])=>{const top=(M[dd]||[])[0];return `<button class="${dd===d?'on':''}" onclick="marcD(${dd})"><span>${dK(dd)}</span><small>${top?fmtT(top.t):'—'}</small>${dd===d?'<i>✓</i>':''}</button>`}).join('')}</div>`;
+  if(!MKS.sel){
+    if(!L.length)h+=`<div class="mke">${medIco('RP','#3a424d','#9aa3ad')}<b>Ainda sem marca de ${nomeD}</b><p>Corra pelo menos ${nomeD} com o GPS ligado e o tempo aparece aqui.</p></div>`;
+    else{
+      const x=L[0],p=x.t/d*1000;
+      h+=`<div class="mkr mk1 ${MKS.ab[0]?'on':''}" data-i="0"><button class="mkt" onclick="marcAb(0)"><span>${nomeD} RP</span><i>${MK_ICO.baixo}</i></button>
+        <div class="mkbig"><div class="mkmed">${medIco('RP','#1a1305','#f0b72f','big')}</div><b class="mkt1">${fmtT(x.t)}</b><span class="mkt2">${fmtP(p)} /km</span></div>
+        <div class="mkd">${marcCorrida(x)}</div></div>`;
+      L.slice(1).forEach((y,j)=>{const i=j+1,[bg,fg]=MED_COR(i);
+        h+=`<div class="mkr ${MKS.ab[i]?'on':''}" data-i="${i}"><button class="mkt mkn" onclick="marcAb(${i})"><span class="mkc2" style="background:${bg}">${medIco(String(i+1),fg,bg)}</span><span class="mkv"><b>${fmtT(y.t)}</b><small>${fmtP(y.t/d*1000)} /km · ${dataLonga(y.date)}</small></span><i>${MK_ICO.baixo}</i></button><div class="mkd">${marcCorrida(y)}</div></div>`});
+      if(L.length<10)h+=`<p class="mkf">${L.length===1?'Só uma corrida':'Só '+L.length+' corridas'} com ${nomeD} até agora. As próximas entram aqui sozinhas.</p>`;
+    }
+    h+=`<p class="mkf" id="mk-prog"></p>`;
+  }
+  $('#marc').innerHTML=h;
+  if(!MKS.fr)marcRefaz();
+}
+const f2=v=>(+v).toFixed(1);
+// corridas analisadas antes das distâncias novas (400 m, milhas, 15, 20 e 50 km): busca de novo os dados do relógio, aos poucos
+let MK_RF=0;
+async function marcRefaz(){
+  if(MK_RF||!temConta())return;const fila=D.acts.filter(a=>isRun(a)&&!isMan(a)&&!isMk(a)&&a.dist>=400&&(!AX[a.id]||AX[a.id].bv!==2));if(!fila.length)return;
+  MK_RF=1;let n=0;
+  for(const a of fila){if(VIEW!=='marc')break;const el=$('#mk-prog');if(el)el.textContent=`Atualizando as marcas com as distâncias novas… ${n}/${fila.length}`;
+    try{const et=AX[a.id]&&AX[a.id].etapas;await loadAX(a.id);if(et!==undefined)AX[a.id].etapas=et}catch(e){}n++}
+  LS.set('ax5',AX);LS.set('terrc',null);MK_RF=0;if(VIEW==='marc')render();
+}
+
 // 2º e 3º lugar: fechados mostram só uma pontinha; o primeiro toque abre, o segundo abre a corrida
 window.mkAbre=(el,id)=>{const w=el.closest('.mk2');if(w&&!w.classList.contains('on')){w.classList.add('on');return}if(id)openAct(id)};
 const mTxt=s=>{s=String(s);const m=s.match(/^(\d+[ªº]?K?)/);return m?m[1]:s.slice(0,4)};
@@ -1701,20 +1794,23 @@ function condPag(S,cur){
 }
 /* ---------- blocos com resumo: título, linhas com ícone e a página completa ao tocar ---------- */
 const BLK={};
+// ícones das linhas (blocos do Início, Perfil e Mais): duas tonalidades — p = cheio, s = tom claro, l = traço branco, k = traço na cor
 const IC={
- modo:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
- bib:'<path d="M5 4h4v16H5zM11 4h4v16h-4zM17 5l3 .8-3.6 14.5-3-.8"/>',
- vdot:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>',
- prova:'<path d="M6 21V4M6 4h11l-2 4 2 4H6"/>',
- fc:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M5 12h3l2-3 3 6 2-3h4"/>',
- sono:'<path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/>',
- vo2:'<path d="M12 4v8M8 8c-3 1-4 5-4 8 0 2 2 3 4 2l2-2V9M16 8c3 1 4 5 4 8 0 2-2 3-4 2l-2-2V9"/>',
- forma:'<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>',
- fadiga:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
- equil:'<path d="M12 4v16M5 8h14M5 8l-3 6h6zM19 8l-3 6h6z"/>',
- corrida:'<path class="ifill" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>',
- cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>'};
-const icoC=(k,cls)=>`<span class="li-ic ${cls||''}"><svg viewBox="0 0 24 24">${IC[k]||''}</svg></span>`;
+ sono:'<path class="p" d="M13.6 3.1a8.9 8.9 0 1 0 7.3 13.1 7.2 7.2 0 0 1-7.3-13.1z"/><path class="s" d="M18 3.6l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.6zM21 8.6l.4.9.9.4-.9.4-.4.9-.4-.9-.9-.4.9-.4z"/>',
+ fc:'<path class="p" d="M12 21.2c-.3 0-.6-.1-.8-.3C7 17.6 2.6 14 2.6 9.4 2.6 6.4 4.9 4 7.8 4c1.7 0 3.2.8 4.2 2.1C13 4.8 14.5 4 16.2 4c2.9 0 5.2 2.4 5.2 5.4 0 4.6-4.4 8.2-8.6 11.5-.2.2-.5.3-.8.3z"/><path class="l" d="M4.8 11.6h3.4l1.6-2.6 2.4 5 1.7-3.1h5.3"/>',
+ vo2:'<path class="p" opacity=".85" d="M10.4 9.4v9.2c0 1.5-1.5 2.4-2.9 2-2.6-.8-4.2-3.5-4.2-6.8 0-2.8 1.1-5.6 3-6.8 1.7-1 4.1.4 4.1 2.4zM13.6 9.4v9.2c0 1.5 1.5 2.4 2.9 2 2.6-.8 4.2-3.5 4.2-6.8 0-2.8-1.1-5.6-3-6.8-1.7-1-4.1.4-4.1 2.4z"/><path class="k" d="M12 3v7.6M12 10.6l-2.2 2.2M12 10.6l2.2 2.2"/>',
+ forma:'<rect class="s" x="3.5" y="14" width="3.6" height="6.5" rx="1.2"/><rect class="s" x="10.2" y="10.5" width="3.6" height="10" rx="1.2"/><rect class="p" x="16.9" y="6.5" width="3.6" height="14" rx="1.2"/><path class="k" d="M3.8 10.2l4.6-3.6 3.4 2.2 6-5.3M14.6 3.5h3.6v3.6"/>',
+ fadiga:'<rect class="k" x="2.8" y="7" width="16.4" height="10" rx="2.6"/><rect class="p" x="5" y="9.2" width="4.2" height="5.6" rx="1"/><path class="s" d="M20.4 10.2h.6c.6 0 1 .4 1 1v1.6c0 .6-.4 1-1 1h-.6z"/>',
+ equil:'<path class="k" d="M12 4.2v15.6M7.5 20h9M4.6 7.4h14.8"/><circle class="p" cx="12" cy="4.4" r="1.6"/><path class="s" d="M2.2 13.6 4.6 8l2.4 5.6c0 1.4-1.1 2.4-2.4 2.4s-2.4-1-2.4-2.4zM17 13.6 19.4 8l2.4 5.6c0 1.4-1.1 2.4-2.4 2.4S17 15 17 13.6z"/>',
+ vdot:'<path class="s" d="M3.6 16.8a8.4 8.4 0 0 1 3.1-8.6l1.9 2.6a5.2 5.2 0 0 0-1.9 5.4z"/><path class="s" d="M8.2 7.1a8.4 8.4 0 0 1 7.6 0l-1.3 2.9a5.2 5.2 0 0 0-5 0z" opacity=".7"/><path class="p" d="M17.3 8.2a8.4 8.4 0 0 1 3.1 8.6l-3.1-.6a5.2 5.2 0 0 0-1.9-5.4z"/><path class="k" d="M12 16.2l3.6-5.4"/><circle class="p" cx="12" cy="16.4" r="2"/>',
+ prova:'<path class="k" d="M5.2 21V3.6"/><path class="p" d="M6.4 4h12.4c.6 0 1 .6.7 1.1L18 8.4l1.5 3.3c.3.5-.1 1.1-.7 1.1H6.4z"/><path class="l" d="M9.5 4v8.8M12.6 4v8.8M15.7 4v8.8M6.4 8.4h12" opacity=".55"/>',
+ modo:'<rect class="s" x="2.8" y="4.4" width="18.4" height="6.6" rx="3.3"/><circle class="p" cx="17.9" cy="7.7" r="2.4"/><rect class="s" x="2.8" y="13" width="18.4" height="6.6" rx="3.3" opacity=".6"/><circle class="p" cx="6.1" cy="16.3" r="2.4"/>',
+ bib:'<path class="s" d="M12 6.4C10.2 5 7.6 4.4 4.4 4.6c-.6 0-1 .5-1 1.1v11.6c0 .6.5 1.1 1.1 1 3-.1 5.4.5 7.5 1.9z"/><path class="p" d="M12 6.4c1.8-1.4 4.4-2 7.6-1.8.6 0 1 .5 1 1.1v11.6c0 .6-.5 1.1-1.1 1-3-.1-5.4.5-7.5 1.9z"/><path class="l" d="M14.6 9.4c1.3-.5 2.8-.7 4.2-.6M14.6 12.4c1.3-.5 2.8-.7 4.2-.6" opacity=".7"/>',
+ corrida:'<path class="p" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>',
+ cal:'<rect class="s" x="3.5" y="5" width="17" height="15.5" rx="3"/><path class="p" d="M3.5 8c0-1.7 1.3-3 3-3h11c1.7 0 3 1.3 3 3v2h-17z"/><path class="k" d="M8.5 3v4M15.5 3v4"/>'};
+// cor de cada assunto (a moldura e o desenho usam a mesma cor)
+const IC_COR={sono:'#8f7bff',fc:'#ff5a6e',vo2:'#25cbb8',forma:'#4a9eff',fadiga:'#ff8a3d',equil:'#f0b72f',vdot:'#4a9eff',prova:'#34c77b',modo:'#4a9eff',bib:'#4a9eff',corrida:'#4a9eff',cal:'#4a9eff'};
+const icoC=(k,cls)=>`<span class="li-ic ic2" style="--c:${IC_COR[k]||'#4a9eff'}"><svg viewBox="0 0 24 24">${IC[k]||''}</svg></span>`;
 const linhaI=(ic,tit,sub,dir,on)=>`<div class="mrow"${on?` onclick="event.stopPropagation();${on}"`:''}>${ic}<div class="mt"><b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>${dir!=null&&dir!==''?`<span class="mv">${dir}</span>`:''}${on?'<span class="li-ch">›</span>':''}</div>`;
 // tira o título antigo da seção ("sec") do começo do trecho
 const semSec=s=>s.replace(/^\s*<div class="sec">[\s\S]*?<\/div>/,'');
@@ -1796,16 +1892,19 @@ const fotosTira=(dono,act)=>{const L=fotosDe(dono,act);return L.length?`<div cla
 /* ---------- desafios do mês: o app confere sozinho pelas corridas e marca a atividade que concluiu ---------- */
 // tipo: um = numa corrida só; soma = somando o mês (campo); conta = número de corridas (filtro)
 const DESAF=[
-  {k:'5k',ic:'5K',n:'5K do mês',d:'Correr 5 km numa corrida',tipo:'um',alvo:5000},
-  {k:'10k',ic:'10K',n:'10K do mês',d:'Correr 10 km numa corrida',tipo:'um',alvo:10000},
-  {k:'21k',ic:'21K',n:'Meia do mês',d:'Correr 21,1 km numa corrida',tipo:'um',alvo:21097},
-  {k:'25km',ic:'25',n:'25 km no mês',d:'Somar 25 km de corrida no mês',tipo:'soma',campo:'dist',alvo:25000},
-  {k:'50km',ic:'50',n:'50 km no mês',d:'Somar 50 km de corrida no mês',tipo:'soma',campo:'dist',alvo:50000},
-  {k:'100km',ic:'100',n:'100 km no mês',d:'Somar 100 km de corrida no mês',tipo:'soma',campo:'dist',alvo:100000},
-  {k:'5h',ic:'5h',n:'5 horas correndo',d:'Somar 5 horas de corrida no mês',tipo:'soma',campo:'mov',alvo:18000},
-  {k:'subida',ic:'500',n:'Subida do mês',d:'Somar 500 m de subida no mês',tipo:'soma',campo:'elev',alvo:500},
-  {k:'12x',ic:'12x',n:'12 corridas',d:'Fazer 12 corridas no mês (3 por semana)',tipo:'conta',alvo:12},
-  {k:'cedo',ic:'☀',n:'Madrugador',d:'5 corridas começando antes das 7h',tipo:'conta',alvo:5,filtro:r=>+String(r.date).slice(11,13)<7}];
+  {k:'10km',cat:'vol',ic:'10',t:'km',n:'10 km no mês',d:'Somar 10 km de corrida no mês',tipo:'soma',campo:'dist',alvo:10000},
+  {k:'25km',cat:'vol',ic:'25',t:'km',n:'25 km no mês',d:'Somar 25 km de corrida no mês',tipo:'soma',campo:'dist',alvo:25000},
+  {k:'50km',cat:'vol',ic:'50',t:'km',n:'50 km no mês',d:'Somar 50 km de corrida no mês',tipo:'soma',campo:'dist',alvo:50000},
+  {k:'75km',cat:'vol',ic:'75',t:'km',n:'75 km no mês',d:'Somar 75 km de corrida no mês',tipo:'soma',campo:'dist',alvo:75000},
+  {k:'100km',cat:'vol',ic:'100',t:'km',n:'100 km no mês',d:'Somar 100 km de corrida no mês',tipo:'soma',campo:'dist',alvo:100000},
+  {k:'5k',cat:'dist',ic:'5',t:'km',n:'Correr 5 km',d:'Percorrer 5 km numa corrida',tipo:'um',alvo:5000},
+  {k:'10k',cat:'dist',ic:'10',t:'km',n:'Correr 10 km',d:'Percorrer 10 km numa corrida',tipo:'um',alvo:10000},
+  {k:'21k',cat:'dist',ic:'21',t:'km',n:'Correr 21 km',d:'Percorrer 21,1 km numa corrida',tipo:'um',alvo:21097},
+  {k:'8x',cat:'freq',ic:'8',t:'corridas',n:'8 corridas',d:'Fazer 8 corridas no mês (2 por semana)',tipo:'conta',alvo:8},
+  {k:'12x',cat:'freq',ic:'12',t:'corridas',n:'12 corridas',d:'Fazer 12 corridas no mês (3 por semana)',tipo:'conta',alvo:12},
+  {k:'cedo',cat:'freq',ic:'5',t:'antes 7h',n:'Madrugador',d:'5 corridas começando antes das 7h',tipo:'conta',alvo:5,filtro:r=>+String(r.date).slice(11,13)<7},
+  {k:'5h',cat:'esp',ic:'5h',t:'correndo',n:'5 horas correndo',d:'Somar 5 horas de corrida no mês',tipo:'soma',campo:'mov',alvo:18000},
+  {k:'subida',cat:'esp',ic:'500',t:'m subida',n:'Subida do mês',d:'Somar 500 m de subida no mês',tipo:'soma',campo:'elev',alvo:500}];
 const MESC=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 // resultado dos desafios de um mês a partir de uma lista de corridas {id,date,dist,mov,elev}
 function desafiosMes(runs,ano,mes){
@@ -1820,20 +1919,35 @@ const desTxt=(c)=>c.tipo==='um'?`Maior corrida: ${km(c.v).replace('.',',')} de $
 // emblema do desafio: anel dourado que enche com o progresso; concluído fica dourado cheio
 function desEmb(c,sz=46){const r=20,L=2*Math.PI*r,fs=String(c.ic).length>2?11:13;
   return `<svg class="desemb" viewBox="0 0 48 48" style="width:${sz}px;height:${sz}px"><circle cx="24" cy="24" r="${c.ok?22:r}" fill="${c.ok?'#f0c24b':'rgba(240,194,75,.12)'}"/>${c.ok?'':`<circle cx="24" cy="24" r="${r}" fill="none" stroke="#f0c24b" stroke-width="3.5" stroke-dasharray="${(L*c.p).toFixed(1)} ${L.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 24 24)"/>`}<text x="24" y="${24+fs*.36}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${c.ok?'#3a2a05':'#f0c24b'}">${c.ic}</text></svg>`}
-const desLinha=c=>`<div class="mrow">${desEmb(c)}<div class="mt"><b>${c.n}</b><span>${c.ok?'Concluído em '+fmtD(String(c.data).slice(0,10)):desTxt(c)}</span>${c.ok?'':`<div class="bar" style="margin-top:6px;height:4px"><i style="width:${c.p*100}%;background:#f0c24b"></i></div>`}</div><span class="mv"${c.ok?' style="color:#f0c24b"':''}>${c.ok?'✓':Math.round(c.p*100)+'%'}</span></div>`;
+const desLinha=c=>`<div class="mrow"><span class="desi">${desEsc(c)}</span><div class="mt"><b>${c.n}</b><span>${c.ok?'Concluído em '+fmtD(String(c.data).slice(0,10)):desTxt(c)}</span>${c.ok?'':`<div class="dsb"><i style="width:${(c.p*100).toFixed(0)}%"></i></div>`}</div>${c.ok?'<span class="mv" style="color:var(--blue)">✓</span>':''}</div>`;
 function blocoDes(runs,t,on){
   const L=desafiosMes(runs,t.getFullYear(),t.getMonth()),feitos=L.filter(c=>c.ok).length;
   const top=[...L].sort((a,b)=>(a.ok-b.ok)||(b.p-a.p)).slice(0,3);
   return `<div class="card blc" onclick="${on}"><div class="blh"><b>Desafios de ${MESC[t.getMonth()]}</b><span>${feitos}/${L.length} ›</span></div>${top.map(desLinha).join('')}</div>`;
 }
-window.openDesafios=()=>{
-  const runs=D.acts.filter(isRun),t=TODAY(),L=desafiosMes(runs,t.getFullYear(),t.getMonth()),fim=new Date(t.getFullYear(),t.getMonth()+1,0),falta=Math.round((fim-t)/864e5);
-  let h=`<div class="hd"><b>Desafios de ${MESC[t.getMonth()]}</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="meta" style="margin-bottom:8px">O app confere sozinho pelas suas corridas do mês. ${falta>0?`Faltam ${falta} ${falta===1?'dia':'dias'} para o mês acabar.`:'Último dia do mês.'}</p>`;
-  h+=`<div class="card blc">${[...L.filter(c=>!c.ok).sort((a,b)=>b.p-a.p),...L.filter(c=>c.ok)].map(desLinha).join('')}</div>`;
-  const ant=[];for(let k=1;k<=6;k++){const d=new Date(t.getFullYear(),t.getMonth()-k,1),M=desafiosMes(runs,d.getFullYear(),d.getMonth()).filter(c=>c.ok);if(M.length)ant.push([d,M])}
-  if(ant.length)h+=`<div class="sec">Concluídos nos meses anteriores</div>`+ant.map(([d,M])=>`<div class="card blc"><div class="blh"><b>${MESC[d.getMonth()].replace(/^./,c=>c.toUpperCase())} de ${d.getFullYear()}</b><span>${M.length}</span></div>${M.map(desLinha).join('')}</div>`).join('');
-  openSheet(h);
-};
+/* ---------- DESAFIOS: página inteira com voltar, por categoria, e navegação pelos meses (meses anteriores: só os concluídos) ---------- */
+const DES_CAT=[['vol','Volume do mês','raio'],['dist','Distância numa corrida','fe2'],['freq','Frequência','cmd'],['esp','Especiais','cmd']];
+const desF=c=>(DES_CAT.find(x=>x[0]===c.cat)||[,,'cmd'])[2];
+const desEsc=(c)=>escConq({f:desF(c),k:c.ic,t:c.t,on:c.ok});
+let DSM={off:0,prev:'des'};
+window.openDesafios=()=>{DSM={off:0,prev:VIEW==='desaf'?DSM.prev:VIEW};go('desaf');const v=$('#v-desaf');if(v)v.scrollTop=0};
+window.desVolta=()=>go(DSM.prev&&DSM.prev!=='desaf'?DSM.prev:'des');
+window.dsMes=n=>{DSM.off=Math.max(0,DSM.off+n);render();const v=$('#v-desaf');if(v)v.scrollTop=0};
+function rDesaf(){
+  const runs=D.acts.filter(isRun),t=TODAY(),d=new Date(t.getFullYear(),t.getMonth()-DSM.off,1),atual=DSM.off===0,L=desafiosMes(runs,d.getFullYear(),d.getMonth());
+  const pri=runs.map(r=>String(r.date).slice(0,7)).sort()[0]||ymd(t).slice(0,7),ymS=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),podeVoltar=ymS>pri&&DSM.off<36;
+  const fim=new Date(t.getFullYear(),t.getMonth()+1,0),falta=Math.round((fim-t)/864e5),feitos=L.filter(c=>c.ok).length,mesN=MESC[d.getMonth()].replace(/^./,c=>c.toUpperCase());
+  let h=`<div class="mkh"><button class="mkb" onclick="desVolta()" aria-label="Voltar">${MK_ICO.seta}</button><b>Desafios</b><span></span></div>
+  <div class="dsn"><button onclick="dsMes(1)" ${podeVoltar?'':'disabled'} aria-label="Mês anterior">${MK_ICO.seta}</button><div><b>${mesN}</b><small>${d.getFullYear()}</small></div><button onclick="dsMes(-1)" ${atual?'disabled':''} aria-label="Próximo mês" class="pr">${MK_ICO.seta}</button></div>
+  <p class="dss">${atual?`${feitos} de ${L.length} concluídos · ${falta>0?`faltam ${falta} ${falta===1?'dia':'dias'}`:'último dia do mês'}`:`${feitos} ${feitos===1?'desafio concluído':'desafios concluídos'} em ${MESC[d.getMonth()]}`}</p>`;
+  let algum=0;
+  for(const [cat,nome] of DES_CAT){
+    const I=L.filter(c=>c.cat===cat&&(atual||c.ok));if(!I.length)continue;algum=1;
+    h+=`<div class="cqh"><span class="sec">${nome}</span><small>${I.filter(c=>c.ok).length}/${atual?I.length:L.filter(c=>c.cat===cat).length}</small></div><div class="grid g3 cqg dsg">${I.map(c=>`<div class="badge cq ${c.ok?'':'lock'}">${desEsc(c)}<b>${esc(c.n)}</b>${c.ok?`<small>Concluído em ${fmtD(String(c.data).slice(0,10))}</small>`:`<small>${desTxt(c)}</small><div class="dsb"><i style="width:${(c.p*100).toFixed(0)}%"></i></div>`}</div>`).join('')}</div>`}
+  if(!algum)h+=`<div class="mke">${escConq({f:'cmd',k:'0',t:'desafios',on:false})}<b>Nenhum desafio concluído em ${MESC[d.getMonth()]}</b><p>Use as setas para ver outros meses.</p></div>`;
+  $('#desaf').innerHTML=h;
+}
+
 // desafios que cada atividade concluiu (para o selo amarelo no cartão)
 function desPorAtiv(runs){
   const o={},meses=new Set(runs.map(r=>String(r.date).slice(0,7)));
@@ -2037,6 +2151,8 @@ window.fbSet=async(id,k,v)=>{
 };
 window.fbParte=(id,p)=>{const f=FB[id]||{},L=f.partes||[];fbSet(id,'partes',L.includes(p)?L.filter(x=>x!==p):[...L,p])};
 // estatísticas no estilo Strava: rótulo pequeno em cima e número grande, sem caixas
+// luz azul de fundo (atrás dos cartões): lado d = direita, e = esquerda
+const glw=(lado,baixo)=>`<div class="glw ${lado}${baixo?' gbx':''}" aria-hidden="true"><i></i></div>`;
 const sst=(L,c)=>`<div class="sst${c===3?' c3':''}">${L.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>`;
 // quem correu junto, descoberto sozinho: corridas de outras pessoas que começaram até 15 min antes ou depois, no mesmo lugar
 function autoJuntos(a){
@@ -2895,7 +3011,7 @@ window.openPerfilAmigo=(id,tab)=>{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
     if(FT==='prog'){
       h+=progBox('fr',semanas(runs));
-      const MF={};BE.forEach(([d])=>{MF[d]=runs.filter(r=>r.best&&r.best[d]).map(r=>({t:r.best[d],date:ds(r)})).sort((u,v)=>u.t-v.t)});FMARC=MF;
+      const MF={};BE.forEach(([d])=>{MF[d]=runs.filter(r=>r.best&&r.best[d]).map(r=>({t:r.best[d],date:String(r.date),name:r.name,dist:r.dist,mov:r.mov,elev:r.elev,map:r.map})).sort((u,v)=>u.t-v.t)});FMARC=MF;
       h+=blocoMarcas(MF,`openMarcas(FMARC,&quot;openPerfilAmigo('${id}')&quot;)`);
       if(med.length)h+=`<div class="card blc"><div class="blh"><b>Conquistas</b><span>${med.length}</span></div><div class="grid g3 bgrid">${[...med].reverse().slice(0,3).map(badgeHtml).join('')}</div></div>`;
       if(tdo)h+=`<div class="card blc" onclick="openTerr('${esc(id)}')"><div class="blh"><b>Área dominada</b><span>›</span></div>${linhaI(`<span class="li-ic" style="background:${tdo.cor}33"><span class="li-dot" style="background:${tdo.cor}"></span></span>`,fmtKm2(tdo.km2),tdo.n+' '+(tdo.n===1?'circuito':'circuitos')+' fechados','')}</div>`;
@@ -3287,9 +3403,9 @@ window.togTema=()=>{
 temaIcone();
 
 /* ================= navegação ================= */
-const TITLES={ini:'INÍCIO',cal:'CALENDÁRIO',des:'DESAFIOS',comp:'MAPA',mais:'MAIS',perf:'PERFIL'};
+const TITLES={ini:'INÍCIO',cal:'CALENDÁRIO',des:'DESAFIOS',comp:'MAPA',mais:'MAIS',perf:'PERFIL',marc:'MELHORES MARCAS',desaf:'DESAFIOS'};
 let VIEW='ini';
-function go2(v){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+function go2(v){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.v===v||(v==='marc'&&b.dataset.v==='perf')||(v==='desaf'&&b.dataset.v==='des')))}
 function go(v){VIEW=v;go2(v);render()}
 document.querySelectorAll('#tabbar button').forEach(b=>b.onclick=()=>go(b.dataset.v));
 $('#menu').onclick=()=>go(VIEW==='mais'?'ini':'mais');
@@ -3306,7 +3422,8 @@ function render2(){if(_desk===null)marcaDesk();
   $('#ttl').textContent=TITLES[VIEW];
   $('#avimg').src=myPic();
   $('#avst').className=D.at&&Date.now()-D.at<864e5?'on':D.at?'off':'';
-  ({ini:rIni,cal:rCal,des:rDes,comp:rComp,mais:rMais,perf:rPerf})[VIEW]();
+  document.body.classList.toggle('vmarc',VIEW==='marc'||VIEW==='desaf');
+  ({ini:rIni,cal:rCal,des:rDes,comp:rComp,mais:rMais,perf:rPerf,marc:rMarc,desaf:rDesaf})[VIEW]();
   if(['ini','des','mais','perf'].includes(VIEW)&&!(VIEW==='ini'&&DESK()))groupBlocks($('#'+VIEW));
   drawMaps();
 }
