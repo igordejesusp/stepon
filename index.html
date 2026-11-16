@@ -2604,6 +2604,19 @@ window.openAmigos=nofetch=>{
   ${FR.friends.length+FR.inc.length+FR.out.length?'':'<p class="empty" style="margin-top:12px">Você ainda não tem amigos adicionados.</p>'}`);
   if(!nofetch)frCall('lista').then(()=>{const i=$('#am-id');if(i&&!i.value)openAmigos(1);if(VIEW==='comp')rComp()}).catch(()=>{});
 };
+// botão de amizade no cartão do mapa e no perfil: adicionar, aceitar, aguardando ou já amigo
+function btnAmizade(id,volta,cls){
+  if(!id||id===CFG.athlete)return '';const c=cls||'b';
+  if(FR.friends.includes(id))return `<button class="${c}" disabled style="opacity:.7">✓ Amigo</button>`;
+  if(FR.inc.includes(id))return `<button class="${c} pri" onclick="frPedir('${esc(id)}','aceitar',&quot;${volta}&quot;)">Aceitar pedido</button>`;
+  if(FR.out.includes(id))return `<button class="${c}" onclick="frPedir('${esc(id)}','remover',&quot;${volta}&quot;)">Pedido enviado · cancelar</button>`;
+  return `<button class="${c} pri" onclick="frPedir('${esc(id)}','pedir',&quot;${volta}&quot;)">+ Adicionar amigo</button>`;
+}
+window.frPedir=async(id,acao,volta)=>{
+  try{const j=await frCall(acao,id);toast(acao==='aceitar'||j.aviso==='aceito'||j.aviso==='ja'?'Vocês agora são amigos':acao==='remover'?'Pedido cancelado':j.aviso==='cheio'?'Essa pessoa tem pedidos demais':'Pedido de amizade enviado',2600)}
+  catch(e){toast('Não deu para enviar: '+e.message,3500)}
+  if(volta)try{(new Function(volta))()}catch(e){}if(VIEW==='comp')rComp();
+};
 window.copiaId=()=>{try{navigator.clipboard.writeText(CFG.athlete).then(()=>toast('ID COPIADO')).catch(()=>toast(CFG.athlete,4000))}catch(e){toast(CFG.athlete,4000)}};
 window.frAdd=async()=>{
   let v=($('#am-id').value||'').trim().toLowerCase().replace(/\s/g,'');if(/^\d{3,12}$/.test(v))v='i'+v;
@@ -2631,7 +2644,7 @@ window.openPerfilAmigo=(id,tab)=>{
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
   let h=`<div class="hd"><b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="card cur pcab">${avatar({pic:frPic(id)},62)}<div class="pnm"><h2>${esc(frNome(id))}</h2><div class="meta">${runs.length} corridas · ${km(tot)} km no app${eAmigo?' · Amigo':''}</div></div>${nv?escudo(nv,''):''}</div>`;
+  <div class="card cur pcab">${avatar({pic:frPic(id)},62)}<div class="pnm"><h2>${esc(frNome(id))}</h2><div class="meta">${runs.length} corridas · ${km(tot)} km no app${eAmigo?' · Amigo':''}</div></div>${nv?escudo(nv,''):''}</div>${eAmigo?'':`<div style="margin:-2px 0 10px">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'b full')}</div>`}`;
   if(!u||!runs.length)h+=`<p class="empty" style="color:var(--txt)">${esc(frNome(id))} ainda não entrou no ranking, então o app não tem as corridas dessa pessoa. Quando ela entrar, o perfil aparece aqui sozinho.</p>`;
   else{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
@@ -2660,12 +2673,12 @@ window.openTerr=id=>{
   openSheet(`<div class="hd"><b>Área dominada</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   <div class="card cur pcab">${avatar({pic:o.u.pic,me:eu},62)}<div class="pnm"><h2>${esc(o.u.name)}</h2><div class="meta">${eu?'Você':FR.friends.includes(id)?'Amigo':'Atleta'}</div></div><span class="terrdot" style="background:${o.cor}"></span></div>
   <div class="card stc"><div class="stg c3"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Circuitos</span><b>${o.n}</b></div><div><span>Última</span><b>${o.last?fmtD(o.last):'--'}</b></div></div></div>
-  ${eu?`<div class="card gcard"><div class="blh"><b>Sua cor no mapa</b></div>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="grid g2" style="margin-top:8px"><button class="b pri" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button><button class="b" onclick="closeSheet()">Fechar</button></div>`}
+  ${eu?`<div class="card gcard"><div class="blh"><b>Sua cor no mapa</b></div>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="grid g2" style="margin-top:8px"><button class="b" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button>${btnAmizade(id,`openTerr('${esc(id)}')`)}</div>`}
   <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. Se alguém correr por cima depois, essa parte passa para ele.</p>`);
   $('#sbox').dataset.terr=eu?'me':'';
 };
 window.openRank=()=>{
-  const {L,mes,dias}=ranking(),M=MODO(),meI=L.findIndex(x=>x.u.me),row=(x,j)=>`<div class="row" ${!x.u.me&&M==='a'?`onclick="openPerfilAmigo('${esc(x.u.id)}')" `:''}style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)"><span class="num" style="width:28px;text-align:center;font-size:${j<3?17:12}px">${medal(j)}</span>${avatar(x.u,34)}<span style="flex:1;min-width:0"><b style="display:block;font-size:14px;${x.u.me?'color:var(--blue)':''}">${esc(x.u.name)}</b><span class="meta">Nível ${nivelXp(x.u.me?meuXp():xpDe(x.u)).L} · ${km(x.km*1000)} km · ${x.tr} ${x.tr===1?'treino':'treinos'}${!x.u.me&&x.u.at?` · ${atrasoTxt(x.u.at)}`:''}</span></span><span class="num" style="font-size:18px">${x.pts}<small class="dim"> pts</small></span></div>`;
+  const {L,mes,dias}=ranking(),M=MODO(),meI=L.findIndex(x=>x.u.me),row=(x,j)=>`<div class="row" ${!x.u.me?`onclick="openPerfilAmigo('${esc(x.u.id)}')" `:''}style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)"><span class="num" style="width:28px;text-align:center;font-size:${j<3?17:12}px">${medal(j)}</span>${avatar(x.u,34)}<span style="flex:1;min-width:0"><b style="display:block;font-size:14px;${x.u.me?'color:var(--blue)':''}">${esc(x.u.name)}</b><span class="meta">Nível ${nivelXp(x.u.me?meuXp():xpDe(x.u)).L} · ${km(x.km*1000)} km · ${x.tr} ${x.tr===1?'treino':'treinos'}${!x.u.me&&x.u.at?` · ${atrasoTxt(x.u.at)}`:''}</span></span><span class="num" style="font-size:18px">${x.pts}<small class="dim"> pts</small></span></div>`;
   const vis=L.map((x,j)=>[x,j]).filter(([x,j])=>j<10||x.u.me);
   openSheet(`<div class="hd"><b>${M==='a'?'RANKING DOS AMIGOS':'RANKING GERAL'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   ${LS.get('pubErr',null)?`<p class="empty" style="color:var(--txt);margin-bottom:8px">Suas corridas mais recentes ainda não chegaram ao servidor (${esc(LS.get('pubErr',''))}). Toque em sincronizar no Início para tentar de novo.</p>`:''}<div class="row" style="gap:6px"><span class="tag ok">TEMPORADA DE ${mes.toUpperCase()}</span><span class="tag">ZERA EM ${dias} ${dias===1?'DIA':'DIAS'}</span></div>
