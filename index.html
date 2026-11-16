@@ -787,7 +787,7 @@ const marcaDe=t=>{t=String(t||'');for(const [k,rx] of MARCA_RX)if(rx.test(t))ret
 const ultAparelho=()=>{const a=(D.acts||[]).find(x=>isRun(x)&&x.dev&&!/stepon/i.test(x.dev)&&x.src!=='MARCADO');return a?devNome(a):''};
 function marcaRel(){const r=PF?PF.relogio:LS.get('relogio',isIgor()?'garmin':null);if(r&&r!=='outro'&&r!=='sim')return r;return marcaDe(ultAparelho())||r||null}
 const hasWatch=()=>marcaRel()==='garmin';
-const META={c:{n:'Constância',sem:8,d:0},5:{n:'5 km',sem:8,d:5,dist:5000},10:{n:'10 km',sem:10,d:10,dist:10000},21:{n:'Meia maratona',sem:16,d:21.1,dist:21097.5}};
+const META={cam:{n:'Caminhar e começar a correr',sem:12,d:0,cam:1},c:{n:'Constância',sem:8,d:0},5:{n:'5 km',sem:8,d:5,dist:5000},10:{n:'10 km',sem:10,d:10,dist:10000},21:{n:'Meia maratona',sem:16,d:21.1,dist:21097.5}};
 // objetivo escrito (meta 'x'): o app lê o texto e a pessoa confere os campos (tipo, distância, tempo-alvo e data)
 const MESN=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 function entendeObj(txt){
@@ -795,7 +795,7 @@ function entendeObj(txt){
   const hoje=TODAY(),y0=hoje.getFullYear(),futuro=(d,m,y)=>{let Y=y||y0,dt=new Date(Y,m,d);if(!y&&dt<hoje)dt=new Date(Y+1,m,d);return ymd(dt)};
   // tipo
   if(/\btaf\b|cooper|policia|\bpm\b|pm-?mg|bombeir|militar|exercito|concurso|aptidao fisica/.test(t))o.tipo='taf';
-  if(/caminh/.test(t)&&!/corr(er|ida)/.test(t.replace(/comecar a correr|depois.*correr/,'')))o.tipo='cam';
+  if(/caminh/.test(t)&&(!/corr/.test(t)||/(ate|depois|para|antes de|e|so|pra)\s+(conseguir\s+|comecar\s+a\s+|poder\s+|aguentar\s+)?corr/.test(t)))o.tipo='cam';
   // distância
   let m=t.match(/(\d+(?:[.,]\d+)?)\s*(?:km|k\b|quilometro)/);if(m)o.d=parseFloat(m[1].replace(',','.'));
   if(!o.d){m=t.match(/(\d[\d.]{2,5})\s*(?:m\b|metros|mts)/);if(m)o.d=parseFloat(m[1].replace(/\./g,''))/1000}
@@ -878,6 +878,10 @@ function libFit(id,P,Z,qmax,alivio){
 }
 // quem ainda não corre começa no corre e caminha: [minutos correndo, minutos caminhando]
 const RW=[[1,2],[2,2],[3,2],[5,1],[8,1]];
+// objetivo caminhada: [minutos nos dias comuns, minutos no dia mais longo], uma linha por semana; depois vem o corre e caminha
+const CAMW=[[20,30],[25,35],[30,40],[35,45]];
+// dia de caminhada no plano: a atividade gravada vai como caminhada (Walk) e uma caminhada cumpre o treino
+const ehCam=ds=>{const p=planOn(ds);return !!p&&p.tipo==='caminhada'};
 function genPlan(pf){
   const Z=zonesFor(pf.V),E=Z.E,M=metaDe(pf),novo=!pf.km0,P=[];
   const dias=[...pf.dias].sort((a,b)=>(a+6)%7-(b+6)%7),outros=dias.filter(d=>d!==pf.longo),k=outros.length;
@@ -896,9 +900,13 @@ function genPlan(pf){
       else{outros.filter(d=>(d+1)%7!==pf.longo).forEach(d=>add(d,{tipo:'rodagem',titulo:'Rodagem curta',km:3,steps:[['Contínuo','3km',E]]}));add(pf.longo,prova)}
       break;
     }
-    if(novo&&w<RW.length){const [c,cw]=RW[w];
+    const CAM=pf.meta==='cam'?CAMW.length:0,wr=w-CAM;
+    if(w<CAM){const [mn,ml]=CAMW[w];
+      dias.forEach(d=>{const lg=d===pf.longo,m=lg?ml:mn;add(d,{tipo:'caminhada',titulo:`Caminhada ${m} min`,km:r5(m/10),steps:[['Caminhada firme',m+'min',null]],dica:'Caminhe em ritmo firme, ainda conseguindo conversar. Postura alta, braços soltos. Se sentir dor, anote no Como foi.'})});
+      continue}
+    if(novo&&wr>=0&&wr<RW.length){const [c,cw]=RW[wr];
       dias.forEach(d=>{const lg=d===pf.longo,rp=Math.round(30/(c+cw))+(lg?1:0);add(d,{tipo:lg?'longo':'rodagem',titulo:`Corre ${c} min, caminha ${cw} (${rp}×)`,km:r5(rp*(c*60/E[1]+cw/10)),steps:[['Corre',c+'min',E,rp],['Caminhada',cw+'min',null,rp]]})});
-      if(w===RW.length-1){W=dias.length*3;L=4}
+      if(wr===RW.length-1){W=dias.length*3;L=4}
       continue;
     }
     // como a semana anterior foi sentida: dor que atrapalhou ou treino muito duro seguram o volume e repetem o degrau; tudo fácil adianta o degrau
@@ -948,7 +956,7 @@ const actsOn=ds=>D.acts.filter(a=>a.date.slice(0,10)===ds);
 let _mk=null,_mv={};
 function casaPlano(){
   const P=plan(),key=_pk+'|'+(D.at||0)+'|'+D.acts.length;if(key===_mk)return _mv;
-  const rd={};D.acts.filter(isRun).forEach(a=>{const d=a.date.slice(0,10);(rd[d]=rd[d]||[]).push(a)});
+  const cam=PF&&PF.meta==='cam',rd={};D.acts.filter(a=>isRun(a)||(cam&&/Walk|Hike/.test(a.type||''))).forEach(a=>{const d=a.date.slice(0,10);(rd[d]=rd[d]||[]).push(a)});
   const comPlano=new Set(P.map(p=>p.date)),orf=Object.keys(rd).filter(d=>!comPlano.has(d)).sort(),usado=new Set(),M={};
   // primeiro os treinos com corrida no próprio dia; depois os pares mais próximos na data e nos km (adiantado ganha no empate)
   const pend=[];for(const p of P){if(rd[p.date])M[p.date]={runs:rd[p.date],de:p.date};else pend.push(p)}
@@ -1104,7 +1112,7 @@ function pmcSvg(S,days=90){
 }
 function stepsHtml(p){return `<div class="steps">${p.steps.map(s=>`<div><span>${esc(s[0])}</span><span>${s[3]?s[3]+'× ':''}${esc(s[1])}${s[2]?' @ '+fmtP(Math.min(...s[2]))+'–'+fmtP(Math.max(...s[2]))+'/km':/Caminh|Parado|Pausa/.test(s[0])?'':' leve'}</span></div>`).join('')}</div>`}
 const tagSt={cumprido:'<span class="tag ok">CUMPRIDO</span>',parcial:'<span class="tag warn">PARCIAL</span>',perdido:'<span class="tag bad">PERDIDO</span>',enviado:'<span class="tag ok">NO RELÓGIO</span>',planejado:'<span class="tag">PLANEJADO</span>'};
-const tipoIc={qualidade:'QLD',rodagem:'ROD',longo:'LNG',prova:'ALVO'};
+const tipoIc={qualidade:'QLD',rodagem:'ROD',longo:'LNG',prova:'ALVO',caminhada:'CAM'};
 const typeIc=a=>isRun(a)?'RUN':/Walk|Hike/.test(a.type)?'MCH':/Swim/.test(a.type)?'NAT':/Weight/.test(a.type)?'FOR':/Ride/.test(a.type)?'BIK':'OUT';
 
 /* ================= INÍCIO ================= */
@@ -2158,9 +2166,9 @@ function histo(){
   return {n:r.length,w4,L,V:V&&V.v};
 }
 function obInit(){const H=histo();OB.a={relogio:OB.relogio||null,meta:null,dias:[2,4,0],longo:0,km0:H.n?(H.w4<1?0:H.w4<10?7:H.w4<20?15:H.w4<35?27:40):null,t5:null,H}}
-const OBS=[{id:'conn',show:()=>!temConta()},{id:'oi'},{id:'relogio'},{id:'meta'},{id:'dias'},{id:'longo'},{id:'km0'},{id:'t5',show:()=>!!OB.a&&!OB.a.H.V},{id:'fim'}];
+const OBS=[{id:'conn',show:()=>!temConta()},{id:'oi'},{id:'relogio'},{id:'meta'},{id:'dias'},{id:'longo'},{id:'km0',show:()=>!OB.a||OB.a.meta!=='cam'},{id:'t5',show:()=>!!OB.a&&!OB.a.H.V&&OB.a.meta!=='cam'},{id:'fim'}];
 function obPF(){
-  const a=OB.a,H=a.H,km0=a.km0||0,L0=H.L>=1?H.L:{0:0,7:3,15:5,27:8,40:12}[km0];
+  const a=OB.a,H=a.H,km0=a.meta==='cam'?0:a.km0||0,L0=H.L>=1?H.L:{0:0,7:3,15:5,27:8,40:12}[km0];
   const V=H.V||vdot(5000,a.t5||(km0?2100:2700));
   return {relogio:a.relogio,meta:a.meta,...(a.meta==='x'&&a.obj?{obj:a.obj}:{}),dias:a.dias,longo:a.longo,km0,L0:r5(L0),V:Math.round(V*10)/10,Vsrc:H.V?'historico':'chute',inicio:ymd(addD(TODAY(),1))};
 }
@@ -2191,12 +2199,12 @@ function rOB(){
     h+=`<div class="obh">Você usa relógio de corrida?</div><p class="obp">Com o relógio ligado ao Intervals, as corridas chegam sozinhas no app.</p><button class="opt ${usa?'on':''}" onclick="OB.usa=1;rOB()"><span>Uso relógio<small>Escolha a marca logo abaixo</small></span></button>${o('relogio','nenhum','Não uso relógio','Você segue o treino e grava a corrida pelo celular')}`;
     if(usa)h+=`<div class="obh" style="font-size:17px;margin-top:18px">Qual a marca?</div><div class="grid g2" style="gap:8px">${Object.entries(MARCAS).map(([k,n])=>`<button class="opt ${a.relogio===k?'on':''}" style="margin:0" onclick="obSet('relogio','${k}')"><span>${n}</span></button>`).join('')}</div><p class="empty" style="margin-top:10px">Depois de escolher, ligue o relógio no Intervals: Configurações → Conexões → a sua marca, marcando <b>Baixar atividades</b>. O app mostra o passo a passo em Mais → Dispositivos.</p>`}
   if(s.id==='meta'){const ob=OB.obj,esc2=v=>v==null?'':v;
-    h+=`<div class="obh">Qual é o seu objetivo?</div><p class="obp">O plano vai até a data da meta. Depois é só montar o próximo.</p>${o('meta','c','Criar constância','Correr com regularidade · 8 semanas')}${o('meta','5','Correr 5 km','8 semanas')}${o('meta','10','Correr 10 km','10 semanas')}${o('meta','21','Meia maratona (21 km)','16 semanas')}
+    h+=`<div class="obh">Qual é o seu objetivo?</div><p class="obp">O plano vai até a data da meta. Depois é só montar o próximo.</p>${o('meta','cam','Caminhar e depois correr','Começa caminhando e vira corrida · 12 semanas')}${o('meta','c','Criar constância','Correr com regularidade · 8 semanas')}${o('meta','5','Correr 5 km','8 semanas')}${o('meta','10','Correr 10 km','10 semanas')}${o('meta','21','Meia maratona (21 km)','16 semanas')}
     <button class="opt ${OB.escreve||a.meta==='x'?'on':''}" onclick="OB.escreve=1;rOB()"><span>Outro objetivo (escrever)<small>TAF, concurso, prova com data, tempo-alvo…</small></span></button>`;
     if(OB.escreve||a.meta==='x'){
       h+=`<div class="card" style="margin-top:10px"><div class="lbl">Conte o seu objetivo com as suas palavras</div><textarea id="ob-txt" rows="3" style="width:100%;margin-top:6px" placeholder="Ex.: Passar no TAF da PM-MG em 20/03: correr 2.400 m em 12 minutos">${esc((ob&&ob.txt)||'')}</textarea><button class="b pri full" style="margin-top:8px" onclick="obEntende()">Entender meu objetivo</button></div>`;
       if(ob)h+=`<div class="card cur" style="margin-top:10px"><div class="lbl" style="color:var(--blue)">Entendi assim. Confira e ajuste se precisar</div>
-      <label class="meta obf">Tipo<select id="ob-tipo" class="inp">${[['prova','Prova / corrida com distância'],['taf','TAF / teste físico']].map(([k,n])=>`<option value="${k}" ${ob.tipo===k?'selected':''}>${n}</option>`).join('')}</select></label>
+      <label class="meta obf">Tipo<select id="ob-tipo" class="inp">${[['prova','Prova / corrida com distância'],['taf','TAF / teste físico'],['cam','Caminhar e depois correr']].map(([k,n])=>`<option value="${k}" ${ob.tipo===k?'selected':''}>${n}</option>`).join('')}</select></label>
       <label class="meta obf">Nome<input id="ob-rot" class="inp" value="${esc(ob.rotulo||'')}"></label>
       <div class="grid g2" style="gap:8px"><label class="meta obf">Distância (km)<input id="ob-d" class="inp" inputmode="decimal" value="${esc2(ob.d!=null?kmTxt(ob.d):'')}"></label><label class="meta obf">Tempo-alvo<input id="ob-t" class="inp" placeholder="12:00" value="${ob.alvo?fmtT(ob.alvo):''}"></label></div>
       <label class="meta obf">Data da prova<input id="ob-data" class="inp" type="date" value="${esc2(ob.data)}"></label>
@@ -2222,6 +2230,7 @@ window.obEntende=()=>{const t=($('#ob-txt')||{}).value||'';if(t.trim().length<4)
 window.obUsaObj=()=>{const o={...(OB.obj||{})},v=id=>($('#'+id)||{}).value||'';
   o.tipo=v('ob-tipo')||o.tipo;o.rotulo=v('ob-rot').trim()||o.rotulo;const d=parseFloat(v('ob-d').replace(',','.'));o.d=d>0?d:null;
   const tt=parseT(v('ob-t'));o.alvo=tt&&tt>0?tt:null;o.data=v('ob-data')||null;delete o.ref;
+  if(o.tipo==='cam'){OB.obj=null;if(OB.a)OB.a.obj=null;return obSet('meta','cam')}
   if(!o.d)return toast('Informe a distância da prova',3000);
   if(o.data&&o.data<=ymd(addD(TODAY(),7)))return toast('A data da prova precisa ser daqui a mais de uma semana',3500);
   OB.obj=o;if(OB.a)OB.a.obj=o;obSet('meta','x')};
@@ -2404,10 +2413,10 @@ window.markDone=ds=>{
 window.saveDone=async ds=>{
   const n=id=>parseFloat(String($(id).value).replace(',','.')),k=n('#m-km'),mn=n('#m-min');
   if(!(k>0&&mn>0))return toast('PREENCHA A DISTÂNCIA E O TEMPO');
-  const p=planOn(ds),a={date:ds+'T07:00:00',type:'Run',name:p?p.titulo:'Corrida',dist:Math.round(k*1000),mov:Math.round(mn*60),el:Math.round(mn*60),src:'MANUAL'};
+  const p=planOn(ds),a={date:ds+'T07:00:00',type:p&&p.tipo==='caminhada'?'Walk':'Run',name:p?p.titulo:'Corrida',dist:Math.round(k*1000),mov:Math.round(mn*60),el:Math.round(mn*60),src:'MANUAL'};
   try{ // grava no Intervals para valer em qualquer aparelho; sem conexão, fica só neste
-    const r=await api(`/athlete/${CFG.athlete}/activities/manual`,{method:'POST',body:JSON.stringify({start_date_local:a.date,type:'Run',name:a.name,distance:a.dist,moving_time:a.mov,elapsed_time:a.mov,description:'Marcado como feito no StepOn'})});
-    const x=slim(r||{});x.id=x.id||'icu-'+Date.now();x.date=x.date||a.date;x.type=x.type||'Run';x.dist=x.dist??a.dist;x.mov=x.mov??a.mov;x.src='MANUAL';
+    const r=await api(`/athlete/${CFG.athlete}/activities/manual`,{method:'POST',body:JSON.stringify({start_date_local:a.date,type:a.type,name:a.name,distance:a.dist,moving_time:a.mov,elapsed_time:a.mov,description:'Marcado como feito no StepOn'})});
+    const x=slim(r||{});x.id=x.id||'icu-'+Date.now();x.date=x.date||a.date;x.type=x.type||a.type;x.dist=x.dist??a.dist;x.mov=x.mov??a.mov;x.src='MANUAL';
     D.acts=withMan([x].concat(D.acts));toast('TREINO MARCADO // SALVO NO INTERVALS');
   }catch(e){a.id='man-'+Date.now();MAN.push(a);LS.set('man',MAN);D.acts=withMan(D.acts);toast('TREINO MARCADO NESTE CELULAR')}
   LS.set('data',D);closeSheet();render();
@@ -3103,7 +3112,7 @@ window.recEnd=()=>{
 window.recTrash=()=>{if(!confirm('Descartar esta corrida? Ela não poderá ser recuperada.'))return;recClear();closeSheet();toast('CORRIDA DESCARTADA')};
 function recClear(){REC=null;LS.set('rec',null);wake(0);recWatch(0);clearInterval(RTK);RTK=null;$('#rec').classList.remove('on');$('#rec').innerHTML='';if(RM){RM.remove();RM=null}render()}
 function toGpx(name){
-  let s=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="StepOn" xmlns="http://www.topografix.com/GPX/1/1"><metadata><time>${new Date(REC.pts[0][0]).toISOString()}</time></metadata><trk><name>${esc(name)}</name><type>running</type>`,seg=null;
+  let s=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="StepOn" xmlns="http://www.topografix.com/GPX/1/1"><metadata><time>${new Date(REC.pts[0][0]).toISOString()}</time></metadata><trk><name>${esc(name)}</name><type>${ehCam(ymd(new Date(REC.pts[0][0])))?'walking':'running'}</type>`,seg=null;
   for(const q of REC.pts){if(q[4]!==seg){if(seg!==null)s+='</trkseg>';s+='<trkseg>';seg=q[4]}s+=`<trkpt lat="${q[1]}" lon="${q[2]}">${q[3]!=null?`<ele>${q[3]}</ele>`:''}<time>${new Date(q[0]).toISOString()}</time></trkpt>`}
   return s+'</trkseg></trk></gpx>';
 }
@@ -3119,7 +3128,7 @@ window.recSave=async()=>{
   catch(e){ // sem internet ou o Intervals recusou: guarda no celular e deixa reenviar depois
     const {t0,t,d}=recStats(),id='man-'+Date.now();
     AX[id]=analyze(t,d,[],[],{data:REC.pts.map(q=>q[1]),data2:REC.pts.map(q=>q[2])});LS.set('ax5',AX);LS.set('gpx.'+id,gpx);
-    MAN.push({id,date:isoLocal(t0),type:'Run',name,dist:Math.round(REC.dist),mov:Math.round(recMov()),el:Math.round(t[t.length-1]||0),src:'APP',gpx:1});LS.set('man',MAN);
+    MAN.push({id,date:isoLocal(t0),type:ehCam(isoLocal(t0).slice(0,10))?'Walk':'Run',name,dist:Math.round(REC.dist),mov:Math.round(recMov()),el:Math.round(t[t.length-1]||0),src:'APP',gpx:1});LS.set('man',MAN);
     D.acts=withMan(D.acts);LS.set('data',D);closeSheet();recClear();toast('SALVA NESTE CELULAR // REENVIE PELO DETALHE DA CORRIDA',4500)}
 };
 window.resendGpx=async id=>{
