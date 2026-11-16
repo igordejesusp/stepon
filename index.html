@@ -487,6 +487,14 @@ body.vmarc #top{display:none}body.vmarc .view{top:0;padding-top:0}
 @keyframes caixaEntra{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 #sheet .hd{justify-content:flex-start;gap:10px;margin-bottom:12px}#sheet .hd b{color:var(--hi);font-size:16px;font-weight:700;flex:1}
 .shv{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0;flex:none}.shv svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+/* plano B */
+.pbb{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;border-radius:14px;border:1px dashed color-mix(in srgb,#8f7bff 55%,transparent);background:color-mix(in srgb,#8f7bff 10%,transparent);color:var(--hi);text-align:left;cursor:pointer}
+.pbb span{display:flex;flex-direction:column}.pbb b{font-size:14px}.pbb small{font-size:12px;color:var(--dim);margin-top:2px}.pbb.on{border-style:solid}
+.pbi{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,#8f7bff 22%,transparent);flex:none}.pbi svg{width:20px;height:20px}.pbi .pbm{fill:#8f7bff}
+.pbt{display:flex;gap:14px;align-items:center;margin-bottom:12px}.pbt p{font-size:14px;line-height:1.45;color:var(--txt)}
+.pbo{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;background:var(--cell);border:1px solid var(--line);margin-bottom:10px}.pbo small{font-size:11px;color:var(--dim)}.pbo b{font-size:15px;margin-top:2px;text-decoration:line-through;opacity:.75}.pbo span{font-size:12px;color:var(--dim)}
+.pbc{display:flex;align-items:center;gap:12px;width:100%;padding:14px;margin-bottom:8px;border-radius:14px;border:1px solid var(--line);background:var(--cell);color:var(--hi);text-align:left;cursor:pointer}
+.pbc div{flex:1;display:flex;flex-direction:column}.pbc b{font-size:15px}.pbc span{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.4}.pbc i{font-style:normal;font-weight:700;font-size:13px;color:var(--blue)}.pbc.pbd b{color:var(--txt)}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
@@ -609,7 +617,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
 // o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
 // Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
-const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode'];
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk'];
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parseD=s=>{const [y,m,d]=s.slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
@@ -1271,12 +1279,14 @@ function rIni(){
   // próxima atividade
   const nx=plan().filter(p=>p.date>=ds&&!casaPlano()[p.date])[0];
   h+=`<div class="sec">PRÓXIMA ATIVIDADE</div>`;
+  if(pbLivreHoje())h+=`<div class="card"><p class="empty" style="color:var(--txt)">Hoje é dia livre: você escolheu descansar. O plano segue normal amanhã.</p><button class="b full" style="margin-top:8px" onclick="pbVolta('${ds}')">Voltar ao treino de hoje</button></div>`;
   if(nx){const adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
     h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagSt[st]}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
     ${adj?`<div class="coach"><b class="bad" style="color:var(--bad)">COACH // AJUSTE PROPOSTO</b>${esc(adj.why)}<div class="row" style="margin-top:8px"><button class="b sm pri" onclick="acceptAdj('${nx.date}')">Aceitar ajuste</button></div></div>`:''}
     ${hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${nx.date}')">${st==='enviado'?'Reenviar ao relógio':'▲ Enviar ao relógio'}</button>`:''}
     <button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${nx.date}')">▶ Fazer treino agora</button>
-    <div class="grid g2" style="margin-top:8px">${nx.date<=ds?`<button class="b" onclick="markDone('${nx.date}')">✓ Marcar feito</button>`:`<button class="b" onclick="openDay('${nx.date}')">Ver o dia</button>`}<button class="b" onclick="openBuilder('${nx.date}')">Editar treino</button></div></div>`}
+    <div class="grid g2" style="margin-top:8px">${nx.date<=ds?`<button class="b" onclick="markDone('${nx.date}')">✓ Marcar feito</button>`:`<button class="b" onclick="openDay('${nx.date}')">Ver o dia</button>`}<button class="b" onclick="openBuilder('${nx.date}')">Editar treino</button></div>
+    ${st==='cumprido'?'':nx.planoB?`<button class="pbb on" onclick="pbVolta('${nx.date}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${nx.date}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`}</div>`}
   else if(PF)h+=`<div class="card cur"><h2>Plano concluído</h2><p class="empty" style="margin-top:4px">Os treinos deste ciclo acabaram. Responda o questionário de novo para montar o próximo com base no que você fez.</p><button class="b pri full" style="margin-top:10px" onclick="redoPlan()">Montar o próximo plano</button></div>`;
   else h+=`<div class="card"><p class="empty">Nenhuma atividade planejada.</p><button class="b full" style="margin-top:8px" onclick="openBib()">+ Escolher um treino</button></div>`;
   const mE=h.length;
@@ -1320,6 +1330,43 @@ let _desk=null;
 function marcaDesk(){const d=DESK();document.body.classList.toggle('desk',d);if(_desk!==null&&_desk!==d){CM=null;const c=$('#comp');if(c)c.innerHTML='';render()}_desk=d}
 window.addEventListener('resize',()=>{clearTimeout(marcaDesk._t);marcaDesk._t=setTimeout(marcaDesk,250)});
 window.checkin=n=>{const c=LS.get('ck',{});c[ymd(TODAY())]=n;LS.set('ck',c);render()};
+/* ---------- PLANO B: não acordou bem? o coach oferece opções mais leves só para aquele dia (o resto da semana não muda) ---------- */
+// o que tinha antes no dia fica guardado, para poder voltar ao treino original
+const pbGuarda=ds=>{const B=LS.get('pbk',{});if(!B[ds]){const ov=LS.get('ov',{}),ex=LS.get('extra',{});B[ds]={ov:ov[ds]||null,ex:ex[ds]||null};LS.set('pbk',B)}};
+function pbOpcoes(p){
+  const Z=zonesFor(curV()||40),E=Z.E,reg=[E[0]+20,E[1]+30],O=[],cam=p.tipo==='caminhada';
+  if(cam){
+    O.push({k:'leve',t:'Caminhada leve 20 min',d:'Passos tranquilos, só para soltar o corpo.',p:{tipo:'caminhada',titulo:'Caminhada leve 20 min (plano B)',km:2,steps:[['Caminhada leve','20min',null]]}});
+  }else{
+    const k=Math.max(3,Math.round(p.km*0.55*2)/2);
+    O.push({k:'reg',t:`Rodagem leve de ${kmTxt(k)} km`,d:`Bem devagar (${fmtP(reg[0])}–${fmtP(reg[1])}/km), conseguindo conversar. Ajuda a recuperar sem cansar.`,p:{tipo:'rodagem',titulo:`Rodagem regenerativa ${kmTxt(k)} km (plano B)`,km:k,steps:[['Contínuo',k+'km',reg]]}});
+    if(p.tipo==='qualidade'||p.tipo==='longo'){
+      const st=(p.steps||[]).map(s=>{const c=[...s];if(c[3]>1)c[3]=Math.max(1,Math.ceil(c[3]/2));else if(/km$/.test(String(c[1]))&&!c[3])c[1]=Math.max(1,Math.round(parseFloat(c[1])*0.6*2)/2)+'km';if(Array.isArray(c[2]))c[2]=[c[2][0]+12,c[2][1]+12];return c});
+      O.push({k:'meio',t:'Versão leve do treino',d:p.tipo==='longo'?'O mesmo longão, com 60% da distância e ritmo mais solto.':'O mesmo treino com metade das repetições e ritmo um pouco mais solto.',p:{...p,titulo:p.titulo.replace(/\s*\(.*\)$/,'')+' · versão leve (plano B)',km:Math.max(2,Math.round(p.km*0.6*2)/2),steps:st,adjusted:1}});
+    }
+    O.push({k:'trote',t:'Trote ou caminhada 20 min',d:'Para quando o corpo está bem cansado: 20 minutos alternando trote e caminhada.',p:{tipo:'rodagem',titulo:'Trote e caminhada 20 min (plano B)',km:2.5,steps:[['Trote','3min',reg,4],['Caminhada','2min',null,4]]}});
+  }
+  return O;
+}
+window.planoB=ds=>{
+  const p=planOn(ds);if(!p)return;const r=readiness(TODAY()),O=pbOpcoes(p);window._pbO={ds,O};
+  openSheet(`<div class="hd"><b>Não estou bem hoje</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="pbt">${bateria(Math.round(r.sc))}<p>Sem problema. Em dia ruim, um treino leve rende mais do que forçar e travar a semana. Escolha uma opção para <b>${ds===ymd(TODAY())?'hoje':fmtD(ds)}</b>: só este dia muda, o resto da planilha continua igual.</p></div>
+  <div class="pbo"><small>Treino de hoje</small><b>${esc(p.titulo)}</b><span>${kmTxt(p.km)} km</span></div>
+  ${O.map((o,i)=>`<button class="pbc" onclick="pbUsa(${i})"><div><b>${esc(o.t)}</b><span>${esc(o.d)}</span></div><i>Usar</i></button>`).join('')}
+  <button class="pbc pbd" onclick="pbDescanso('${ds}')"><div><b>Descansar hoje</b><span>Às vezes o melhor treino é não treinar. O dia fica livre e o plano segue normal.</span></div><i>Usar</i></button>
+  <button class="pbc pbd" onclick="closeSheet();openBuilder('${ds}')"><div><b>Mudar o treino de dia</b><span>Fazer o treino original em outro dia da semana.</span></div><i>Abrir</i></button>`);
+};
+window.pbUsa=i=>{const {ds,O}=window._pbO||{},o=O&&O[i];if(!o)return;pbGuarda(ds);
+  const ex=LS.get('extra',{}),ov=LS.get('ov',{});ex[ds]={...o.p,date:ds,custom:1,planoB:1,criado:ymd(TODAY())};delete ov[ds];LS.set('extra',ex);LS.set('ov',ov);
+  closeSheet();toast('Plano B escolhido: '+o.t,3000);render();if(evOn(ds)&&hasWatch())sendWatch(ds)};
+window.pbDescanso=ds=>{pbGuarda(ds);const ex=LS.get('extra',{});ex[ds]={date:ds,off:1,planoB:1};LS.set('extra',ex);apagaEvento(ds);closeSheet();toast('Dia livre. Descanse bem.',3000);render()};
+window.pbVolta=ds=>{const B=LS.get('pbk',{}),b=B[ds];const ex=LS.get('extra',{}),ov=LS.get('ov',{});
+  if(b){if(b.ex)ex[ds]=b.ex;else delete ex[ds];if(b.ov)ov[ds]=b.ov;else delete ov[ds];delete B[ds];LS.set('pbk',B)}else delete ex[ds];
+  LS.set('extra',ex);LS.set('ov',ov);toast('Treino original de volta');render();if(evOn(ds)&&hasWatch())sendWatch(ds)};
+// dia livre por plano B (para mostrar "voltar ao treino original" no Início)
+const pbLivreHoje=()=>{const e=LS.get('extra',{})[ymd(TODAY())];return e&&e.off&&e.planoB};
+
 window.acceptAdj=ds=>{const p=planOn(ds),a=adjust(p,readiness(TODAY()));if(!a)return;const ov=LS.get('ov',{});ov[ds]={...(ov[ds]||{}),...a.new,why:a.why};LS.set('ov',ov);toast('AJUSTE APLICADO // REENVIE AO RELÓGIO');render()};
 
 /* ================= explicações ================= */
@@ -1469,7 +1516,7 @@ window.openDay=ds=>{
   let h=`<div class="hd"><b>${DOW[d.getDay()]} ${ds.split('-').reverse().join('/')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
   if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}${p.aj?' · ritmos ajustados pelo teste de '+fmtD(p.aj):''}</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
     ${ds>=ymd(TODAY())?`<button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${ds}')">▶ Fazer treino agora</button>`:''}
-    <div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
+    ${ds>=ymd(TODAY())&&status(p)!=='cumprido'?(p.planoB?`<button class="pbb on" onclick="closeSheet();pbVolta('${ds}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${ds}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`):''}<div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
   ex.forEach(a=>h+=`<div class="card" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
   if(!p&&ex.some(isRun)&&contouPara(ds))h+=`<p class="meta" style="margin:-4px 0 10px">Esta corrida contou como o treino planejado de ${fmtD(contouPara(ds))}.</p>`;
   if(!p&&!ex.length)h+=`<p class="empty">Dia de descanso.</p>`;
@@ -2177,6 +2224,7 @@ const glw=(lado,baixo)=>`<div class="glw ${lado}${baixo?' gbx':''}" aria-hidden=
 const corBat=sc=>{const v=clamp(sc,0,100),h=v<50?v/50*32:32+(v-50)/50*100;return `hsl(${h.toFixed(0)} 88% ${v>=50?48:54}%)`};
 function bateria(sc){const v=clamp(sc,0,100),c=corBat(v),w=Math.max(4,58*v/100);
   return `<svg class="bat" viewBox="0 0 76 38" aria-label="Disposição ${v}%"><rect x="1.5" y="1.5" width="66" height="35" rx="10" class="batc"/><rect x="5" y="5" width="${w.toFixed(1)}" height="28" rx="6.5" fill="${c}"/><rect x="5" y="5" width="${w.toFixed(1)}" height="11" rx="5" fill="#fff" opacity=".18"/><path d="M70.5 13.5c2.4.6 3.8 2.6 3.8 5.5s-1.4 4.9-3.8 5.5z" class="batk"/><text x="34.5" y="25.6" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" stroke="rgba(0,0,0,.35)" stroke-width="2.5" style="paint-order:stroke;font-family:var(--f)">${v}</text></svg>`}
+const PB_ICO='<i class="pbi"><svg viewBox="0 0 24 24"><path class="pbm" d="M13.6 3.1a8.9 8.9 0 1 0 7.3 13.1 7.2 7.2 0 0 1-7.3-13.1z"/></svg></i>';
 const sst=(L,c)=>`<div class="sst${c===3?' c3':''}">${L.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>`;
 // quem correu junto, descoberto sozinho: corridas de outras pessoas que começaram até 15 min antes ou depois, no mesmo lugar
 function autoJuntos(a){
