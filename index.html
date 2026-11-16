@@ -429,7 +429,7 @@ body.ob .view{padding-bottom:30px}
 .spr span:nth-child(4),.spr span:nth-child(5){text-align:right}.spr span:nth-child(4){color:var(--dim)}.sph{font-size:12px;color:var(--dim);border-bottom:1px solid var(--line2);padding-bottom:8px;margin-bottom:4px}
 .spr i{display:block;height:20px;border-radius:6px;background:#2f6fc4}.spr i.top{background:var(--blue)}
 /* melhores marcas: página inteira */
-body.vmarc #top{display:none}
+body.vmarc #top{display:none}body.vmarc .view{top:0;padding-top:0}
 #v-marc .wrap,#v-desaf .wrap{padding-top:calc(env(safe-area-inset-top) + 10px)}
 .mkh{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:4px 0 14px}.mkh b{text-align:center;font-size:19px;font-weight:700;color:var(--hi)}
 .mkb{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0}
@@ -455,14 +455,16 @@ body.vmarc #top{display:none}
 .mke{text-align:center;padding:40px 20px;color:var(--dim)}.mke .mdi{width:80px;height:80px}.mke b{display:block;color:var(--hi);font-size:17px;margin-top:10px}.mke p{margin-top:6px;font-size:14px}
 .mkf{font-size:13px;color:var(--dim);text-align:center;margin:10px 0}
 /* luz azul de fundo */
-.glw{position:relative;height:0;pointer-events:none;z-index:0}.glw i{position:absolute;width:460px;height:460px;top:-240px;border-radius:50%;background:radial-gradient(closest-side,rgba(74,158,255,.95),rgba(58,134,240,.5) 40%,rgba(74,158,255,0));filter:blur(16px)}
+.glw{position:relative;height:0;pointer-events:none;z-index:-1}
+/* a luz fica na camada mais funda da página: qualquer bloco (cartões, feed, colunas do computador) fica por cima */
+.view .wrap{isolation:isolate}.glw i{position:absolute;width:460px;height:460px;top:-240px;border-radius:50%;background:radial-gradient(closest-side,rgba(74,158,255,.95),rgba(58,134,240,.5) 40%,rgba(74,158,255,0));filter:blur(16px)}
 .glw.d i{right:-200px}.glw.e i{left:-200px}.glw.gbx i{top:-160px}
 :root[data-theme="light"] .glw i{background:radial-gradient(closest-side,rgba(42,128,234,.32),rgba(42,128,234,.12) 45%,rgba(42,128,234,0))}
 .view .card,.view .blc{z-index:1}
 /* os blocos ficam opacos, na cor de sempre: a luz só aparece no fundo, onde não tem bloco */
 /* desafios */
-.dsn{display:flex;align-items:center;justify-content:space-between;margin:2px 0 4px}.dsn div{text-align:center}.dsn b{display:block;font-size:22px;color:var(--hi)}.dsn small{font-size:13px;color:var(--dim)}
-.dsn button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0}.dsn button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.dsn button.pr svg{transform:rotate(180deg)}.dsn button:disabled{opacity:.3;cursor:default}
+.dsn{display:flex;align-items:center;justify-content:center;gap:14px;margin:2px 0 4px}.dsn div{text-align:center;min-width:130px}.dsn b{display:block;font-size:22px;color:var(--hi)}.dsn small{font-size:13px;color:var(--dim)}
+.dsn button{width:30px;height:30px;border:0;background:none;color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0;margin-top:-16px}.dsn button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.dsn button.pr svg{transform:rotate(180deg)}.dsn button:disabled{opacity:.3;cursor:default}
 .dss{text-align:center;font-size:13px;color:var(--dim);margin-bottom:6px}
 .dsb{height:5px;border-radius:99px;background:rgba(127,140,155,.22);overflow:hidden;margin-top:6px;width:100%}.dsb i{display:block;height:100%;background:var(--blue);border-radius:99px}
 .dsg .badge.cq small{min-height:28px}.desi{flex:none;width:48px;display:grid;place-items:center}.desi .esc{width:44px;height:50px}.desi .esc.asa{width:52px}
@@ -471,6 +473,20 @@ body.vmarc #top{display:none}
 .li-ic.ic2 svg{width:26px;height:26px;stroke:none;fill:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35))}
 .li-ic.ic2 .p{fill:var(--c)}.li-ic.ic2 .s{fill:var(--c);opacity:.42}.li-ic.ic2 .l{fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.li-ic.ic2 .k{fill:none;stroke:var(--c);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 :root[data-theme="light"] .li-ic.ic2{background:linear-gradient(155deg,color-mix(in srgb,var(--c) 20%,#fff),color-mix(in srgb,var(--c) 7%,#fff));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 22%,transparent)}:root[data-theme="light"] .li-ic.ic2 svg{filter:none}
+/* disposição: bateria e "como você acordou" no próprio cartão */
+.dispc .blh{align-items:center}.dsa{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--dim);display:grid;place-items:center;cursor:pointer;padding:0}.dsa svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.dsp1{display:flex;align-items:center;gap:14px;padding:4px 0 2px}.bat{width:76px;height:38px;flex:none}.bat.bg{width:104px;height:52px}.bat .batc{fill:none;stroke:rgba(255,255,255,.4);stroke-width:2}.bat .batk{fill:rgba(255,255,255,.4)}
+:root[data-theme="light"] .bat .batc{stroke:rgba(15,24,35,.35)}:root[data-theme="light"] .bat .batk{fill:rgba(15,24,35,.35)}
+.dsp1 .mt b{font-size:18px}.dsq{font-size:13px;color:var(--dim);margin:14px 0 8px}
+.dsf{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.dsf button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:12px;border:1px solid var(--line);background:var(--cell);color:var(--hi);cursor:pointer}
+.dsf button b{font-size:17px}.dsf button small{font-size:10px;color:var(--dim)}.dsf button.on{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 18%,transparent)}.dsf button.on small{color:var(--blue)}
+/* janelas: caixa no meio da tela (toque fora fecha), com a setinha de voltar */
+#sheet.on{display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)}
+#sheet .box{position:relative;left:auto;right:auto;bottom:auto;width:100%;max-width:520px;max-height:100%;border:1px solid var(--line);border-radius:22px;padding:16px 14px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);animation:caixaEntra .18s ease-out}
+#sheet .box:before{display:none}
+@keyframes caixaEntra{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+#sheet .hd{justify-content:flex-start;gap:10px;margin-bottom:12px}#sheet .hd b{color:var(--hi);font-size:16px;font-weight:700;flex:1}
+.shv{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0;flex:none}.shv svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
@@ -1241,7 +1257,7 @@ function rIni(){
   else h+=`<div class="card"><p class="empty">Nenhuma corrida registrada ainda.</p></div>`;
   const mD=h.length;let mD2,mC2,mV2,mP2,mE2;
   // disposição
-  h+=`<div class="sec"><span>DISPOSIÇÃO${qb('disp')}</span><small>HOJE</small></div><div class="card ${r.cls==='bad'?'alert':''}"><div class="ring">${ringSvg(r.sc,r.cls)}<div style="flex:1"><div class="lbl">Hoje está</div><div class="num big ${r.cls}">${r.st}</div>
+  h+=`<div class="sec"><span>DISPOSIÇÃO${qb('disp')}</span><small>HOJE</small></div><div class="card ${r.cls==='bad'?'alert':''}"><div class="ring">${bateria(Math.round(r.sc)).replace('class="bat"','class="bat bg"')}<div style="flex:1"><div class="lbl">Hoje está</div><div class="num big ${r.cls}">${r.st}</div>
     ${r.parts.map(p=>`<div class="row" style="justify-content:space-between;margin-top:4px;font-size:11px"><span class="dim">${p[0]}</span><span class="num" style="font-size:11px">${p[1]}</span></div><div class="bar ${p[2]<.5?'red':''}" style="margin-top:2px;height:3px"><i style="width:${p[2]*100}%"></i></div>`).join('')}</div></div>
     <div class="lbl" style="margin-top:12px">Como você acordou?</div><div class="feel" style="margin-top:5px">${[1,2,3,4,5].map(n=>`<button class="${(LS.get('ck',{})[ds])===n?'on':''}" onclick="checkin(${n})">${n}</button>`).join('')}</div>
     <div class="row meta" style="justify-content:space-between;margin-top:3px"><span>destruído</span><span>100%</span></div></div>`;
@@ -1268,7 +1284,11 @@ function rIni(){
   {// disposição, vitais, condição e próxima atividade viram blocos com resumo
     const sD=semSec(h.slice(mD,mC)),sV=h.slice(mC,mV),sC=semSec(h.slice(mV,mP)),sP=semSec(h.slice(mP,mE));
     const ck=LS.get('ck',{})[ds];
-    const bD=blk('disp','Disposição',linhaI(`<span class="li-num ${r.cls}">${Math.round(r.sc)}</span>`,r.st,ck?'Você acordou '+['','destruído','cansado','normal','bem','100%'][ck]:'Toque para dizer como você acordou',''),sD);
+    blk('disp','Disposição','',sD); // guarda os detalhes (abrem pela setinha)
+    const sc=Math.round(r.sc),CKN=['','Destruído','Cansado','Normal','Bem','100%'];
+    const bD=`<div class="card blc dispc"><div class="blh"><b>Disposição</b><button class="dsa" onclick="openBlk('disp')" aria-label="Ver detalhes da disposição"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+    <div class="dsp1">${bateria(sc)}<div class="mt"><b>${r.st}</b><span>Hoje você está ${sc}%</span></div></div>
+    <div class="dsq">Como você acordou hoje?</div><div class="dsf">${[1,2,3,4,5].map(n=>`<button class="${ck===n?'on':''}" onclick="checkin(${n})"><b>${n}</b><small>${CKN[n]}</small></button>`).join('')}</div></div>`;
     const bV=blk('vit','Vitais',linhaI(icoC('sono'),'Sono',w.sleep?'Última noite':'Sem dado de hoje',fmtSleep(w.sleep),"openVital('sono')")+linhaI(icoC('fc','red'),'FC de repouso',r.rb?'Média '+r.rb.toFixed(0)+' bpm':'',(w.rhr||'--')+' bpm',"openVital('fc')")+linhaI(icoC('vo2'),'VO2 máx',vo2?'Garmin '+fmtD(vo2.d):'Sem dado',vo2?vo2.vo2:'--',"openVital('vo2')"),null);
     const bP=h.slice(mP,mE); // a próxima atividade fica como cartão completo: um toque já manda ao relógio
     const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=glw('e',1)+bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
@@ -2153,6 +2173,10 @@ window.fbParte=(id,p)=>{const f=FB[id]||{},L=f.partes||[];fbSet(id,'partes',L.in
 // estatísticas no estilo Strava: rótulo pequeno em cima e número grande, sem caixas
 // luz azul de fundo (atrás dos cartões): lado d = direita, e = esquerda
 const glw=(lado,baixo)=>`<div class="glw ${lado}${baixo?' gbx':''}" aria-hidden="true"><i></i></div>`;
+// bateria da disposição (como a do iPhone): enche com a nota e muda de cor — vermelho, laranja, amarelo, verde
+const corBat=sc=>{const v=clamp(sc,0,100),h=v<50?v/50*32:32+(v-50)/50*100;return `hsl(${h.toFixed(0)} 88% ${v>=50?48:54}%)`};
+function bateria(sc){const v=clamp(sc,0,100),c=corBat(v),w=Math.max(4,58*v/100);
+  return `<svg class="bat" viewBox="0 0 76 38" aria-label="Disposição ${v}%"><rect x="1.5" y="1.5" width="66" height="35" rx="10" class="batc"/><rect x="5" y="5" width="${w.toFixed(1)}" height="28" rx="6.5" fill="${c}"/><rect x="5" y="5" width="${w.toFixed(1)}" height="11" rx="5" fill="#fff" opacity=".18"/><path d="M70.5 13.5c2.4.6 3.8 2.6 3.8 5.5s-1.4 4.9-3.8 5.5z" class="batk"/><text x="34.5" y="25.6" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" stroke="rgba(0,0,0,.35)" stroke-width="2.5" style="paint-order:stroke;font-family:var(--f)">${v}</text></svg>`}
 const sst=(L,c)=>`<div class="sst${c===3?' c3':''}">${L.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>`;
 // quem correu junto, descoberto sozinho: corridas de outras pessoas que começaram até 15 min antes ou depois, no mesmo lugar
 function autoJuntos(a){
@@ -2208,7 +2232,10 @@ window.openAct=async id=>{
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
   openSheet(h);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
-function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;$('#sheet').classList.add('on');drawMaps()}
+function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
+  // o X do topo vira a setinha de voltar, à esquerda do título
+  const x=b.querySelector('.hd button[onclick="closeSheet()"]');if(x){x.className='shv';x.setAttribute('aria-label','Voltar');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';x.parentNode.insertBefore(x,x.parentNode.firstChild)}
+  $('#sheet').classList.add('on');drawMaps()}
 (()=>{const bx=$('#sbox');let y0=null,dy=0;
   bx.addEventListener('touchstart',e=>{y0=bx.scrollTop<=0?e.touches[0].clientY:null;dy=0;bx.style.transition='none'},{passive:true});
   bx.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>0)bx.style.transform=`translateY(${dy}px)`},{passive:true});
