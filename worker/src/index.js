@@ -203,9 +203,13 @@ export default {
 
       if (req.method === 'DELETE') {
         await env.BR.delete('a:' + b.athlete);
+        await env.BR.put('fora:' + b.athlete, String(Date.now())); // saiu do ranking por vontade própria: nenhum aparelho o recoloca sozinho
         await trocaNoSnap(env, b.athlete, null);
         return json(req, { ok: true });
       }
+      // quem saiu do ranking só volta tocando em "Entrar no ranking" (entrar: true)
+      if (b.entrar) await env.BR.delete('fora:' + b.athlete);
+      else if (await env.BR.get('fora:' + b.athlete)) return json(req, { ok: false, fora: true });
       const runs = Array.isArray(b.runs) ? b.runs.slice(0, 200) : [];
       // foto: a escolhida no app (JPEG pequeno) ou a do Intervals; "/no-profile-pic.png" (sem foto) vira vazio
       const foto = typeof b.foto === 'string' && b.foto.length < 40000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(b.foto) ? b.foto : '';
