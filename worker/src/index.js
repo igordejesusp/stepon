@@ -303,6 +303,24 @@ export default {
       return json(req, out, 200, { 'Cache-Control': 'no-store' });
     }
 
+    // cópia de segurança do app de cada pessoa (plano, treinos editados, esforço...): privada, só o dono lê e grava
+    if (req.method === 'POST' && url.pathname === '/dados') {
+      const txt = await req.text();
+      if (txt.length > 400000) return json(req, { erro: 'dados grandes demais' }, 413);
+      let b;
+      try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      const k = 'u:' + b.athlete;
+      if (b.acao === 'gravar') {
+        if (!b.dados || typeof b.dados !== 'object') return json(req, { erro: 'sem dados' }, 400);
+        const at = Number.isFinite(+b.at) ? Math.min(+b.at, Date.now() + 60e3) : Date.now();
+        await env.BR.put(k, JSON.stringify({ at, dados: b.dados }));
+        return json(req, { ok: true, at });
+      }
+      return json(req, (await env.BR.get(k, 'json')) || { at: 0, dados: null }, 200, { 'Cache-Control': 'no-store' });
+    }
+
     if (req.method === 'POST' && url.pathname === '/amigos') {
       let b;
       try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
@@ -312,6 +330,6 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'GET /fotos', 'GET /foto', 'POST /foto', 'POST /marcar', 'POST /marcados', 'GET /juntos', 'POST /oauth/token'] });
+    return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'GET /fotos', 'GET /foto', 'POST /foto', 'POST /marcar', 'POST /marcados', 'GET /juntos', 'POST /dados', 'POST /oauth/token'] });
   },
 };

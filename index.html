@@ -526,7 +526,10 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 /* ================= util ================= */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}}};
+const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
+// o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
+// Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode'];
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parseD=s=>{const [y,m,d]=s.slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
@@ -608,9 +611,29 @@ function devNome(x){if(!x)return '';const d=String(x.dev||'');if(x.src==='MARCAD
   const s=String(x.src||'').toUpperCase();return FONTES[s]||(s?s.toLowerCase().replace(/_/g,' ').replace(/^./,c=>c.toUpperCase()):'')}
 const slim=a=>({id:a.id,date:a.start_date_local,type:a.type,name:a.name,dist:a.distance,mov:a.moving_time,el:a.elapsed_time,hr:a.average_heartrate,hrmax:a.max_heartrate,load:a.icu_training_load,trimp:a.trimp,elev:a.total_elevation_gain,cad:a.average_cadence,rpe:a.icu_rpe,feel:a.feel,speed:a.average_speed,src:a.source,dev:a.device_name||null,oc:a.oauth_client_id||null});
 
+/* ---------- cópia de segurança no servidor ---------- */
+let BKT=null,RESTAURANDO=false;
+function bkMarca(){try{localStorage.setItem('br.bkSujo','1')}catch(e){}clearTimeout(BKT);BKT=setTimeout(()=>bkEnvia().catch(()=>{}),4000)}
+async function bkEnvia(){
+  if(!temConta()||RESTAURANDO)return;const dados={};for(const k of BK_CHAVES){const v=LS.get(k,undefined);if(v!==undefined&&v!==null)dados[k]=v}
+  const at=Date.now(),r=await fetch(PUBURL+'/dados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'gravar',at,dados})});
+  if(!r.ok)throw new Error('HTTP '+r.status);try{localStorage.setItem('br.bkAt',String(at));localStorage.removeItem('br.bkSujo')}catch(e){}
+}
+// ao entrar ou sincronizar: se o servidor tem uma cópia mais nova (outro aparelho ou app reinstalado), ela volta para cá
+async function bkRestaura(){
+  if(!temConta())return false;let j;
+  try{const r=await fetch(PUBURL+'/dados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'ler'})});if(!r.ok)return false;j=await r.json()}catch(e){return false}
+  const local=+(localStorage.getItem('br.bkAt')||0),sujo=!!localStorage.getItem('br.bkSujo');
+  if(!j||!j.dados||!(j.at>local)||sujo){if(!j||!j.dados||sujo||!local)bkEnvia().catch(()=>{});return false}
+  RESTAURANDO=true;
+  try{for(const k of BK_CHAVES){if(k in j.dados)localStorage.setItem('br.'+k,JSON.stringify(j.dados[k]))}localStorage.setItem('br.bkAt',String(j.at))}catch(e){}
+  PF=LS.get('pf',null);FB=LS.get('fb',{});MAN=LS.get('man',[]);D.acts=withMan(D.acts||[]);LS.set('data',D);_pk='';_mk=null;LS.set('terrc',null);
+  RESTAURANDO=false;if(!needOB())OB={i:0,a:null};return true;
+}
 async function sync(full){
   const btn=$('#sync');btn.disabled=true;btn.classList.add('gira');
   try{
+    if(await bkRestaura())toast('Seu plano e os treinos editados foram recuperados',3500);
     const t=TODAY(),old=ymd(addD(t,-400)),nw=ymd(addD(t,1));
     const [ath,acts,well,evs]=await Promise.all([api('/athlete/'+CFG.athlete),api(`/athlete/${CFG.athlete}/activities?oldest=${old}&newest=${nw}`),api(`/athlete/${CFG.athlete}/wellness?oldest=${old}&newest=${nw}`),api(`/athlete/${CFG.athlete}/events?oldest=${ymd(addD(t,-60))}&newest=${ymd(addD(t,120))}&category=WORKOUT`)]);
     D={athlete:{name:ath.name,pic:ath.profile_medium,rhr:ath.icu_resting_hr,weight:ath.icu_weight,city:ath.city,
@@ -2473,7 +2496,10 @@ function drawB(){
   ${o?`<button class="b red full" style="margin-top:8px" onclick="bOff()">Tirar o treino deste dia</button>`:''}
   <p class="empty" style="margin-top:10px">Os ritmos vêm do seu nível atual (VDOT) e se ajustam sozinhos quando você evolui.</p>`);
 }
-function bClear(ex,ds){if(baseTemplate().some(p=>p.date===ds))ex[ds]={date:ds,off:1};else delete ex[ds]}
+function bClear(ex,ds){if(baseTemplate().some(p=>p.date===ds))ex[ds]={date:ds,off:1};else delete ex[ds];apagaEvento(ds)}
+// treino tirado ou movido: o envio antigo sai do calendário do Intervals (e do relógio) para não sobrar treino fantasma
+function apagaEvento(ds){const e=evOn(ds);if(!e||!temConta())return;D.ev=(D.ev||[]).filter(x=>x.d!==ds);LS.set('data',D);
+  api(`/athlete/${CFG.athlete}/events/${e.id}`,{method:'DELETE'}).catch(()=>{})}
 window.bSave=send=>{
   if(!BD.steps.some(s=>s.v>0))return toast('ADICIONE PELO MENOS UMA ETAPA');
   if(!BD.date)return toast('ESCOLHA O DIA');
@@ -3205,6 +3231,12 @@ function render2(){if(_desk===null)marcaDesk();
 }
 window.sync=sync;window.sendWatch=sendWatch;
 if(!LS.get('vhist')){const vt=LS.get('vt');if(vt&&vt.V){const Va=(curVdot()||{}).v||null;LS.set('vhist',[{ds:vt.ds,V:vt.V,Va,d:1000,t:(LS.get('vtests',{})[vt.ds])||null}])}else if(PF&&PF.Vsrc==='teste'){const ks=Object.keys(PF.tests||{}).filter(k=>PF.tests[k]).sort(),k=ks[ks.length-1];if(k)LS.set('vhist',[{ds:k,V:PF.V,Va:null,d:1000,t:PF.tests[k]}])}}
+// semana de 10/11 do Igor (as mudanças sumiram ao reinstalar, antes da cópia no servidor): terça foi para quarta como teste de 1 km
+// e a rodagem de quinta foi para sexta. Os treinos originais saem do calendário.
+if(isIgor()&&!LS.get('fix1013')){const ex=LS.get('extra',{}),b12=baseTemplate().find(p=>p.date==='2026-11-12');
+  if(!ex['2026-11-11']){ex['2026-11-10']={date:'2026-11-10',off:1};ex['2026-11-11']={...sessaoLib('teste1k',{a:2,d:2},zonesFor(curV()||40)),date:'2026-11-11',custom:1,criado:'2026-11-10'}}
+  if(b12&&!ex['2026-11-13']){ex['2026-11-12']={date:'2026-11-12',off:1};ex['2026-11-13']={...b12,date:'2026-11-13',custom:1,criado:'2026-11-12'}}
+  LS.set('extra',ex);LS.set('fix1013',1)}
 if(isIgor()&&!LS.get('fix0711')){const ex=LS.get('extra',{}),b=baseTemplate().find(p=>p.date==='2026-11-08');
   if(b&&!ex['2026-11-07']){ex['2026-11-07']={...b,date:'2026-11-07'};if(!ex['2026-11-08'])ex['2026-11-08']={date:'2026-11-08',off:1};LS.set('extra',ex)}LS.set('fix0711',1)}
 render();
