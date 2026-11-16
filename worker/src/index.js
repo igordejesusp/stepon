@@ -216,7 +216,8 @@ export default {
         if (!z || !/^\d{4}-\d{2}-\d{2}$/.test(String(z.d || '')) || !Array.isArray(z.p)) return null;
         const p = z.p.slice(0, 150).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]);
         const h = /^\d{2}:\d{2}$/.test(String(z.h || '')) ? z.h : undefined;
-        return p.length >= 3 ? { d: z.d, h, p } : null;
+        const r = Number.isFinite(+z.r) && +z.r >= 120 && +z.r <= 1200 ? Math.round(+z.r) : undefined; // ritmo médio (s/km) da corrida que fechou a área
+        return p.length >= 3 ? { d: z.d, h, r, p } : null;
       }).filter(Boolean);
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));

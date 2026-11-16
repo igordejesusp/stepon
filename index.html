@@ -2588,9 +2588,9 @@ function simp(pts,n){
 }
 // as áreas de todas as corridas do Igor (calculadas no aparelho, com o trajeto sem os 200 m do começo e do fim)
 function meusLacos(){
-  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===3).length+'|v4';
+  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===3).length+'|v5';
   const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v;
-  const v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===3&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr):[]})();for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),p})}
+  const v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===3&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr):[]})();const r=a.dist>=500&&a.mov?Math.round(a.mov/a.dist*1000):null;for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),r,p})}
   v.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
   // tira as repetidas: uma área que já está quase toda (95%) dentro das áreas mais novas não muda nada na disputa
   const pc=window.polygonClipping,R=[];let U=null;
@@ -2615,7 +2615,7 @@ let TD=[];
 function terrData(){
   const P=people(),Z=[];
   for(const u of P){const L=u.me?meusLacos():((PUBL.find(x=>x.id===u.id)||{}).terr||[]);
-    for(const z of L){const la=z.p.map(q=>q[0]),lo=z.p.map(q=>q[1]);Z.push({u,d:z.d,h:z.h||null,p:z.p,ts:Date.parse(z.d+'T'+(z.h||'12:00')+':00'),b:[Math.min(...la),Math.max(...la),Math.min(...lo),Math.max(...lo)]})}}
+    for(const z of L){const la=z.p.map(q=>q[0]),lo=z.p.map(q=>q[1]);Z.push({u,d:z.d,h:z.h||null,r:Number.isFinite(z.r)?z.r:null,p:z.p,ts:Date.parse(z.d+'T'+(z.h||'12:00')+':00'),b:[Math.min(...la),Math.max(...la),Math.min(...lo),Math.max(...lo)]})}}
   Z.sort((a,b)=>a.ts-b.ts);
   const pai=Z.map((_,i)=>i),raiz=i=>pai[i]===i?i:(pai[i]=raiz(pai[i])),cruza=(a,b)=>a[0]<=b[1]&&b[0]<=a[1]&&a[2]<=b[3]&&b[2]<=a[3];
   for(let i=0;i<Z.length;i++)for(let k=i+1;k<Z.length&&Z[k].ts-Z[i].ts<=15*60e3;k++)
@@ -2623,7 +2623,32 @@ function terrData(){
   const grupos={};Z.forEach((z,i)=>{(grupos[raiz(i)]=grupos[raiz(i)]||[]).push(z)});
   const G={},pc=window.polygonClipping,n={},last={},anel=z=>{const r=z.p.map(q=>[q[1],q[0]]);r.push(r[0]);return [[r]]};
   const dif=(a,b)=>a&&a.length&&b&&b.length?pc.difference(a,b):(a||[]),uni=(a,b)=>a&&a.length?(b&&b.length?pc.union(a,b):a):(b||[]);
-  for(const g of Object.values(grupos).sort((a,b)=>a[0].ts-b[0].ts)){
+  // GERAL: cada pedaço de área guarda o ritmo de quem o conquistou; outra pessoa só toma aquele pedaço correndo mais rápido.
+  // A própria pessoa mantém o melhor ritmo que já fez ali. Área sem ritmo (dado antigo) segue a regra de quem correu por último.
+  const RIT=MODO()==='g';
+  if(RIT){
+    const Q={},bbG=g=>{let a=[1e9,-1e9,1e9,-1e9];for(const poly of g)for(const q of poly[0]){if(q[0]<a[0])a[0]=q[0];if(q[0]>a[1])a[1]=q[0];if(q[1]<a[2])a[2]=q[1];if(q[1]>a[3])a[3]=q[1]}return a};
+    const cB=(a,b)=>a[0]<=b[1]&&b[0]<=a[1]&&a[2]<=b[3]&&b[2]<=a[3];
+    const aplica=(id,A,r,prot)=>{if(!A||!A.length)return;const bA=bbG(A);let novo=A;
+      for(const k in Q){for(const q of Q[k]){if(!q.g.length||!cB(q.b,bA))continue;
+        const vence=!prot.includes(k)&&(r==null||q.r==null||r<q.r);
+        if(vence){q.g=dif(q.g,A);if(q.g.length)q.b=bbG(q.g)}else novo=dif(novo,q.g);if(!novo.length)break}
+        Q[k]=Q[k].filter(q=>q.g.length);if(!novo.length)break}
+      if(novo.length)(Q[id]=Q[id]||[]).push({g:novo,r,b:bbG(novo)})};
+    for(const g of Object.values(grupos).sort((a,b)=>a[0].ts-b[0].ts)){
+      const ids=[...new Set(g.map(z=>z.u.id))];
+      try{
+        if(ids.length===1){for(const z of g){aplica(z.u.id,anel(z),z.r,[]);n[z.u.id]=(n[z.u.id]||0)+1;last[z.u.id]=z.d}continue}
+        const pts={};ids.forEach(id=>pts[id]=pontosMes(g.find(z=>z.u.id===id).u,g[0].d+'T'+(g[0].h||'23:59')));
+        let coberto=[];
+        for(const id of [...ids].sort((a,b)=>pts[b]-pts[a])){const zs=g.filter(z=>z.u.id===id);let Pm=[];for(const z of zs)Pm=uni(Pm,anel(z));
+          const rs=zs.map(z=>z.r).filter(x=>x!=null);aplica(id,dif(Pm,coberto),rs.length?Math.min(...rs):null,ids);coberto=uni(coberto,Pm);n[id]=(n[id]||0)+zs.length;last[id]=g[0].d}
+      }catch(e){}
+    }
+    for(const k in Q){G[k]=[];for(const q of Q[k])G[k]=uni(G[k],q.g)}
+    var RITU={};for(const k in Q){const rs=Q[k].map(q=>q.r).filter(x=>x!=null);if(rs.length)RITU[k]=[Math.min(...rs),Math.max(...rs)]}
+  }
+  if(!RIT)for(const g of Object.values(grupos).sort((a,b)=>a[0].ts-b[0].ts)){
     const ids=[...new Set(g.map(z=>z.u.id))];
     try{
       if(ids.length===1){for(const z of g){const id=z.u.id,A=anel(z);for(const k in G)if(k!==id)G[k]=dif(G[k],A);G[id]=uni(G[id],A);n[id]=(n[id]||0)+1;last[id]=z.d}continue}
@@ -2637,7 +2662,7 @@ function terrData(){
   }
   // tira lascas muito pequenas que sobram da junção das áreas (menos de 0,3 ha)
   for(const k in G)G[k]=(G[k]||[]).filter(poly=>ringKm2(poly[0])>=0.003);
-  TD=P.map(u=>{const g=G[u.id]||[],pr=(PUBL.find(x=>x.id===u.id)||{});return {u,geom:g,km2:geoKm2(g),n:n[u.id]||0,last:last[u.id]||null,cor:u.me?minhaCor():corDe(u.id,pr.cor)}}).filter(o=>o.geom.length);
+  TD=P.map(u=>{const g=G[u.id]||[],pr=(PUBL.find(x=>x.id===u.id)||{});return {u,geom:g,km2:geoKm2(g),n:n[u.id]||0,last:last[u.id]||null,rit:RIT&&RITU?RITU[u.id]||null:null,cor:u.me?minhaCor():corDe(u.id,pr.cor)}}).filter(o=>o.geom.length);
   return TD;
 }
 // bolinha com a foto no meio das maiores áreas de cada um
@@ -2786,8 +2811,9 @@ window.openTerr=id=>{
   openSheet(`<div class="hd"><b>Área dominada</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   <div class="card cur pcab">${avatar({pic:o.u.pic,me:eu},62)}<div class="pnm"><h2>${esc(o.u.name)}</h2><div class="meta">${eu?'Você':FR.friends.includes(id)?'Amigo':'Atleta'}</div></div><span class="terrdot" style="background:${o.cor}"></span></div>
   <div class="card stc"><div class="stg c3"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Circuitos</span><b>${o.n}</b></div><div><span>Última</span><b>${o.last?fmtD(o.last):'--'}</b></div></div></div>
+  ${o.rit?`<div class="card dica"><p>${eu?`No Geral, as suas áreas estão defendidas pelo seu ritmo: <b>${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>. Só toma quem fechar o circuito mais rápido.`:`No Geral, para tomar estas áreas você precisa fechar o circuito mais rápido que ${esc(o.u.name.split(' ')[0])}: <b>abaixo de ${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>, conforme o pedaço.`}</p></div>`:''}
   ${eu?`<div class="card gcard"><div class="blh"><b>Sua cor no mapa</b></div>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="grid g2" style="margin-top:8px"><button class="b" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button>${btnAmizade(id,`openTerr('${esc(id)}')`)}</div>`}
-  <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. Se alguém correr por cima depois, essa parte passa para ele.</p>`);
+  <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`);
   $('#sbox').dataset.terr=eu?'me':'';
 };
 window.openRank=()=>{
@@ -2802,7 +2828,7 @@ window.openRank=()=>{
 window.openCompCfg=first=>{
   const on=LS.get('comp',null)==='sim';
   openSheet(`<div class="hd"><b>${first?'Bem-vindo ao mapa':'Seu perfil no ranking'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <p class="empty" style="color:var(--txt)">No Mapa você domina áreas. Quando uma corrida fecha um circuito (você volta a um ponto por onde já passou, ou cruza o próprio caminho), tudo o que ficou dentro vira seu, na cor que você escolher. Se outra pessoa correr por cima depois, ela toma aquela parte. Em Amigos você vê só você e quem aceitou o seu pedido; em Geral, todo mundo que entrou no ranking.</p>
+  <p class="empty" style="color:var(--txt)">No Mapa você domina áreas. Quando uma corrida fecha um circuito (você volta a um ponto por onde já passou, ou cruza o próprio caminho), tudo o que ficou dentro vira seu, na cor que você escolher. Em Amigos, se alguém correr por cima depois, toma aquela parte. Em Geral, vale o ritmo: só toma quem fechar o circuito com ritmo melhor que o do dono. Em Amigos você vê só você e quem aceitou o seu pedido; em Geral, todo mundo que entrou no ranking.</p>
   <p class="empty" style="margin-top:8px">Para aparecer no mapa e no ranking, o app publica o resumo das suas corridas e as áreas fechadas, sem os primeiros e os últimos 200 m de cada corrida, para não mostrar onde você mora. A sua chave do Intervals só é usada para provar que as corridas são suas e não fica guardada. <a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--blue)">Política de privacidade</a>.</p>
   <div class="card gcard" style="margin-top:10px"><div class="blh"><b>Sua cor no mapa</b></div>${swatches(minhaCor())}</div>
   ${first?'':`<div class="card ${on?'cur':''}" style="margin-top:10px"><div class="row" style="justify-content:space-between"><span class="lbl" style="color:var(--txt)">Situação</span><span class="tag ${on?'ok':''}">${on?'No ranking':'Só olhando'}</span></div></div>`}
