@@ -404,6 +404,10 @@ body.ob .view{padding-bottom:30px}
 .mk2:after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;background:linear-gradient(transparent,var(--panel));pointer-events:none;transition:opacity .2s}
 .mk2 .mrow{opacity:.55;transition:opacity .2s}.mk2.on{max-height:240px}.mk2.on:after{opacity:0}.mk2.on .mrow{opacity:1}
 .mk2s{position:absolute;right:2px;bottom:1px;color:var(--dim);z-index:1;display:flex}.mk2.on .mk2s{display:none}
+.pse{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:8px}.pse button{min-height:38px;padding:0;border:1.5px solid var(--line);border-radius:10px;background:var(--cell);color:var(--hi);font:700 14px var(--f);cursor:pointer}
+.pse-l{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:4px}
+.fbp{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.fbp button{padding:7px 11px;border:1px solid var(--line);border-radius:99px;background:var(--cell);color:var(--txt);font:500 13px var(--f);cursor:pointer}.fbp button.on{border-color:#ff8a3d;background:rgba(255,138,61,.15);color:#ffb27a}
+.fbc .seg button{font-size:12px}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
@@ -586,6 +590,7 @@ let D=LS.get('data',{athlete:null,acts:[],well:[],at:0});
 let MAN=LS.get('man',[]);
 const isMan=a=>String(a.id).startsWith('man-');
 // corridas em que um amigo marcou você: entram como se você tivesse corrido (contam para mapa, ranking, nível e desafios)
+let FB=LS.get('fb',{}); // percepção de esforço e sinais do corpo por corrida
 let AX=LS.get('ax5',{}); // análise por atividade: splits, best efforts, deriva, trajeto
 let MARC=LS.get('marc',[]);
 const isMk=a=>String(a.id).startsWith('mk-');
@@ -615,7 +620,7 @@ async function sync(full){
       well:(well||[]).map(w=>({d:w.id,rhr:w.restingHR,sleep:w.sleepSecs,ss:w.sleepScore,hrv:w.hrv,vo2:w.vo2max,steps:w.steps,feel:w.fatigue,shr:w.avgSleepingHR,sq:w.sleepQuality})),
       ev:(evs||[]).filter(e=>e.category==='WORKOUT').map(e=>({id:e.id,d:e.start_date_local.slice(0,10),name:e.name})),
       at:Date.now()};
-    LS.set('data',D);LS.set('authRuim',0);
+    LS.set('data',D);LS.set('authRuim',0);fbDoIntervals();
     await analyzeRuns(full);
     await puxaMarcados().catch(()=>{});
     LS.set('redeAt',0);rede(); // corrida nova entra no ranking público (só para quem aceitou) e os amigos são atualizados
@@ -858,7 +863,9 @@ function genPlan(pf){
       if(w===RW.length-1){W=dias.length*3;L=4}
       continue;
     }
-    const dl=w>0&&(w+1)%4===0,Wk=dl?W*0.8:W,Lk=r5(dl?Math.max(3,L-2):L),resto=Math.max(0,Wk-Lk);
+    // como a semana anterior foi sentida: dor que atrapalhou ou treino muito duro seguram o volume e repetem o degrau; tudo fácil adianta o degrau
+    const fbP=w>0?fbSemana(ymd(addD(m0,7*(w-1))),ymd(addD(m0,7*w-1))):{dor:0},segura=fbP.dor>=2||fbP.duro,parou=fbP.dor>=3;
+    const dl=w>0&&(w+1)%4===0,Wk=dl?W*0.8:segura?W*0.85:W,Lk=r5(dl?Math.max(3,L-2):segura?Math.max(3,L-1):L),resto=Math.max(0,Wk-Lk);
     let qs=null;
     if(k){
       const q=r5(clamp(resto/k*1.15,3,10)),qmax=Math.max(4.5,q*1.5),vale=ymd(addD(m0,7*w+(outros[0]+6)%7))>=pf.inicio;
@@ -866,13 +873,14 @@ function genPlan(pf){
         wT=w;qs=sessaoLib('teste1k',niv?{a:2,d:2}:{a:1.5,d:1.5},Z)}
       else{
         const [id,P0]=lad[Math.min(li,lad.length-1)];
-        qs=libFit(id,id==='acel'?{c:r5(clamp(q-1,2,6))}:P0,Z,qmax,dl);
-        if(dl)qs.titulo+=' (alívio)';else if(vale&&++lu>=2){lu=0;li++}}
+        if(parou)qs={tipo:'rodagem',titulo:'Rodagem leve (recuperação)',km:q,steps:[['Contínuo',q+'km',E]],fb:1};
+        else{qs=libFit(id,id==='acel'?{c:r5(clamp(q-1,2,6))}:P0,Z,qmax,dl||segura);
+          if(dl)qs.titulo+=' (alívio)';else if(segura)qs={...qs,titulo:qs.titulo+' (ajustado)',fb:1};else if(vale){if(fbP.facil)lu++;if(++lu>=2){lu=0;li++}}}}
     }
     const e=k>1?r5(clamp((resto-qs.km)/(k-1),3,10)):0;
     add(pf.longo,{tipo:'longo',titulo:'Longão '+kmTxt(Lk)+' km',km:Lk,steps:[['Contínuo',Lk+'km',E]]});
     outros.forEach((d,i)=>add(d,i===0?qs:{tipo:'rodagem',titulo:'Rodagem leve',km:e,steps:[['Contínuo',e+'km',E]]}));
-    if(!dl){W=Math.min(W*1.08,pico);L=Math.min(L+(M.d>21?1.5:1),capL)}
+    if(!dl&&!segura){W=Math.min(W*1.08,pico);L=Math.min(L+(M.d>21?1.5:1),capL)}
   }
   return P;
 }
@@ -881,7 +889,7 @@ const baseTemplate=()=>PF?genPlan(PF):isIgor()?planIgor():[];
 let _pk='',_pv=[];
 const rT=V=>{const z=paceZones(V).T;return (z[0]+z[1])/2};
 function plan(){
-  const ov=LS.get('ov',{}),ex=LS.get('extra',{}),key=CFG.athlete+JSON.stringify(PF)+JSON.stringify(ov)+JSON.stringify(ex)+JSON.stringify(vHist());
+  const ov=LS.get('ov',{}),ex=LS.get('extra',{}),key=CFG.athlete+JSON.stringify(PF)+JSON.stringify(ov)+JSON.stringify(ex)+JSON.stringify(vHist())+JSON.stringify(FB);
   if(key===_pk)return _pv;
   _pv=baseTemplate().filter(p=>!ex[p.date]).concat(Object.values(ex).filter(x=>!x.off)).map(p=>ov[p.date]?{...p,...ov[p.date]}:p).sort((a,b)=>a.date<b.date?-1:1);
   // depois de cada teste, os treinos seguintes ganham os ritmos do novo condicionamento
@@ -919,9 +927,24 @@ function status(p){
   if(p.date<ymd(TODAY()))return 'perdido';
   return evOn(p.date)?'enviado':'planejado';
 }
-// ajuste adaptativo: proposta do Coach quando a prontidão está baixa
+/* ---------- percepção de esforço (PSE, escala de 0 a 10) e sinais do corpo, por corrida ----------
+   FB[id] = {rpe, partes:[...], nivel 1 incômodo | 2 atrapalhou | 3 parou, txt, d:data}. A PSE também vai para o Intervals (icu_rpe). */
+const PSE_TXT=['Repouso','Muito leve','Leve','Leve','Moderado','Moderado','Um pouco difícil','Difícil','Muito difícil','Quase no limite','Máximo'];
+const PSE_COR=n=>n<=3?'#5fd18a':n<=5?'#a3e635':n<=7?'#f0c24b':n<=8?'#ff8a3d':'#e0442f';
+const PARTES=['Panturrilha','Canela','Joelho','Tornozelo','Pé','Quadril','Coxa','Lombar','Outro'];
+const NIVEL_DOR=['','Incômodo leve','Dor que atrapalhou','Tive que parar'];
+// o que já veio do Intervals (PSE preenchida lá ou em outro aparelho) entra aqui
+function fbDoIntervals(){let m=0;for(const a of D.acts||[])if(isRun(a)&&a.rpe&&!(FB[a.id]&&FB[a.id].rpe)){FB[a.id]={...(FB[a.id]||{}),rpe:a.rpe,d:a.date.slice(0,10)};m=1}if(m)LS.set('fb',FB)}
+// resumo de um intervalo de datas: corrida muito dura, dor e se os treinos pareceram fáceis
+function fbSemana(ini,fim){
+  const L=Object.values(FB).filter(f=>f&&f.d&&f.d>=ini&&f.d<=fim),R=L.filter(f=>f.rpe).map(f=>f.rpe);
+  const media=R.length?R.reduce((a,b)=>a+b,0)/R.length:0;
+  return {duro:R.some(r=>r>=9)||media>=8,facil:R.length>=2&&Math.max(...R)<=4,dor:Math.max(0,...L.filter(f=>f.partes&&f.partes.length).map(f=>f.nivel||1))};
+}
+// ajuste adaptativo: proposta do Coach quando a prontidão está baixa (ou quando houve dor nos últimos dias)
 function adjust(p,r){
   if(!p||p.adjusted||p.date!==ymd(TODAY()))return null;
+  {const f=fbSemana(ymd(addD(TODAY(),-3)),ymd(addD(TODAY(),-1)));if(f.dor>=2&&p.tipo!=='rodagem'){const k=Math.max(3,Math.round(p.km*0.6));return {why:`Você relatou dor nos últimos dias. Treino trocado por rodagem leve e curta. Se a dor continuar ou piorar, descanse e procure um profissional.`,new:{tipo:'rodagem',titulo:'Rodagem leve (cuidado com a dor)',km:k,steps:[['Contínuo',k+'km',[390,420]]],adjusted:1}}}}
   if(r.sc<50&&p.tipo!=='rodagem')return {why:`Disposição ${r.sc}/100. Treino de qualidade trocado por rodagem regenerativa para não acumular fadiga.`,new:{tipo:'rodagem',titulo:'Regenerativo (ajuste do Coach)',km:Math.max(3,Math.round(p.km*0.6)),steps:[['Contínuo',Math.max(3,Math.round(p.km*0.6))+'km',[390,420]]],adjusted:1}};
   if(r.sc<65&&(p.tipo==='longo'||p.tipo==='qualidade')){const k=Math.round(p.km*0.8);return {why:`Disposição ${r.sc}/100. Volume reduzido em 20% e ritmo mais solto.`,new:{km:k,titulo:p.titulo+' (−20%)',steps:p.steps.map(s=>[s[0],s[1].endsWith('km')&&s[3]==null?Math.max(1,Math.round(parseFloat(s[1])*0.8))+'km':s[1],s[2]&&[s[2][0]+10,s[2][1]+10],s[3]?Math.max(1,s[3]-1):undefined]),adjusted:1}}}
   return null;
@@ -1067,6 +1090,8 @@ function rIni(){
   if(D.at&&D.strava&&nRun<3)h+=`<div class="card alert"><div class="lbl bad">Suas corridas vêm do Strava</div><p class="empty" style="margin-top:4px;color:var(--txt)">O Intervals recebeu ${D.strava} ${D.strava===1?'atividade':'atividades'} pelo Strava, mas o Strava não deixa outros apps lerem esses dados. Por isso elas não aparecem aqui nem contam no ranking e no mapa.</p><p class="empty" style="margin-top:8px;color:var(--txt)"><b>Como resolver (uma vez só):</b> no intervals.icu, vá em Configurações → Conexões e ligue o seu relógio direto (Garmin Connect, Coros, Polar, Suunto ou Wahoo), marcando <b>Baixar atividades</b>. Depois toque em sincronizar aqui. As corridas antigas também podem vir: na mesma tela do Garmin há a opção de importar o histórico.</p><a class="b sm pri" style="margin-top:10px;display:inline-block" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as conexões do Intervals</a></div>`;
   else if(D.at&&!nRun)h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">Nenhuma corrida chegou ainda</div><p class="empty" style="margin-top:4px;color:var(--txt)">O app lê as corridas do seu Intervals.icu. ${(m=>m&&DICA_MARCA[m]&&m!=='garmin'?DICA_MARCA[m]:'Para elas chegarem, ligue o relógio no Intervals: Configurações → Conexões → escolha o seu (Garmin Connect, Coros, Polar, Suunto, Amazfit, Huawei ou Wahoo) e marque <b>Baixar atividades</b>. Não use o Strava como ponte, porque o Strava não libera os dados.')(marcaRel())} Sem relógio, dá para gravar pelo próprio app, no botão de gravar.</p><a class="b sm pri" style="margin-top:10px;display:inline-block" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as conexões do Intervals</a></div>`;
   // ainda não entrou no ranking: convite direto para participar do mapa e do ranking
+  {const ul=D.acts.find(x=>isRun(x)&&!isMk(x)&&x.date.slice(0,10)>=ymd(addD(TODAY(),-2)));
+    if(ul&&!(FB[ul.id]&&FB[ul.id].rpe))h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">Como foi o treino ${diaTxt(ul.date).split(' às')[0].toLowerCase()}?</div><p class="empty" style="margin-top:4px">${km(ul.dist)} km. De 1 (muito leve) a 10 (máximo), quanto esforço foi?</p><div class="pse" style="margin-top:8px">${[1,2,3,4,5,6,7,8,9,10].map(k=>`<button style="border-color:${PSE_COR(k)}55" onclick="fbSet('${ul.id}','rpe',${k})">${k}</button>`).join('')}</div><button class="lk" style="margin-top:8px" onclick="openAct('${ul.id}')">Sentiu alguma dor? Contar mais ›</button></div>`}
   if(temConta()&&LS.get('comp',null)==null)h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">Entre na disputa</div><p class="empty" style="margin-top:4px;color:var(--txt)">Participe do ranking da temporada e domine áreas no mapa fechando circuitos com as suas corridas.</p><button class="b sm pri" style="margin-top:10px" onclick="go('comp')">Abrir o mapa</button></div>`;
   // resultado do teste de 1 km ainda não aplicado
   const tf=testeAchado(),tk=tf&&tf.d/1000;
@@ -1874,6 +1899,25 @@ function etapasHtml(E,a){
 }
 
 /* ================= detalhe da atividade ================= */
+function fbCard(id){
+  const f=FB[id]||{},n=f.rpe,ps=f.partes||[];
+  return `<div class="card fbc" style="margin-top:12px"><div class="blh"><b>Como foi?</b><span>${n?`<b style="color:${PSE_COR(n)}">${n} · ${PSE_TXT[n]}</b>`:'Esforço percebido'}</span></div>
+  <div class="pse">${[1,2,3,4,5,6,7,8,9,10].map(k=>`<button class="${n===k?'on':''}" style="${n===k?`background:${PSE_COR(k)};border-color:${PSE_COR(k)};color:#000`:`border-color:${PSE_COR(k)}55`}" onclick="fbSet('${id}','rpe',${k})">${k}</button>`).join('')}</div>
+  <div class="pse-l"><span>Muito leve</span><span>Máximo</span></div>
+  <div class="lbl" style="margin-top:14px">Sentiu algo no corpo?</div>
+  <div class="chips fbp">${PARTES.map(p=>`<button class="${ps.includes(p)?'on':''}" onclick="fbParte('${id}','${p}')">${p}</button>`).join('')}</div>
+  ${ps.length?`<div class="seg" style="margin-top:10px">${[1,2,3].map(k=>`<button class="${(f.nivel||1)===k?'on':''}" onclick="fbSet('${id}','nivel',${k})">${NIVEL_DOR[k]}</button>`).join('')}</div>`:''}
+  <textarea id="fb-t" rows="2" placeholder="Conte com as suas palavras (ex.: senti o joelho direito na descida)" style="width:100%;margin-top:10px" onchange="fbSet('${id}','txt',this.value)">${esc(f.txt||'')}</textarea>
+  <p class="meta" style="margin-top:6px">O app usa isso para ajustar os próximos treinos: dor ou treino muito duro seguram a progressão; treinos fáceis aceleram.</p></div>`;
+}
+window.fbSet=async(id,k,v)=>{
+  const a=D.acts.find(x=>x.id===id);FB[id]={...(FB[id]||{}),[k]:k==='txt'?String(v).slice(0,300):v,d:(a?a.date:ymd(TODAY())).slice(0,10)};LS.set('fb',FB);
+  const el=$('#fb-card');if(el&&k!=='txt')el.innerHTML=fbCard(id);
+  if(k==='rpe'){if(a)a.rpe=v;toast('Esforço '+v+' · '+PSE_TXT[v]);if(VIEW==='ini'&&!$('#sheet').classList.contains('on'))render();
+    if(a&&!isMan(a)&&temConta())api(`/activity/${id}`,{method:'PUT',body:JSON.stringify({icu_rpe:v})}).catch(()=>{})}
+  else if(k==='txt')toast('Anotação salva');
+};
+window.fbParte=(id,p)=>{const f=FB[id]||{},L=f.partes||[];fbSet(id,'partes',L.includes(p)?L.filter(x=>x!==p):[...L,p])};
 window.openAct=async id=>{
   const a=D.acts.find(x=>x.id===id);if(!a)return;
   if(a.dist&&!AX[id]&&!isMan(a)&&!isMk(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
@@ -1891,6 +1935,7 @@ window.openAct=async id=>{
   if(x.etapas&&x.etapas.length>=2)h+=etapasHtml(x.etapas,a);
   if(x.splits&&x.splits.length){const fast=Math.min(...x.splits.filter(s=>!s.part).map(s=>s.t)),kmT=!!(x.etapas&&x.etapas.length>=2);
     h+=`${kmT?'<details class="card" style="margin-top:12px"><summary><span>Parciais por km</span></summary>':'<div class="sec">PARCIAIS</div>'}<table><tr><th>KM</th><th class="r">Ritmo</th><th class="r">FC</th><th class="r">Elev.</th></tr>${x.splits.map(s=>{const p=s.part?s.t/s.part*1000:s.t;return `<tr><td>${s.part?s.km.toFixed(2):s.km}</td><td class="r ${!s.part&&s.t===fast?'ok':''}">${fmtP(p)}</td><td class="r">${s.hr||'--'}</td><td class="r dim">${s.el!=null?(s.el>0?'+':'')+s.el:''}</td></tr>`}).join('')}</table>${kmT?'</details>':''}`}
+  if(isRun(a)&&!isMk(a))h+=`<div id="fb-card">${fbCard(id)}</div>`;
   if(isRun(a))h+=`<div class="coach" style="margin-top:14px"><b>COACH // LEITURA</b>${esc(coachLast(a))}</div>`;
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
   openSheet(h);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
