@@ -432,6 +432,7 @@ body.ob .view{padding-bottom:30px}
 body.vmarc #top{display:none}body.vmarc .view{top:0;padding-top:0}
 #v-marc .wrap,#v-desaf .wrap{padding-top:calc(env(safe-area-inset-top) + 10px)}
 .mkh{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:4px 0 14px}.mkh b{text-align:center;font-size:19px;font-weight:700;color:var(--hi)}
+.mkfx{position:sticky;top:calc(env(safe-area-inset-top) + 10px);height:0;z-index:30}.mkfx .mkb{position:absolute;left:0;top:4px;box-shadow:0 4px 14px rgba(0,0,0,.45)}
 .mkb{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--cell);color:var(--hi);display:grid;place-items:center;cursor:pointer;padding:0}
 .mkb svg,.mkp svg,.mkt i svg,.mkg svg,.mkl svg,.mki span svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.mkb svg{width:22px;height:22px}
 .mks{display:flex;gap:8px;margin-bottom:12px}.mkp{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:99px;border:1.5px solid var(--line);background:transparent;color:var(--hi);font:500 15px var(--f);cursor:pointer}
@@ -442,12 +443,12 @@ body.vmarc #top{display:none}body.vmarc .view{top:0;padding-top:0}
 .mkr{border-radius:18px;background:var(--cell);border:1px solid var(--line);margin-bottom:10px;overflow:hidden}
 .mkt{display:flex;align-items:center;width:100%;gap:12px;padding:14px 16px;border:0;background:none;color:var(--hi);font:500 16px var(--f);text-align:left;cursor:pointer}.mkt>span:first-child:not(.mkc2){flex:1}
 .mkt i{display:grid;place-items:center;color:var(--dim)}.mkt i svg{width:22px;height:22px;transition:transform .2s}.mkr.on .mkt i svg{transform:rotate(180deg)}
-.mkbig{display:none;position:relative;text-align:center;padding:4px 0 18px}.mkr.on .mkbig{display:block}
+.mkbig{display:none;position:relative;text-align:center;padding:4px 0 18px}.mkr.on .mkbig,.mk1 .mkbig{display:block}.mk1:not(.on) .mkbig{padding-bottom:12px}
 .mkray{position:absolute;left:50%;top:6px;width:300px;height:140px;transform:translateX(-50%)}
 .mkmed{width:120px;height:120px;border-radius:50%;background:#f0b72f;margin:14px auto 0;display:grid;place-items:center;position:relative;box-shadow:0 10px 30px rgba(240,183,47,.25)}.mdi{width:64px;height:64px}.mdi.big{width:76px;height:76px}
 .mkt1{display:block;font-size:52px;font-weight:800;color:var(--hi);margin-top:10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}.mkt2{display:block;font-size:20px;color:var(--dim);margin-top:2px}
 .mkd{display:none;border-top:1px solid var(--line2)}.mkr.on .mkd{display:block}
-.mkc{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}.mkm{width:72px;height:72px;flex:none;border-radius:12px;overflow:hidden;background:var(--panel)}.mkm svg{width:100%;height:100%}
+.mkc{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}.mkm{width:72px;height:72px;flex:none;border-radius:12px;overflow:hidden;background:var(--panel)}.mkm .map{margin:0;border:0;border-radius:0;width:72px}.mkm .map span{display:none}
 .mki{flex:1;min-width:0}.mki b{display:block;font-size:16px;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mki span{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--txt);margin-top:4px}.mki span svg{width:16px;height:16px}.mki small{display:block;font-size:13px;color:var(--dim);margin-top:3px}
 .mkg{color:var(--dim)}.mkg svg{width:20px;height:20px;transform:rotate(180deg)}
 .mkc2{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;flex:none}.mkc2 .mdi{width:34px;height:34px}
@@ -1190,18 +1191,19 @@ function mlLoad(){
         {id:'bn_parque',type:'fill',source:'openmaptiles','source-layer':'park',paint:{'fill-color':T.parque,'fill-opacity':.9}});
       return st}).catch(e=>{_ml[t]=null;throw e});
 }
-const mapBox=(id,H)=>{const im=(MAPIMG[id+'_'+H+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}" style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
+const MAPTR={}; // trajetos de outras pessoas (amigos), para desenhar o mapa pequeno
+const mapBox=(id,H,pad)=>{const im=(MAPIMG[id+'_'+H+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}"${pad?` data-pad="${pad}"`:''} style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
 function drawMaps(){
   document.querySelectorAll('.map[data-map]:not(.ok)').forEach(async el=>{
     // só tira a foto do mapa com o cartão visível e no tamanho certo; escondido (outra aba) tenta de novo depois
     const W=el.clientWidth;if(W<40)return;
-    el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+TEMA(),tr=(AX[id]||{}).map;
+    el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+TEMA(),tr=(AX[id]||{}).map||MAPTR[id],pd=+el.dataset.pad||0;
     if(!tr||(MAPIMG[key]&&Math.abs(MAPIMG[key].w-W)<=4))return;
     el.querySelectorAll('.mimg').forEach(x=>x.remove());
     try{
       const st=await mlLoad(),box=document.createElement('div');box.style.cssText='position:absolute;inset:0';el.prepend(box);
       const ll=tr.map(p=>[p[1],p[0]]),b=ll.reduce((b,p)=>b.extend(p),new maplibregl.LngLatBounds(ll[0],ll[0]));
-      const m=new maplibregl.Map({container:box,style:structuredClone(st),interactive:false,pitch:0,bearing:0,maxPitch:0,attributionControl:false,preserveDrawingBuffer:true,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:{top:24,bottom:24,left:28,right:28},maxZoom:17}});
+      const m=new maplibregl.Map({container:box,style:structuredClone(st),interactive:false,pitch:0,bearing:0,maxPitch:0,attributionControl:false,preserveDrawingBuffer:true,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:pd?{top:pd,bottom:pd,left:pd,right:pd}:{top:24,bottom:24,left:28,right:28},maxZoom:17}});
       m.on('load',()=>{
         m.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:ll}}});
         m.addSource('pt',{type:'geojson',data:{type:'FeatureCollection',features:[ll[0],ll[ll.length-1]].map((c,i)=>({type:'Feature',properties:{f:i},geometry:{type:'Point',coordinates:c}}))}});
@@ -1788,14 +1790,14 @@ function blocoMarcas(M,on){
   return `<div class="card blc" onclick="${on}"><div class="blh"><b>Melhores marcas</b><span>›</span></div>${rp.map(x=>linhaM(1,'RP','RP de '+dK(x.d),dataLonga(x.date),fmtT(x.t))).join('')||'<p class="empty">As suas melhores marcas aparecem aqui depois das primeiras corridas com GPS.</p>'}</div>`;
 }
 /* ---------- MELHORES MARCAS: página inteira (voltar em cima, barra embaixo), seletor de esporte e distância, Top 10 ---------- */
-let MKS={d:null,esp:'run',ab:{0:1},sel:0,selE:0,M:null,volta:null,prev:'perf',fr:0};
-window.openMarcas=(M,volta)=>{MKS={...MKS,M:M||null,volta:volta||null,ab:{0:1},sel:0,selE:0,fr:!!M,prev:VIEW==='marc'?MKS.prev:VIEW};
+let MKS={d:null,esp:'run',ab:{},sel:0,selE:0,M:null,volta:null,prev:'perf',fr:0};
+window.openMarcas=(M,volta)=>{MKS={...MKS,M:M||null,volta:volta||null,ab:{},sel:0,selE:0,fr:!!M,prev:VIEW==='marc'?MKS.prev:VIEW};
   const MM=M||marcasTodas();if(!MKS.d||!(MM[MKS.d]||[]).length)MKS.d=([5000,1000,10000,21097.5,3000].find(d=>(MM[d]||[]).length))||BE[0][0];
   closeSheet();go('marc');$('#v-marc').scrollTop=0;window.scrollTo(0,0)};
 window.marcVolta=()=>{const v=MKS.volta;go(MKS.prev&&MKS.prev!=='marc'?MKS.prev:'perf');if(v)try{(new Function(v))()}catch(e){}};
 const marcTopo=()=>{const v=$('#v-marc');if(v)v.scrollTop=0;window.scrollTo(0,0)};
-window.marcD=d=>{MKS.d=d;MKS.sel=0;MKS.ab={0:1};render();marcTopo()};
-window.marcAb=i=>{MKS.ab[i]=!MKS.ab[i];const el=document.querySelector(`.mkr[data-i="${i}"]`);if(el)el.classList.toggle('on',!!MKS.ab[i])};
+window.marcD=d=>{MKS.d=d;MKS.sel=0;MKS.ab={};render();marcTopo()};
+window.marcAb=i=>{MKS.ab[i]=!MKS.ab[i];const el=document.querySelector(`.mkr[data-i="${i}"]`);if(el)el.classList.toggle('on',!!MKS.ab[i]);drawMaps()};
 const MK_ICO={run:'<svg viewBox="0 0 24 24"><path d="M4 16c3 0 5-1 6-3l2-4c1-1 2-1 3 0l1 1c1 1 2 1 3 0M4 16h15c1 0 2 1 2 2H4zM13 6l2 2M11 8l2 2"/></svg>',bike:'<svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M9 8h3M14 8l-4 8"/></svg>',
   seta:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',baixo:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
 // ícone da medalha da marca (fita + medalha), usado no RP grande e nas posições 2 a 10
@@ -1803,14 +1805,14 @@ const medIco=(n,cor,tinta,cls)=>`<svg viewBox="0 0 48 48" class="mdi ${cls||''}"
 const MED_COR=i=>i===0?['#f0b72f','#1a1305']:i===1?['#b9c2cd','#20262e']:i===2?['#cf9562','#2a1a0c']:['#3a424d','#c6ced8'];
 // a corrida em que a marca foi feita (mapa pequeno, nome, distância, subida, tempo e data)
 function marcCorrida(x){
-  const a=x.id?D.acts.find(q=>q.id===x.id):null,r=a||x,mp=a?(AX[a.id]||{}).map:x.map,nome=(a&&a.name)||x.name||'Corrida',h=String((a&&a.date)||x.date||'').slice(11,16);
+  const a=x.id?D.acts.find(q=>q.id===x.id):null,r=a||x,mp=a?(AX[a.id]||{}).map:x.map,mid=a?a.id:'mf'+String(x.date||'').replace(/\D/g,'')+(x.t||'');if(!a&&mp)MAPTR[mid]=mp;const nome=(a&&a.name)||x.name||'Corrida',h=String((a&&a.date)||x.date||'').slice(11,16);
   const det=[r.dist?km(r.dist).replace('.',',')+' km':null,r.elev!=null?Math.round(r.elev)+' m':null,r.mov?fmtTempo(r.mov):null].filter(Boolean).join(' · ');
-  return `<div class="mkc"${a&&!MKS.fr?` onclick="openAct('${a.id}')"`:''}><div class="mkm">${mp&&mp.length>2?rotaSvg(mp,120,120):''}</div><div class="mki"><b>${esc(nome)}</b><span>${MK_ICO.run}${det}</span><small>${dataLonga(x.date)}${h?' às '+h:''}</small></div>${a&&!MKS.fr?`<i class="mkg">${MK_ICO.seta}</i>`:''}</div>`;
+  return `<div class="mkc"${a&&!MKS.fr?` onclick="openAct('${a.id}')"`:''}><div class="mkm">${mp&&mp.length>2?mapBox(mid,72,10):''}</div><div class="mki"><b>${esc(nome)}</b><span>${MK_ICO.run}${det}</span><small>${dataLonga(x.date)}${h?' às '+h:''}</small></div>${a&&!MKS.fr?`<i class="mkg">${MK_ICO.seta}</i>`:''}</div>`;
 }
 const fmtTempo=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;return h?`${h}h ${m}min`:`${m}min ${ss}s`};
 function rMarc(){
   const M=MKS.M||marcasTodas(),d=MKS.d,L=(M[d]||[]).slice(0,10),nomeD=dK(d);
-  let h=`<div class="mkh"><button class="mkb" onclick="marcVolta()" aria-label="Voltar">${MK_ICO.seta}</button><b>Melhores marcas</b><span></span></div>`;
+  let h=`<div class="mkfx"><button class="mkb" onclick="marcVolta()" aria-label="Voltar">${MK_ICO.seta}</button></div><div class="mkh"><span></span><b>Melhores marcas</b><span></span></div>`;
   // seletores: esporte e distância (abrem uma lista ali mesmo, sem folha por cima)
   h+=`<div class="mks"><button class="mkp ac ${MKS.sel?'on':''}" onclick="MKS.sel=!MKS.sel;render();marcTopo()">${nomeD}${MK_ICO.baixo}</button></div>`;
   if(MKS.sel)h+=`<div class="mkl">${BE.map(([dd])=>{const top=(M[dd]||[])[0];return `<button class="${dd===d?'on':''}" onclick="marcD(${dd})"><span>${dK(dd)}</span><small>${top?fmtT(top.t):'—'}</small>${dd===d?'<i>✓</i>':''}</button>`}).join('')}</div>`;
@@ -2005,7 +2007,7 @@ function rDesaf(){
   const runs=D.acts.filter(isRun),t=TODAY(),d=new Date(t.getFullYear(),t.getMonth()-DSM.off,1),atual=DSM.off===0,L=desafiosMes(runs,d.getFullYear(),d.getMonth());
   const pri=runs.map(r=>String(r.date).slice(0,7)).sort()[0]||ymd(t).slice(0,7),ymS=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),podeVoltar=ymS>pri&&DSM.off<36;
   const fim=new Date(t.getFullYear(),t.getMonth()+1,0),falta=Math.round((fim-t)/864e5),feitos=L.filter(c=>c.ok).length,mesN=MESC[d.getMonth()].replace(/^./,c=>c.toUpperCase());
-  let h=`<div class="mkh"><button class="mkb" onclick="desVolta()" aria-label="Voltar">${MK_ICO.seta}</button><b>Desafios</b><span></span></div>
+  let h=`<div class="mkfx"><button class="mkb" onclick="desVolta()" aria-label="Voltar">${MK_ICO.seta}</button></div><div class="mkh"><span></span><b>Desafios</b><span></span></div>
   <div class="dsn"><button onclick="dsMes(1)" ${podeVoltar?'':'disabled'} aria-label="Mês anterior">${MK_ICO.seta}</button><div><b>${mesN}</b><small>${d.getFullYear()}</small></div><button onclick="dsMes(-1)" ${atual?'disabled':''} aria-label="Próximo mês" class="pr">${MK_ICO.seta}</button></div>
   <p class="dss">${atual?`${feitos} de ${L.length} concluídos · ${falta>0?`faltam ${falta} ${falta===1?'dia':'dias'}`:'último dia do mês'}`:`${feitos} ${feitos===1?'desafio concluído':'desafios concluídos'} em ${MESC[d.getMonth()]}`}</p>`;
   let algum=0;
