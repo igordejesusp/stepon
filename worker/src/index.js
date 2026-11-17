@@ -60,6 +60,19 @@ async function trocaNoSnap(env, id, reg) {
   await env.BR.put(SNAP, JSON.stringify(L), { metadata: { at: (metadata && metadata.at) || Date.now() } });
 }
 
+// tira o que é "só amigos" de quem não é amigo do dono (o dono vê o próprio)
+async function visivelPara(env, txt, viewer) {
+  if (!txt.includes('"v":"a"')) return txt;
+  const L = JSON.parse(txt);
+  for (const u of L) {
+    const tem = (u.runs || []).some((r) => r && r.v === 'a') || (u.terr || []).some((z) => z && z.v === 'a');
+    if (!tem) continue;
+    const amigo = viewer && (u.id === viewer || ((await lerF(env, u.id)).friends || []).includes(viewer));
+    if (!amigo) { u.runs = (u.runs || []).filter((r) => r.v !== 'a'); u.terr = (u.terr || []).filter((z) => z.v !== 'a'); }
+  }
+  return JSON.stringify(L);
+}
+
 // ---------- amigos ----------
 const vazio = () => ({ friends: [], inc: [], out: [] });
 const lerF = async (env, id) => ({ ...vazio(), ...((await env.BR.get('f:' + id, 'json')) || {}) });
@@ -186,11 +199,20 @@ export default {
     const url = new URL(req.url);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(req) });
 
-    if (req.method === 'GET' && url.pathname === '/all') {
+    // ranking e mapa. Sem login (GET): só o que é de todos. Com login (POST): quem é amigo do dono também vê o que é "só amigos".
+    if ((req.method === 'GET' || req.method === 'POST') && url.pathname === '/all') {
+      let viewer = null;
+      if (req.method === 'POST') {
+        let b;
+        try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+        const a = await confere(b.athlete, b.key, b.token);
+        if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+        viewer = b.athlete;
+      }
       const { value, metadata } = await env.BR.getWithMetadata(SNAP);
       const velho = !value || !metadata || !metadata.at || Date.now() - metadata.at > SNAPMAX;
-      const txt = velho ? await refazSnap(env) : value;
-      return new Response(txt, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=30', ...cors(req) } });
+      const txt = await visivelPara(env, velho ? await refazSnap(env) : value, viewer);
+      return new Response(txt, { headers: { 'Content-Type': 'application/json', 'Cache-Control': req.method === 'GET' ? 'public, max-age=30' : 'no-store', ...cors(req) } });
     }
 
     if ((req.method === 'POST' && url.pathname === '/publish') || (req.method === 'DELETE' && url.pathname === '/me')) {
@@ -210,7 +232,9 @@ export default {
       // quem saiu do ranking só volta tocando em "Entrar no ranking" (entrar: true)
       if (b.entrar) await env.BR.delete('fora:' + b.athlete);
       else if (await env.BR.get('fora:' + b.athlete)) return json(req, { ok: false, fora: true });
-      const runs = Array.isArray(b.runs) ? b.runs.slice(0, 200) : [];
+      // cada corrida guarda o relógio usado (dev) e a visibilidade: v:'a' = só amigos. (Corrida "só eu" nem chega aqui: o app não envia.)
+      const runs = (Array.isArray(b.runs) ? b.runs : []).filter((r) => r && typeof r === 'object').slice(0, 200)
+        .map((r) => ({ ...r, dev: typeof r.dev === 'string' && r.dev ? r.dev.slice(0, 40) : undefined, v: r.v === 'a' ? 'a' : undefined }));
       // foto: a escolhida no app (JPEG pequeno) ou a do Intervals; "/no-profile-pic.png" (sem foto) vira vazio
       const foto = typeof b.foto === 'string' && b.foto.length < 40000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(b.foto) ? b.foto : '';
       const doIcu = /^https:\/\//.test(a.profile_medium || '') ? a.profile_medium : '';
@@ -221,7 +245,7 @@ export default {
         const p = z.p.slice(0, 150).filter((q) => Array.isArray(q) && Math.abs(q[0]) <= 90 && Math.abs(q[1]) <= 180).map((q) => [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]);
         const h = /^\d{2}:\d{2}$/.test(String(z.h || '')) ? z.h : undefined;
         const r = Number.isFinite(+z.r) && +z.r >= 120 && +z.r <= 1200 ? Math.round(+z.r) : undefined; // ritmo médio (s/km) da corrida que fechou a área
-        return p.length >= 3 ? { d: z.d, h, r, p } : null;
+        return p.length >= 3 ? { d: z.d, h, r, p, v: z.v === 'a' ? 'a' : undefined } : null;
       }).filter(Boolean);
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));

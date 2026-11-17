@@ -498,6 +498,12 @@ body.vmarc #top{display:none}body.vmarc .view{top:0;padding-top:0}
 .pbc div{flex:1;display:flex;flex-direction:column}.pbc b{font-size:15px}.pbc span{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.4}.pbc i{font-style:normal;font-weight:700;font-size:13px;color:var(--blue)}.pbc.pbd b{color:var(--txt)}
 .tnote{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--cell);border:1px solid var(--line);font-size:13px;line-height:1.45;color:var(--txt)}.tnote b{color:var(--hi)}.tnote.ok{border-color:color-mix(in srgb,var(--blue) 45%,transparent);background:color-mix(in srgb,var(--blue) 10%,transparent)}
 .shfx{position:sticky;top:16px;height:0;z-index:30}.shfx .shv{position:absolute;left:0;top:0;box-shadow:0 4px 14px rgba(0,0,0,.45)}#sheet .hd.cv{padding-left:46px;min-height:36px}
+/* menu do treino */
+.fcard{position:relative}.fdots{margin-left:auto;align-self:flex-start;width:34px;height:34px;border-radius:50%;border:0;background:none;color:var(--dim);display:grid;place-items:center;cursor:pointer;padding:0;flex:none}.fdots svg{width:22px;height:22px;fill:currentColor}.fdots:hover{background:var(--cell);color:var(--hi)}
+.fpriv{display:inline-block;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue);font-size:11px;font-weight:600}
+.pvl{display:flex;flex-direction:column;gap:8px}.pvl button{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--cell);color:var(--hi);cursor:pointer}
+.pvr{width:18px;height:18px;border-radius:50%;border:2px solid var(--dim);flex:none;margin-top:2px;position:relative}.pvl button.on{border-color:var(--blue)}.pvl button.on .pvr{border-color:var(--blue)}.pvl button.on .pvr:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--blue)}
+.pvl b{display:block;font-size:15px}.pvl small{display:block;font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.4}
 /* títulos de seção: sem o pontinho, um pouco maiores e em negrito */
 .sec:before{display:none}
 .sec{font-size:15px;font-weight:800;color:var(--hi);letter-spacing:0}.sec small{font-size:12px;font-weight:600}
@@ -620,7 +626,9 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
 // o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
 // Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
-const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk'];
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv'];
+// privacidade de cada treino: 'a' = só amigos, 'e' = só eu (sem marca = todos)
+let PRIV=LS.get('priv',{});
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parseD=s=>{const [y,m,d]=s.slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
@@ -1338,7 +1346,7 @@ function painelDesk(avisos,ultimo,disp,vit,prox,rodape){
     <button class="b full" style="margin-top:10px" onclick="go('perf')">Ver meu perfil</button></div>`;
   const terr=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${tm?linhaI(`<span class="li-ic" style="background:${tm.cor}33"><span class="li-dot" style="background:${tm.cor}"></span></span>`,fmtKm2(tm.km2),tm.n+' '+(tm.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo','')}</div>`;
   const L=D.acts.slice(0,4),DPA=desPorAtiv(runs);
-  const feed=L.length?`<div class="sec">Atividades recentes<small><a onclick="PT='ativ';go('perf')" style="cursor:pointer;color:var(--blue)">Ver todas</a></small></div>`+L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id],com:isMk(x)?[x.de]:null})).join(''):'';
+  const feed=L.length?`<div class="sec">Atividades recentes<small><a onclick="PT='ativ';go('perf')" style="cursor:pointer;color:var(--blue)">Ver todas</a></small></div>`+L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,mk:isMk(x),priv:PRIV[x.id],des:DPA[x.id],com:isMk(x)?[x.de]:null})).join(''):'';
   if(L.length)setTimeout(()=>{const K=L.map(x=>CFG.athlete+':'+x.id);socLoad(K);juntosLoad(K);fotosPede(CFG.athlete,render)},0);
   return `<div class="dgrid"><aside class="dl">${perfil}${terr}${blocoDes(runs,TODAY(),"openDesafios()")}</aside>
     <section class="dc">${avisos}${prox}${ultimo}${feed}${rodape}</section>
@@ -1508,7 +1516,7 @@ function rCal(){
   if(calMode==='sem'){
     const m=monday(calRef),e=addD(m,6);let tk=0,pk=0;
     h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${m.getDate()} ${MES[m.getMonth()]} — ${e.getDate()} ${MES[e.getMonth()]}</b><button class="b sm" onclick="calGo(1)">▶</button></div>`;
-    h+='<div class="week">';
+    h+=glw('d')+'<div class="week">';
     for(let i=0;i<7;i++){const d=addD(m,i),ds=ymd(d),p=planOn(ds),ex=actsOn(ds),w=W(ds)||{};
       const rk=ex.filter(isRun).reduce((s,a)=>s+(a.dist||0),0);tk+=rk;pk+=p?p.km*1000:0;
       h+=`<div class="day ${ds===ds0?'today':''}" onclick="openDay('${ds}')"><div class="d"><span>${DOW[d.getDay()]}</span><b>${pad(d.getDate())}</b></div><div style="min-width:0">
@@ -1519,7 +1527,7 @@ function rCal(){
     h+=`<div class="card" style="margin-top:8px"><div class="row" style="justify-content:space-between"><span class="lbl">Volume da semana</span><span class="num">${pk?km(tk)+' / '+km(pk):km(tk)} km</span></div>${pk?`<div class="bar"><i style="width:${clamp(tk/pk*100,0,100)}%"></i></div>`:'<div class="meta" style="margin-top:4px">Sem treinos planejados nesta semana.</div>'}</div>`;
   }else{
     const y=calRef.getFullYear(),mo=calRef.getMonth(),f=monday(new Date(y,mo,1));
-    h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${MES[mo]} ${y}</b><button class="b sm" onclick="calGo(1)">▶</button></div><div class="mgrid">${['SEG','TER','QUA','QUI','SEX','SÁB','DOM'].map(x=>`<div class="h">${x}</div>`).join('')}`;
+    h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${MES[mo]} ${y}</b><button class="b sm" onclick="calGo(1)">▶</button></div>${glw('d')}<div class="mgrid">${['SEG','TER','QUA','QUI','SEX','SÁB','DOM'].map(x=>`<div class="h">${x}</div>`).join('')}`;
     let tot=0;
     for(let i=0;i<42;i++){const d=addD(f,i),ds=ymd(d);if(i>=35&&d.getMonth()!==mo)break;const p=planOn(ds),rk=runsOn(ds).reduce((s,a)=>s+(a.dist||0),0),st=p&&status(p);if(d.getMonth()===mo)tot+=rk;
       h+=`<div class="mc ${d.getMonth()!==mo?'out':''} ${ds===ds0?'today':''}" onclick="openDay('${ds}')"><span class="n">${d.getDate()}</span>${rk?`<span class="k">${(rk/1000).toFixed(1)}</span>`:p?`<span class="k p">${p.km}</span>`:'<span></span>'}${p?`<span class="dot ${st==='cumprido'||st==='parcial'?'f':st==='perdido'?'x':''}"></span>`:rk?'<span class="dot f"></span>':'<span></span>'}</div>`}
@@ -1594,7 +1602,7 @@ function rDes(){
   ];
   let h=`<div class="sec">PROGRESSO</div>`;
   h+=ch.map(c=>{const v=clamp(c[2],0,1);return `<div class="card ${v>=1?'cur':''}"><div class="row" style="justify-content:space-between"><span class="lbl" style="color:var(--txt)">${c[0]}</span><span class="num ${v>=1?'ok':''}" style="font-size:12px">${Math.round(v*100)}%</span></div><div class="meta" style="margin-top:3px">${c[1]}</div><div class="bar"><i style="width:${v*100}%"></i></div></div>`}).join('');
-  h+=blocoDes(D.acts.filter(isRun),TODAY(),"openDesafios()");
+  h+=glw('e')+blocoDes(D.acts.filter(isRun),TODAY(),"openDesafios()");
   const M=PF&&metaDe(PF);
   h+=`<div class="sec">OBJETIVO DO PLANO</div><div class="card"><p class="empty" style="color:var(--txt)">${PF?`Seus treinos seguem o objetivo <b style="color:var(--hi)">${M?M.n:'do questionário'}</b>, com os dias e o volume que você informou.`:'Seus treinos seguem o plano de novembro montado pelo Coach.'}</p>
     <p class="empty" style="margin-top:6px">Mudou de objetivo, de dias ou de ritmo? Responda o questionário de novo e o app refaz o plano.</p>
@@ -1661,7 +1669,7 @@ function rMais(soTres){
   {const sM=semSec(h.slice(k1,k2)),sB=semSec(h.slice(k2,mA)),sCo=semSec(h.slice(mA,kM)),sX=semSec(h.slice(kM,k4)),sF=semSec(h.slice(k4));
     const ini=h.slice(0,k1),p10=V?predict(V.v,10000):null;
     h=ini+blk('modo','Modo do app',linhaI(icoC('modo'),SIMPLES()?'Simples':'Completo',SIMPLES()?'Só o essencial na tela':'Todas as métricas na tela',''),sM)
-      +blk('bib','Biblioteca de treinos',linhaI(icoC('bib'),BIBL.length+' treinos prontos','Rodagens, fartlek, tiros, HIIT, testes…',''),sB);
+      +glw('d')+blk('bib','Biblioteca de treinos',linhaI(icoC('bib'),BIBL.length+' treinos prontos','Rodagens, fartlek, tiros, HIIT, testes…',''),sB);
     var mA2=h.length;
     const tres=blk('cond','Condição atual',linhaI(icoC('forma'),'Forma','CTL',cur.ctl.toFixed(1))+linhaI(icoC('fadiga','red'),'Fadiga','ATL',cur.atl.toFixed(1))+linhaI(icoC('equil'),'Equilíbrio',tsbTxt(cur.tsb).split(':')[0],sgn(cur.tsb)),sCo)
     +blk('met','Métricas avançadas',linhaI(icoC('vdot'),'VDOT',V?(V.teste?'Pelo teste de '+fmtD(V.teste):V.est?'Estimado pelo questionário':'Pelas suas corridas'):'Sem dados ainda',V?V.v.toFixed(1):'--')+linhaI(icoC('prova'),'Projeção de 10 km','Condicionamento atual',p10?fmtT(p10):'--'),sX)
@@ -1775,7 +1783,7 @@ function rPerf(){
     if(!SIMPLES()){const tr=rMais(1);const k=tr.lastIndexOf('<div class="card blc"');h+=k>0?tr.slice(0,k)+glw('e')+tr.slice(k):tr}
   }else if(PT==='ativ'){
     SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM),DPA=desPorAtiv(D.acts.filter(isRun));
-    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,des:DPA[x.id],com:isMk(x)?[x.de]:null})).join('')||'<p class="empty">Sem atividades.</p>';
+    h+=L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,mk:isMk(x),priv:PRIV[x.id],des:DPA[x.id],com:isMk(x)?[x.de]:null})).join('')||'<p class="empty">Sem atividades.</p>';
     if(D.acts.length>FLIM)h+=`<button class="b more" onclick="FLIM+=6;render()">Ver mais (${D.acts.length-FLIM} restantes)</button>`;
     setTimeout(()=>{const K=L.map(x=>CFG.athlete+':'+x.id);socLoad(K);juntosLoad(K)},0);
   }else{
@@ -2082,12 +2090,34 @@ window.tiraMarcada=async id=>{
 const diaTxt=ds=>{const d=ds.slice(0,10),h=ds.slice(11,16),hoje=ymd(TODAY()),ont=ymd(addD(TODAY(),-1));return (d===hoje?'Hoje':d===ont?'Ontem':DOW[parseD(d).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+', '+fmtD(d)+(d.slice(0,4)!==String(TODAY().getFullYear())?'/'+d.slice(2,4):''))+(h?' às '+h:'')};
 const nomeHora=ds=>{const h=+String(ds).slice(11,13);return isNaN(h)?'Corrida':h<12?'Corrida da manhã':h<18?'Corrida da tarde':'Corrida da noite'};
 const ICO={add:'<svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.6-3.6 3.3-5.6 6.5-5.6s5.9 2 6.5 5.6M19 8v6M16 11h6"/></svg>',cur:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',com:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',sha:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></svg>',fot:'<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'};
+/* ---------- menu do treino (três pontinhos): quem pode ver e apagar ---------- */
+const PRIV_ROT={a:'Só amigos',e:'Só eu'};
+const PRIV_OPC=[['t','Todos','Aparece para todos no app e conta no ranking e no mapa.'],['a','Só amigos','Só quem é seu amigo no app vê. Para os outros ele não existe: não conta no ranking nem no mapa deles.'],['e','Só eu','Ninguém mais vê e não conta no ranking nem no mapa. Fica só na sua conta.']];
+window.menuAtiv=id=>{const a=D.acts.find(x=>x.id===id);if(!a)return;const p=PRIV[id]||'t';
+  openSheet(`<div class="hd"><b>${esc(a.name||'Treino')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="lbl" style="margin-bottom:8px">Quem pode ver este treino</div>
+  <div class="pvl">${PRIV_OPC.map(([k,t,d])=>`<button class="${p===k?'on':''}" onclick="privSet('${id}','${k}')"><span class="pvr"></span><span><b>${t}</b><small>${d}</small></span></button>`).join('')}</div>
+  <button class="b red full" style="margin-top:14px" onclick="apagarAtiv('${id}')">Apagar treino</button>
+  <p class="meta" style="margin-top:8px">Apagar remove o treino do StepOn e também do Intervals.icu. Não dá para desfazer.</p>`)};
+window.privSet=(id,v)=>{if(v==='t')delete PRIV[id];else PRIV[id]=v;LS.set('priv',PRIV);menuAtiv(id);render();
+  toast(v==='t'?'Treino visível para todos':v==='a'?'Só amigos podem ver este treino':'Só você vê este treino',2600);
+  if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
+window.apagarAtiv=async id=>{const a=D.acts.find(x=>x.id===id);if(!a)return;
+  if(!confirm('Apagar "'+(a.name||'este treino')+'"?\n\nEle será apagado do StepOn e do Intervals.icu. Não dá para desfazer.'))return;
+  try{
+    if(isMan(a)){MAN=MAN.filter(m=>m.id!==id);LS.set('man',MAN);LS.set('gpx.'+id,null)}
+    else if(!String(id).startsWith('icu-'))await api('/activity/'+id,{method:'DELETE'});
+    D.acts=D.acts.filter(x=>x.id!==id);delete AX[id];delete PRIV[id];delete FB[id];
+    LS.set('data',D);LS.set('ax5',AX);LS.set('priv',PRIV);LS.set('fb',FB);LS.set('terrc',null);
+    closeSheet();toast('Treino apagado');render();if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)
+  }catch(e){toast('Não deu para apagar: '+e.message,4000)}
+};
 function feedCard(o){
   const k=o.dono+':'+o.id,pace=o.run&&o.dist?fmtP(o.mov/o.dist*1000)+' /km':null;
   const st=[['Distância',o.dist?km(o.dist).replace('.',',')+' km':'--'],pace?['Ritmo',pace]:['FC média',o.hr?o.hr+' bpm':'--'],['Tempo',tempoCart(o.mov)]];
-  const mapa=o.map==='own'?mapBox(o.id,190):o.map?`<div class="froute">${rotaSvg(o.map,600,300)}</div>`:'';
+  const mapa=o.map==='own'?mapBox(o.id,190):Array.isArray(o.map)&&o.map.length>2?(MAPTR['f'+o.dono+o.id]=o.map,mapBox('f'+o.dono+o.id,190)):'';
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:''}>
-  <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div></div>
+  <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}${o.priv?` · <span class="fpriv">${PRIV_ROT[o.priv]}</span>`:''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div>${o.meu&&!o.mk?`<button class="fdots" aria-label="Mais opções do treino" onclick="event.stopPropagation();menuAtiv('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:''}</div>
   <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2><div class="fjunto" data-jk="${k}">${o.com?comTxt(o.com):''}</div>${seloDes(o.des)}
   <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
@@ -2839,7 +2869,7 @@ const cen=tr=>{let a=0,b=0;for(const q of tr){a+=q[0];b+=q[1]}return [a/tr.lengt
 function bestsOf(a,b0){const b={...(b0||{})};for(const [d] of CDIST)if(a.dist>=d*0.99&&a.dist<=d*1.05&&a.mov){const t=Math.round(a.mov*d/a.dist);if(!b[d]||t<b[d])b[d]=t}return b}
 function people(all){
   const me={id:CFG.athlete,name:((D.athlete||{}).name||'Você'),pic:myPic(),me:1,
-    runs:D.acts.filter(a=>isRun(a)&&!isMan(a)).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date,dist:a.dist,mov:a.mov,elev:a.elev!=null?Math.round(a.elev):null,name:String(a.name||'').slice(0,60),best:bestsOf(a,x.best),map:x.map||null}})};
+    runs:D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date,dist:a.dist,mov:a.mov,elev:a.elev!=null?Math.round(a.elev):null,name:String(a.name||'').slice(0,60),best:bestsOf(a,x.best),map:x.map||null}})};
   return [me,...PUBL.filter(u=>u.id!==CFG.athlete&&u.runs&&u.runs.length&&(all||MODO()==='g'||FR.friends.includes(u.id))).map(u=>({id:u.id,name:u.name||u.id,xp:u.xp,pic:okPic(u.pic),runs:u.runs,at:u.at}))];
 }
 const atrasoTxt=t=>{if(!t)return '';const m=Math.round((Date.now()-t)/6e4);return m<2?'atualizado agora':m<60?'atualizado há '+m+' min':m<1440?'atualizado há '+Math.round(m/60)+' h':'atualizado há '+Math.round(m/1440)+' d'};
@@ -2863,9 +2893,9 @@ function trimTrack(tr,full){
 }
 async function publishMine(force,entrar){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
-  const runs=D.acts.filter(a=>isRun(a)&&!isMan(a)).slice(0,150).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null}});
+  const runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').slice(0,150).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null,dev:devNome(a).slice(0,40),...(PRIV[a.id]==='a'?{v:'a'}:{})}});
   const foto=await fotoMini();
-  const terr=meusLacos().slice(0,160),cor=minhaCor(),xp=meuXp(),sig=runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
+  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv2|'+JSON.stringify(PRIV)+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
   while(terr.length&&JSON.stringify({runs,terr,foto}).length>660000)terr.pop();
   const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,...(entrar?{entrar:true}:{})})});
@@ -2883,7 +2913,9 @@ function rede(force){
   REDE=publishMine(force).then(()=>pullAll()).then(()=>frCall('lista').catch(()=>{})).catch(pubFalha).then(()=>{REDE=null;LS.set('pubAt',Date.now());if(typeof VIEW!=='undefined'&&VIEW==='comp')rComp()});
   return REDE}
 async function pullAll(){
-  const r=await fetch(PUBURL+'/all');if(!r.ok)throw new Error('HTTP '+r.status);
+  let r=null;
+  if(temConta()){try{r=await fetch(PUBURL+'/all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(credSrv())});if(!r.ok)r=null}catch(e){r=null}} // logado: vem também o "só amigos" dos amigos
+  if(!r)r=await fetch(PUBURL+'/all');if(!r.ok)throw new Error('HTTP '+r.status);
   const L=await r.json();
   // regra: quem está publicado no servidor está no ranking, em qualquer aparelho (só sai tocando em "Sair do ranking")
   if(CFG.athlete&&L.some(u=>u.id===CFG.athlete)&&LS.get('comp',null)!=='sim')LS.set('comp','sim');
@@ -2931,19 +2963,20 @@ function simp(pts,n){
   let r=dp(pts,tol);while(r.length>n&&tol<10){tol*=1.4;r=dp(pts,tol)}if(r.length>n){const st=r.length/n;r=[...Array(n)].map((_,i)=>r[Math.floor(i*st)])}return r;
 }
 // as áreas de todas as corridas do Igor (calculadas no aparelho, com o trajeto sem os 200 m do começo e do fim)
-function meusLacos(){
-  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===TVN).length+'|v6';
-  const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v;
-  const v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===TVN&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr,extremos(x.map)):[]})();const r=a.dist>=500&&a.mov?Math.round(a.mov/a.dist*1000):null;for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),r,p})}
+function meusLacos(pub){
+  const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===TVN).length+'|v7';
+  if(!pub){const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v}
+  let v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===TVN&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr,extremos(x.map)):[]})();const r=a.dist>=500&&a.mov?Math.round(a.mov/a.dist*1000):null;for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),r,id:a.id,p})}
+  // para publicar: o que é "só eu" fica de fora e o que é "só amigos" vai marcado
+  if(pub)v=v.filter(z=>PRIV[z.id]!=='e').map(z=>PRIV[z.id]==='a'?{...z,v:'a'}:z);
   v.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
-  // tira as repetidas: uma área que já está quase toda (95%) dentro das áreas mais novas não muda nada na disputa
-  // uma área só é descartada se outra, mais nova, de ritmo igual ou melhor, já cobre 95% dela (senão se perderia o melhor ritmo da disputa do Geral)
-  const R=[],bk=r=>r==null?10:clamp(Math.floor((r-210)/15),0,9),U=Array(11).fill(null);
-  for(const z of v){const ring=z.p.map(q=>[q[1],q[0]]);ring.push(ring[0]);const mp=[[ring]],k=bk(z.r);
+  // uma área só é descartada se outra, mais nova, de ritmo igual ou melhor e de visibilidade igual ou maior já cobre 95% dela
+  const R=[],bk=r=>r==null?10:clamp(Math.floor((r-210)/15),0,9),Ut=Array(11).fill(null),Ua=Array(11).fill(null);
+  for(const z of v){const ring=z.p.map(q=>[q[1],q[0]]);ring.push(ring[0]);const mp=[[ring]],k=bk(z.r),aberta=z.v!=='a',U=aberta?Ut:Ua;
     if(U[k]){const sobra=pcSeguro('difference',mp,U[k]),a0=geoKm2(mp);if(sobra&&a0>0&&geoKm2(sobra)<a0*0.05)continue}
-    for(let j=k;j<=10;j++)U[j]=U[j]?(pcSeguro('union',U[j],mp)||U[j]):mp;
+    for(let j=k;j<=10;j++){if(aberta)Ut[j]=Ut[j]?(pcSeguro('union',Ut[j],mp)||Ut[j]):mp;Ua[j]=Ua[j]?(pcSeguro('union',Ua[j],mp)||Ua[j]):mp}
     R.push(z);if(R.length>=160)break}
-  LS.set('terrc',{sig,v:R});return R;
+  if(!pub)LS.set('terrc',{sig,v:R});return R;
 }
 let _pcp=null;
 const pcLoad=()=>Promise.resolve(); // a biblioteca já vem dentro do app
@@ -3141,7 +3174,7 @@ window.openPerfilAmigo=(id,tab)=>{
       if(tdo)h+=`<div class="card blc" onclick="openTerr('${esc(id)}')"><div class="blh"><b>Área dominada</b><span>›</span></div>${linhaI(`<span class="li-ic" style="background:${tdo.cor}33"><span class="li-dot" style="background:${tdo.cor}"></span></span>`,fmtKm2(tdo.km2),tdo.n+' '+(tdo.n===1?'circuito':'circuitos')+' fechados','')}</div>`;
     }else if(FT==='ativ'){
       const L=ord.slice(0,15),DPA=desPorAtiv(runs);fotosPede(id,()=>openPerfilAmigo(id));
-      h+=L.map(r=>feedCard({id:r.id,dono:id,nome:frNome(id),pic:frPic(id),date:r.date,titulo:r.name,dist:r.dist,mov:r.mov,run:1,map:r.map,des:DPA[r.id]})).join('');
+      h+=L.map(r=>feedCard({id:r.id,dono:id,nome:frNome(id),pic:frPic(id),date:r.date,titulo:r.name,dist:r.dist,mov:r.mov,src:r.dev||'',run:1,map:r.map,des:DPA[r.id]})).join('');
       setTimeout(()=>socLoad(L.map(r=>id+':'+r.id)),0);
     }else{fotosPede(id,()=>openPerfilAmigo(id));h+=galeria(id)}
     h+=`<p class="meta" style="margin-top:8px">Só aparece o que a pessoa publicou no ranking: as corridas com GPS mais recentes.</p>`;
