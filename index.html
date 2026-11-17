@@ -626,9 +626,10 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
 // o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
 // Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
-const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv'];
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont'];
 // privacidade de cada treino: 'a' = só amigos, 'e' = só eu (sem marca = todos)
 let PRIV=LS.get('priv',{});
+let CONT=LS.get('cont',{}); // circuitos contestados e aprovados pelo app: o que foi aprovado nunca volta ao cálculo original
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parseD=s=>{const [y,m,d]=s.slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
@@ -773,7 +774,7 @@ async function loadAX(id){
   const s=await api(`/activity/${id}/streams?types=time,distance,heartrate,velocity_smooth,altitude,latlng,cadence`);
   const f=k=>s.find(x=>x.type===k)||{},g=k=>f(k).data||[];
   AX[id]=analyze(g('time'),g('distance'),g('heartrate'),g('altitude'),f('latlng'),g('cadence'));
-  try{const tr=trajetoVal(f('latlng')),t2=trimTrack(tr,1),T=t2?laços(t2,extremos(tr)):[];AX[id].terr=T;AX[id].tv=TVN;AX[id].tg={g:gapFim(tr),a:T.length,ha:uniHa(T)}}catch(e){}
+  try{const tr=trajetoVal(f('latlng')),t2=trimTrack(tr,1),T=t2?laços(t2,extremos(tr)):[];AX[id].terr=T;AX[id].tv=TVN;AX[id].tg={g:gapFim(tr),a:T.length,ha:uniHa(T)};if(CONT[id]&&CONT[id].terr){AX[id].terr=CONT[id].terr;AX[id].tg={g:gapFim(tr),a:CONT[id].terr.length,ha:CONT[id].ha}}}catch(e){}
 }
 // áreas fechadas a partir do trajeto completo (não do resumo de 300 pontos): mais fiel às ruas por onde a pessoa passou
 // trajeto completo já limpo: tira pontos sem GPS e picos (ponto solto longe do caminho) e deixa um ponto a cada 8 m
@@ -2097,17 +2098,55 @@ window.menuAtiv=id=>{const a=D.acts.find(x=>x.id===id);if(!a)return;const p=PRIV
   openSheet(`<div class="hd"><b>${esc(a.name||'Treino')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   <div class="lbl" style="margin-bottom:8px">Quem pode ver este treino</div>
   <div class="pvl">${PRIV_OPC.map(([k,t,d])=>`<button class="${p===k?'on':''}" onclick="privSet('${id}','${k}')"><span class="pvr"></span><span><b>${t}</b><small>${d}</small></span></button>`).join('')}</div>
+  ${isRun(a)&&!isMan(a)&&!isMk(a)?`<div class="lbl" style="margin:16px 0 8px">Circuito não reconhecido?</div>
+  <button class="b full" onclick="contestar('${id}')">Contestar circuito</button>
+  <p class="meta" style="margin-top:8px">${CONT[id]?'✓ Contestação aprovada: o app já conta '+CONT[id].terr.length+(CONT[id].terr.length===1?' circuito':' circuitos')+' neste treino. ':''}O app confere o trajeto de novo, com mais tolerância ao GPS, e diz na hora se aprova.</p>`:''}
   <button class="b red full" style="margin-top:14px" onclick="apagarAtiv('${id}')">Apagar treino</button>
   <p class="meta" style="margin-top:8px">Apagar remove o treino do StepOn e também do Intervals.icu. Não dá para desfazer.</p>`)};
 window.privSet=(id,v)=>{if(v==='t')delete PRIV[id];else PRIV[id]=v;LS.set('priv',PRIV);menuAtiv(id);render();
   toast(v==='t'?'Treino visível para todos':v==='a'?'Só amigos podem ver este treino':'Só você vê este treino',2600);
   if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
+// contestação de circuito: o app refaz a conta com o trajeto completo e tolerância maior; aprova sozinho se for um percurso real
+const CONT_NIV=[{prox:30,fecha:50},{prox:40,fecha:90},{prox:50,fecha:130},{prox:60,fecha:170}],CONT_MAXF=170;
+function velMax(la,lo,t){ // maior velocidade média em janelas de ~30 s (carro/moto passam de 9 m/s)
+  let m=0,j=0;const n=la.length;
+  for(let i=0;i<n;i++){if(la[i]==null||lo[i]==null||t[i]==null)continue;if(j<i)j=i;
+    while(j<n-1&&(t[j]==null||la[j]==null||t[j]-t[i]<30))j++;
+    if(j<n&&la[j]!=null&&t[j]-t[i]>=20){const v=dM([la[i],lo[i]],[la[j],lo[j]])/(t[j]-t[i]);if(v>m)m=v}}
+  return m}
+window.contestar=async id=>{
+  const a=D.acts.find(x=>x.id===id);if(!a)return;
+  openSheet(`<div class="hd"><b>Contestar circuito</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="empty" style="color:var(--txt)">Conferindo o trajeto completo…</p>`);
+  const fim=(ok,tit,msg)=>openSheet(`<div class="hd"><b>Contestar circuito</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+    <div class="card blc"><div class="blh"><b style="color:${ok?'var(--blue)':'var(--red)'}">${ok?'✓ ':''}${tit}</b></div><p class="meta" style="margin:6px 0 0;line-height:1.5">${msg}</p></div>
+    <button class="b full" style="margin-top:12px" onclick="menuAtiv('${id}')">Voltar</button>`);
+  try{
+    const s=await api(`/activity/${id}/streams?types=time,distance,latlng`),f=k=>s.find(x=>x.type===k)||{},ll=f('latlng'),tm=(f('time').data)||[];
+    if(!ll.data||!ll.data2)return fim(0,'Sem GPS','Este treino não tem trajeto de GPS, então não há como conferir circuito.');
+    const tr=trajetoVal(ll),dist=a.dist||0;
+    if(tr.length<30||dist<1000)return fim(0,'Trajeto curto demais','Para contar circuito o treino precisa ter pelo menos 1 km com GPS.');
+    const vm=velMax(ll.data,ll.data2,tm);
+    if(vm>8.5)return fim(0,'Não aprovado','O trajeto tem trechos acima de '+Math.round(vm*3.6)+' km/h, o que parece deslocamento de veículo. Circuito só vale para corrida a pé.');
+    const t2=trimTrack(tr,1),ext=extremos(tr);if(!t2||!ext)return fim(0,'Trajeto curto demais','Não deu para montar o contorno deste treino.');
+    const gap=gapFim(tr),base=laços(t2,ext),ha0=Math.max(uniHa(base),(AX[id]&&AX[id].tg&&AX[id].tg.ha)||0);
+    let melhor=null;
+    for(const o of CONT_NIV.slice(1)){const T=laços(t2,ext,o),ha=uniHa(T);if(T.length&&ha>ha0+0.2){melhor={T,ha,o};break}}
+    if(melhor){
+      CONT[id]={terr:melhor.T,ha:melhor.ha,em:Date.now(),fecha:melhor.o.fecha};LS.set('cont',CONT);
+      AX[id]=Object.assign(AX[id]||{},{terr:melhor.T,tv:TVN,tg:{g:gap,a:melhor.T.length,ha:melhor.ha}});LS.set('ax5',AX);LS.set('terrc',null);
+      render();if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha);
+      return fim(1,'Contestação aprovada','O percurso é real e fecha '+melhor.T.length+(melhor.T.length===1?' circuito':' circuitos')+' ('+String(melhor.ha).replace('.',',')+' ha). O começo e o fim ficaram a '+gap+' m um do outro, dentro da tolerância de '+melhor.o.fecha+' m. A área já entrou no seu mapa'+(LS.get('comp',null)==='sim'?' e no ranking.':'.'))}
+    if(gap!=null&&gap>CONT_MAXF)return fim(0,'Não aprovado','O começo e o fim do treino ficaram a '+gap+' m um do outro. O app aceita até '+CONT_MAXF+' m de folga do GPS. Se o percurso realmente fechou, o GPS pode ter falhado no começo ou no fim.');
+    if(base.length)return fim(0,'Nada a mudar','O app já conta '+base.length+(base.length===1?' circuito':' circuitos')+' neste treino ('+String(ha0).replace('.',',')+' ha) e, mesmo com mais tolerância, não achou área nova.');
+    return fim(0,'Não aprovado','O trajeto não forma uma área fechada grande o bastante (mínimo 0,8 ha). Ida e volta pela mesma rua não vira circuito.')
+  }catch(e){fim(0,'Não deu para conferir','Não consegui baixar o trajeto agora ('+esc(String(e&&e.message||e).slice(0,60))+'). Tente de novo em instantes.')}
+};
 window.apagarAtiv=async id=>{const a=D.acts.find(x=>x.id===id);if(!a)return;
   if(!confirm('Apagar "'+(a.name||'este treino')+'"?\n\nEle será apagado do StepOn e do Intervals.icu. Não dá para desfazer.'))return;
   try{
     if(isMan(a)){MAN=MAN.filter(m=>m.id!==id);LS.set('man',MAN);LS.set('gpx.'+id,null)}
     else if(!String(id).startsWith('icu-'))await api('/activity/'+id,{method:'DELETE'});
-    D.acts=D.acts.filter(x=>x.id!==id);delete AX[id];delete PRIV[id];delete FB[id];
+    D.acts=D.acts.filter(x=>x.id!==id);delete AX[id];delete PRIV[id];delete FB[id];delete CONT[id];LS.set('cont',CONT);
     LS.set('data',D);LS.set('ax5',AX);LS.set('priv',PRIV);LS.set('fb',FB);LS.set('terrc',null);
     closeSheet();toast('Treino apagado');render();if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)
   }catch(e){toast('Não deu para apagar: '+e.message,4000)}
@@ -2929,10 +2968,10 @@ const minhaCor=()=>corDe(CFG.athlete,LS.get('cor',null));
 // 300 m), o que ficou dentro vira uma área. A saída de casa, que não fecha nada, fica de fora. Voltas finas (ida e volta pela mesma rua) não contam.
 // pontas reais do trajeto (primeiros e últimos ~600 m, antes do corte de privacidade)
 function extremos(tr){const n=tr.length;if(n<8)return null;let a=0,d=0;while(a<n-1&&d<600){d+=dM(tr[a],tr[a+1]);a++}let b=n-1;d=0;while(b>a&&d<600){d+=dM(tr[b],tr[b-1]);b--}return {ini:tr.slice(0,a+1),fim:tr.slice(b)}}
-function laços(tr,ext){
+function laços(tr,ext,opt){
   if(!tr||tr.length<8)return [];
   const la0=tr[0][0],lo0=tr[0][1],ky=111320,kx=111320*Math.cos(la0*Math.PI/180),P=tr.map(q=>[(q[1]-lo0)*kx,(q[0]-la0)*ky]);
-  const PROX=30,MINP=300,MINA=8000,out=[],H=Math.hypot;
+  const PROX=(opt&&opt.prox)||30,FECHA=(opt&&opt.fecha)||50,MINP=300,MINA=8000,out=[],H=Math.hypot;
   const ap=(a,b,c)=>{const dx=c[0]-b[0],dy=c[1]-b[1],L=dx*dx+dy*dy,t=L?clamp(((a[0]-b[0])*dx+(a[1]-b[1])*dy)/L,0,1):0,x=b[0]+t*dx,y=b[1]+t*dy;return {d:H(a[0]-x,a[1]-y),x,y}};
   const area=r=>{let s=0;for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length];s+=a[0]*b[1]-b[0]*a[1]}return Math.abs(s)/2};
   const per=r=>{let s=0;for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length];s+=H(a[0]-b[0],a[1]-b[1])}return s};
@@ -2948,7 +2987,7 @@ function laços(tr,ext){
   }
   // circuito fechado pelo começo e pelo fim: se o final do trajeto passa a menos de 50 m de onde ele começou (o GPS no começo costuma derivar uns 20 a 30 m), o percurso todo vira uma área.
   // Ida e volta pela mesma rua continua sem virar área: o polígono fica fino e o filtro de tamanho e de formato (ok) barra.
-  if(ext&&ext.ini&&ext.fim){let perto=false;for(const p of ext.ini){for(const q of ext.fim)if(dM(p,q)<=50){perto=true;break}if(perto)break}
+  if(ext&&ext.ini&&ext.fim){let perto=false;for(const p of ext.ini){for(const q of ext.fim)if(dM(p,q)<=FECHA){perto=true;break}if(perto)break}
     if(perto)volta(P.slice())} // o filtro de tamanho e de formato (ok) é aplicado depois, em cada pedaço já normalizado
   // normaliza cada contorno (um percurso em forma de 8 vira dois laços simples; a ida e volta pela mesma rua some) e só então aplica o filtro de tamanho e formato
   const norm=r=>{const ring=r.map(q=>[q[0],q[1]]);ring.push(ring[0]);const U=pcSeguro('union',[[ring]],[[ring]]);
