@@ -1147,23 +1147,44 @@ function adjust(p,r){
 }
 // texto no formato de treino do Intervals.icu (vai para o Garmin)
 function toIcu(p){
-  const pz=r=>r?(fmtP(Math.min(...r))+'-'+fmtP(Math.max(...r))+'/km Pace'):'Z1 HR';
+  // Cada etapa leva o nome e a FAIXA de ritmo (mínimo–máximo): no relógio aparece o arco de ritmo e ele apita ao sair da faixa.
+  // O Intervals só leva ao relógio uma métrica por treino: por isso todas as etapas com ritmo usam ritmo, e as sem ritmo (caminhada, parado) ficam sem alvo (nunca "Z1 HR").
+  const alvo=r=>r?' '+fmtP(Math.min(...r))+'-'+fmtP(Math.max(...r))+'/km Pace':'';
   // no Intervals "m" é minuto e metro é "mtr"
   const du=x=>/min$/.test(x)?x.replace(/min$/,'m'):/\dm$/.test(x)?x.replace(/m$/,'mtr'):x;
+  const nome=x=>String(x||'').replace(/[\r\n]+/g,' ').replace(/\S*\d\S*/g,' ').replace(/\b(km|mtr|min|m|s)\b/gi,' ').replace(/[-–—]/g,' ').replace(/\s+/g,' ').trim()||'Etapa'; // sem números nem unidades no nome: o Intervals leria como duração
+  const lin=s=>`- ${nome(s[0])} ${s[1]}${alvo(s[2])}`.replace(/\s+/g,' ');
   let out='',i=0;const st=p.steps.map(s=>{const c=[...s];c[1]=du(s[1]);return c});
   while(i<st.length){
     const s=st[i];
-    if(s[3]&&st[i+1]&&st[i+1][3]===s[3]){out+=`\n${s[3]}x\n- ${s[1]} ${pz(s[2])}\n- ${st[i+1][1]} ${pz(st[i+1][2])}\n`;i+=2}
-    else if(s[3]){out+=`\n${s[3]}x\n- ${s[1]} ${pz(s[2])}\n`;i++}
-    else{out+=`\n${s[0]}\n- ${s[1]} ${pz(s[2])}\n`;i++}
+    if(s[3]&&st[i+1]&&st[i+1][3]===s[3]){out+=`\n${s[3]}x\n${lin(s)}\n${lin(st[i+1])}\n`;i+=2}
+    else if(s[3]){out+=`\n${s[3]}x\n${lin(s)}\n`;i++}
+    else{out+=`${lin(s)}\n`;i++}
   }
   return out.trim();
+}
+// o Intervals precisa do ritmo de limiar do esporte para levar a faixa de ritmo ao relógio; se faltar, configura com a confirmação da pessoa
+async function limiarGarante(){
+  if(LS.get('limiarOk',null)===CFG.athlete)return true;
+  try{
+    const j=await api('/athlete/'+CFG.athlete),ss=(j.sportSettings||[]).find(x=>(x.types||[]).includes('Run'));
+    if(!ss)return true;
+    if(ss.threshold_pace){LS.set('limiarOk',CFG.athlete);return true}
+    const T=zonesFor(curV()||32).T,mid=(T[0]+T[1])/2,ms=Math.round(1000/mid*1000)/1000;
+    if(!confirm(`Para o relógio mostrar a faixa de ritmo de cada etapa e apitar quando você sair dela, o Intervals precisa do seu ritmo de limiar (hoje está vazio).\n\nPosso configurar agora em ${fmtP(mid)}/km, calculado pelo seu condicionamento?\n\nAs suas métricas de forma e fadiga continuam calculadas pela frequência cardíaca, como hoje. Você pode mudar depois em Intervals → Configurações → Corrida.`))return false;
+    const body={threshold_pace:ms};
+    // mantém a carga de treino pela FC (com ritmo de limiar preenchido, o Intervals passaria a calcular por ritmo e mudaria os números)
+    const lo=String(ss.load_order||'');if(/PACE/.test(lo)&&lo.indexOf('PACE')<lo.indexOf('HR')){const pt=lo.split('_').filter(x=>x!=='PACE'),k=pt.indexOf('HR');pt.splice(k+1,0,'PACE');body.load_order=pt.join('_')}
+    await api(`/athlete/${CFG.athlete}/sport-settings/${ss.id}`,{method:'PUT',body:JSON.stringify(body)});
+    LS.set('limiarOk',CFG.athlete);toast('Ritmo de limiar configurado no Intervals',3000);return true;
+  }catch(e){toast('Não consegui ajustar o ritmo de limiar no Intervals. Defina em Intervals → Configurações → Corrida.',5000);return true}
 }
 async function sendWatch(ds){
   const p=planOn(ds);if(!p)return;
   if(!confirm(`${evOn(ds)?'Atualizar':'Enviar'} "${p.titulo}" (${ds.split('-').reverse().join('/')}) no calendário do Intervals.icu?\n\n${marcaRel()==='amazfit'?'O Intervals repassa ao app Zepp (confere umas 3 vezes por dia). Depois abra o Zepp no celular para o relógio receber.':'O Intervals repassa ao Garmin Connect, e o relógio recebe na próxima sincronização.'}`))return;
   try{
-    const old=evOn(ds),body=JSON.stringify({category:'WORKOUT',type:'Run',start_date_local:ds+'T00:00:00',name:p.titulo,description:toIcu(p)});
+    if(!(await limiarGarante()))return;
+    const old=evOn(ds),body=JSON.stringify({category:'WORKOUT',type:'Run',target:'PACE',start_date_local:ds+'T00:00:00',name:p.titulo,description:toIcu(p)});
     const ev=old?await api(`/athlete/${CFG.athlete}/events/${old.id}`,{method:'PUT',body}):await api(`/athlete/${CFG.athlete}/events`,{method:'POST',body});
     D.ev=(D.ev||[]).filter(e=>e.d!==ds).concat([{id:ev.id,d:ds,name:ev.name}]);LS.set('data',D);
     toast(marcaRel()==='amazfit'?'ENVIADO AO INTERVALS // ABRA O ZEPP PARA SINCRONIZAR':D.athlete&&D.athlete.gUp?'TREINO ENVIADO AO RELÓGIO':'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN',4000);render();
