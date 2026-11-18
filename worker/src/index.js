@@ -199,6 +199,23 @@ async function marcar(env, a, b) {
   return { ok: true, amigos: novos };
 }
 
+// ---------- eventos (corridas online): inscritos ----------
+// 'ev:<evento>' = { ins: { <atleta>: { n: nome, t: quando } } }. Só os eventos listados aqui existem.
+const EVENTOS_OK = ['stepon1'], MAXINS = 5000;
+async function evento(env, a, b) {
+  const ev = String(b.ev || '');
+  if (!EVENTOS_OK.includes(ev)) return { erro: 'evento inválido' };
+  const k = 'ev:' + ev, d = (await env.BR.get(k, 'json')) || { ins: {} };
+  if (b.acao === 'participar') {
+    if (!d.ins[b.athlete] && Object.keys(d.ins).length >= MAXINS) return { erro: 'evento lotado' };
+    d.ins[b.athlete] = { n: String(a.name || b.athlete).slice(0, 60), t: (d.ins[b.athlete] || {}).t || Date.now() };
+  } else if (b.acao === 'sair') delete d.ins[b.athlete];
+  else return { erro: 'ação inválida' };
+  await env.BR.put(k, JSON.stringify(d));
+  return { ok: true, ...evLista(d) };
+}
+const evLista = (d) => ({ n: Object.keys(d.ins).length, ins: Object.entries(d.ins).sort((x, y) => x[1].t - y[1].t).slice(0, 300).map(([id, v]) => ({ id, name: v.n })) });
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -346,6 +363,23 @@ export default {
     }
 
     // cópia de segurança do app de cada pessoa (plano, treinos editados, esforço...): privada, só o dono lê e grava
+    if (req.method === 'GET' && url.pathname === '/evento') {
+      const ev = String(url.searchParams.get('ev') || '');
+      if (!EVENTOS_OK.includes(ev)) return json(req, { erro: 'evento inválido' }, 400);
+      return json(req, evLista((await env.BR.get('ev:' + ev, 'json')) || { ins: {} }), 200, { 'Cache-Control': 'no-store' });
+    }
+
+    if (req.method === 'POST' && url.pathname === '/evento') {
+      const txt = await req.text();
+      if (txt.length > 4000) return json(req, { erro: 'pedido grande demais' }, 413);
+      let b;
+      try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      const r = await evento(env, a, b);
+      return json(req, r, r.erro ? 400 : 200);
+    }
+
     if (req.method === 'POST' && url.pathname === '/dados') {
       const txt = await req.text();
       if (txt.length > 400000) return json(req, { erro: 'dados grandes demais' }, 413);
