@@ -131,6 +131,11 @@ async function social(env, a, b) {
     if (!txt) return { erro: 'comentário vazio' };
     if (s.m.length >= MAXCOM) return { erro: 'limite de comentários' };
     s.m.push({ i: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), id: eu, name: a.name || eu, t: Date.now(), txt });
+  } else if (b.acao === 'curtirc' || b.acao === 'descurtirc') { // curtida em um comentário
+    const c = s.m.find((x) => x.i === b.cid);
+    if (!c) return { erro: 'comentário não encontrado' };
+    c.l = b.acao === 'curtirc' ? com(c.l || [], eu) : sem(c.l || [], eu);
+    if (!c.l.length) delete c.l;
   } else if (b.acao === 'apagar') { // quem escreveu ou o dono da atividade
     s.m = s.m.filter((c) => !(c.i === b.cid && (c.id === eu || b.dono === eu)));
   } else return { erro: 'ação inválida' };
@@ -247,7 +252,16 @@ export default {
         const r = Number.isFinite(+z.r) && +z.r >= 120 && +z.r <= 1200 ? Math.round(+z.r) : undefined; // ritmo médio (s/km) da corrida que fechou a área
         return p.length >= 3 ? { d: z.d, h, r, p, v: z.v === 'a' ? 'a' : undefined } : null;
       }).filter(Boolean);
-      const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
+      // perfil público: bio, link, selos e capa (tudo curto e validado)
+      const pr = b.perfil && typeof b.perfil === 'object' ? b.perfil : {};
+      const limpa = (x, n) => String(x || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+      const perfil = {
+        bio: limpa(pr.bio, 160),
+        link: /^https?:\/\/[^\s<>"']{3,118}$/i.test(String(pr.link || '')) ? String(pr.link) : '',
+        selos: (Array.isArray(pr.selos) ? pr.selos : []).map((x) => limpa(x, 28)).filter(Boolean).slice(0, 3),
+        capa: /^[a-z0-9]{2,12}$/.test(String(pr.capa || '')) ? String(pr.capa) : '',
+      };
+      const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, perfil, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));
       await trocaNoSnap(env, b.athlete, reg);
       return json(req, { ok: true, runs: runs.length });

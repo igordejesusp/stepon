@@ -566,6 +566,29 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .ntl{display:flex;flex-direction:column;gap:6px}.nti{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 12px;color:var(--txt)}
 .nti.nv{border-color:var(--blue)}.nic{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 18%,transparent)}
 .nic svg{width:18px;height:18px;fill:none;stroke:var(--c);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ntx{display:flex;flex-direction:column;gap:2px;min-width:0}.ntx b{font-size:13.5px;font-weight:600;line-height:1.35;color:var(--txt)}.ntx small{color:var(--dim);font-size:11.5px}
+.li-ic.ic2 .lt{fill:#fff;font-family:var(--f);font-weight:800;text-anchor:middle;stroke:rgba(0,0,0,.3);stroke-width:.7px;paint-order:stroke}.li-ic.ic2 .lk{fill:var(--c);font-family:var(--f);font-weight:900;text-anchor:middle}.li-ic.ic2 .w{fill:rgba(255,255,255,.85)}.li-ic.ic2 text{text-decoration:none}
+#sheet.baixo.on{align-items:flex-end;padding:0}
+#sheet.baixo .box{max-width:560px;height:80%;max-height:80%;margin:0 auto;border-radius:26px 26px 0 0;padding:0;display:flex;flex-direction:column;overflow:hidden;animation:subirCom .24s ease-out}
+@keyframes subirCom{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+#sheet.baixo .box:before{display:block;top:9px;left:calc(50% - 20px);width:40px;height:4px;background:var(--line)}
+.cmh{text-align:center;font-weight:700;font-size:15px;color:var(--hi);padding:24px 0 12px;border-bottom:1px solid var(--line2);flex:none}
+.cml{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 12px}.cmq{font-size:12.5px;color:var(--dim);padding:10px 0 2px}
+.cmi{display:flex;gap:12px;padding:14px 0 6px;align-items:flex-start}.cmi>img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;background:var(--cell)}
+.cmb{flex:1;min-width:0}.cmb b{font-size:13.5px;color:var(--hi)}.cmb small{color:var(--dim);font-size:12px;margin-left:7px}
+.cmb p{margin:2px 0 6px;font-size:15px;line-height:1.4;color:var(--txt);word-break:break-word}.cmr{display:flex;gap:16px}.cmr button{background:none;border:0;padding:0;font-size:12.5px;font-weight:600;color:var(--dim)}
+.cmc{flex:none;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--dim);font-size:12px;min-width:38px;padding:4px 0}.cmc svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}.cmc.on{color:#ff5a6e}.cmc.on svg{fill:#ff5a6e;stroke:#ff5a6e}
+.cme{text-align:center;color:var(--dim);padding:50px 0;line-height:1.6;font-size:14px}
+.cmf{flex:none;border-top:1px solid var(--line2);padding:10px 14px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center;background:var(--panel2)}.cmf>img{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:none;background:var(--cell)}
+.cmw{flex:1;display:flex;align-items:center;border:1px solid var(--line);border-radius:99px;padding:0 6px 0 16px;background:var(--bg)}.cmw input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);font-size:15px;padding:11px 0}
+.cmw button{background:none;border:0;color:var(--blue);font-weight:700;font-size:14px;padding:8px 10px;opacity:.35}.cmw button.on{opacity:1}
+.pcard{padding:0;overflow:hidden}.pcv{height:128px;position:relative}.pedt{position:absolute;right:12px;top:12px;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;backdrop-filter:blur(6px)}
+.pbd{padding:0 16px 16px;margin-top:-46px;position:relative}.prow{display:flex;justify-content:space-between;align-items:flex-end}.pav{position:relative;width:92px;height:92px}.pav img{width:92px;height:92px;border-radius:50%;object-fit:cover;border:4px solid var(--panel);box-shadow:0 0 0 2px var(--blue);background:var(--cell);display:block}
+.pcam{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--blue);color:#06203d;border:3px solid var(--panel);font-size:12px;padding:0;display:flex;align-items:center;justify-content:center}
+.pn{font-size:23px;margin-top:10px;color:var(--hi)}.pbio{margin:8px 0 0;font-size:15px;line-height:1.5;color:var(--txt);white-space:pre-line;word-break:break-word}
+.plk{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--blue);font-size:14px;font-weight:600;text-decoration:none;max-width:100%}.plk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex:none}.plk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.psl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.psl span{display:inline-flex;align-items:center;gap:6px;background:var(--cell);border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 8px;font-size:13px;color:var(--txt)}.psl svg{width:14px;height:14px;fill:#f0b72f}
+.pseq{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:15px;color:var(--txt)}.pseq svg{width:22px;height:22px}.pcnt{margin-top:12px;font-size:14px;color:var(--dim)}.pcnt b{color:var(--hi)}
+.capas{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cap{height:54px;border-radius:12px;border:2px solid transparent;position:relative;padding:0;overflow:hidden}.cap small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 0;text-align:center}.cap.on{border-color:var(--blue);box-shadow:0 0 0 2px rgba(74,158,255,.4)}
 </style>
 </head>
 <body>
@@ -636,7 +659,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
 // o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
 // Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
-const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont','nt'];
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont','nt','nomesLoc','perfil'];
 // privacidade de cada treino: 'a' = só amigos, 'e' = só eu (sem marca = todos)
 let PRIV=LS.get('priv',{});
 let CONT=LS.get('cont',{}); // circuitos contestados e aprovados pelo app: o que foi aprovado nunca volta ao cálculo original
@@ -1291,7 +1314,7 @@ function rotaSimples(el,tr){if(!tr||tr.length<2||!el.isConnected)return;el.query
   if(pl){const cor=MAPCOR[el.dataset.map]||'#4a9eff',d=pl.map(poly=>poly.map(ring=>ring.map((q,i)=>{const t=T([q[0]*kx,-q[1]]);return (i?'L':'M')+t[0].toFixed(1)+' '+t[1].toFixed(1)}).join('')+'Z').join('')).join('');
     el.insertAdjacentHTML('afterbegin',`<svg class="rsvg" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:100%;height:100%"><path d="${d}" fill="${cor}" fill-opacity=".45" fill-rule="evenodd" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round"/></svg>`);return}
   const d=Q.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(''),a=Q[0],b=Q[Q.length-1];
-  el.insertAdjacentHTML('afterbegin',`<svg class="rsvg" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:100%;height:100%"><path d="${d}" fill="none" stroke="${TM[TEMA()].sob}" stroke-opacity=".6" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#4a9eff" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${a[0]}" cy="${a[1]}" r="5" fill="#fff" stroke="#4a9eff" stroke-width="2.5"/><circle cx="${b[0]}" cy="${b[1]}" r="5" fill="#4a9eff" stroke="#fff" stroke-width="2.5"/></svg>`)}
+  el.insertAdjacentHTML('afterbegin',`<svg class="rsvg" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:100%;height:100%"><path d="${d}" fill="none" stroke="${TM[TEMA()].sob}" stroke-opacity=".6" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#4a9eff" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>${el.dataset.sp?'':`<circle cx="${a[0]}" cy="${a[1]}" r="5" fill="#fff" stroke="#4a9eff" stroke-width="2.5"/><circle cx="${b[0]}" cy="${b[1]}" r="5" fill="#4a9eff" stroke="#fff" stroke-width="2.5"/>`}</svg>`)}
 function mlLoad(){
   const t=TEMA(),T=TM[t];_ml=_ml||{};
   if(_ml[t])return _ml[t];
@@ -1312,12 +1335,12 @@ function mlLoad(){
 }
 const MAPTR={}; // trajetos de outras pessoas (amigos), para desenhar o mapa pequeno
 const MAPPOLY={},MAPCOR={}; // áreas (polígonos) para o mapa pequeno do território, e a cor de cada uma
-const mapBox=(id,H,pad)=>{const im=(MAPIMG[id+'_'+H+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}"${pad?` data-pad="${pad}"`:''} style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
+const mapBox=(id,H,pad,sp)=>{const im=(MAPIMG[id+'_'+H+(sp?'s':'')+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}"${pad?` data-pad="${pad}"`:''}${sp?' data-sp="1"':''} style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
 function drawMaps(){
   document.querySelectorAll('.map[data-map]:not(.ok)').forEach(async el=>{
     // só tira a foto do mapa com o cartão visível e no tamanho certo; escondido (outra aba) tenta de novo depois
     const W=el.clientWidth;if(W<40)return;
-    el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+TEMA(),tr=(AX[id]||{}).map||MAPTR[id],pl=MAPPOLY[id],pd=+el.dataset.pad||0;
+    el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+(el.dataset.sp?'s':'')+TEMA(),tr=(AX[id]||{}).map||MAPTR[id],pl=MAPPOLY[id],pd=+el.dataset.pad||0;
     if(!tr||(MAPIMG[key]&&Math.abs(MAPIMG[key].w-W)<=4))return;
     el.querySelectorAll('.mimg').forEach(x=>x.remove());
     try{
@@ -1334,11 +1357,11 @@ function drawMaps(){
           m.addLayer({id:'pg0',type:'fill',source:'pg',paint:{'fill-color':cor,'fill-opacity':.45}});m.addLayer({id:'pg1',type:'line',source:'pg',layout:{'line-join':'round'},paint:{'line-color':cor,'line-width':2.2}})}
         else{
         m.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:ll}}});
-        m.addSource('pt',{type:'geojson',data:{type:'FeatureCollection',features:[ll[0],ll[ll.length-1]].map((c,i)=>({type:'Feature',properties:{f:i},geometry:{type:'Point',coordinates:c}}))}});
+        if(!el.dataset.sp)m.addSource('pt',{type:'geojson',data:{type:'FeatureCollection',features:[ll[0],ll[ll.length-1]].map((c,i)=>({type:'Feature',properties:{f:i},geometry:{type:'Point',coordinates:c}}))}});
         const lay={'line-join':'round','line-cap':'round'};
         m.addLayer({id:'rt0',type:'line',source:'rt',layout:lay,paint:{'line-color':TM[TEMA()].sob,'line-opacity':.6,'line-width':7}});
         m.addLayer({id:'rt1',type:'line',source:'rt',layout:lay,paint:{'line-color':'#4a9eff','line-width':3.5}});
-        m.addLayer({id:'pt',type:'circle',source:'pt',paint:{'circle-radius':5,'circle-color':['case',['==',['get','f'],0],'#fff','#4a9eff'],'circle-stroke-width':2.5,'circle-stroke-color':['case',['==',['get','f'],0],'#4a9eff','#fff']}});
+        if(!el.dataset.sp)m.addLayer({id:'pt',type:'circle',source:'pt',paint:{'circle-radius':5,'circle-color':['case',['==',['get','f'],0],'#fff','#4a9eff'],'circle-stroke-width':2.5,'circle-stroke-color':['case',['==',['get','f'],0],'#4a9eff','#fff']}});
         }
         m.once('idle',()=>{clearTimeout(tmo);if(feito)return;if(mapaRuim(m,falhas))return refazRota();feito=1;MAPIMG[key]={src:m.getCanvas().toDataURL('image/png'),w:W};m.remove();box.remove();
           if(!el.isConnected)return;const im=new Image();im.className='mimg';im.alt='';im.src=MAPIMG[key].src;el.prepend(im)});
@@ -1766,13 +1789,13 @@ function rMais(soTres){
   h+=`<div class="sec">Condição atual</div>`+condPag(S,cur);
   const kM=h.length;
   h+=`<div class="sec">Métricas avançadas</div>`+stc([['VDOT '+qb('vdot'),V?V.v.toFixed(1):'--',V?(V.teste?'Teste de '+(V.dist/1000)+' km'+(V.t?' em '+fmtT(V.t):'')+' · '+fmtD(V.teste):V.est?'Estimado pelo questionário':'Base: '+(V.dist/1000)+' km em '+fmtT(V.t)):'Sem esforço de 1,5 km ou mais'],['Rampa 7 dias '+qb('rampa'),(ramp>0?'+':'')+ramp.toFixed(1),'Seguro: até +5 por semana',ramp>8?'bad':ramp>5?'warn':'']])
-  +(V?gc('Projeção de prova',[[5000,'5K','5 km'],[10000,'10K','10 km'],[21097.5,'21K','Meia maratona'],[42195,'42K','Maratona']].map(([d,ic,n])=>{const s=predict(V.v,d);return linhaI(icoT(ic),n,fmtP(s/d*1000)+' /km',fmtT(s))}).join(''),'Condicionamento atual')
-    +gc('Ritmos de treino',[['E','Leve / rodagem','#4a9eff'],['M','Maratona','#7cc4ff'],['T','Limiar','#f0c24b'],['I','Intervalado','#ff8a3d'],['R','Repetição','#e0442f']].map(([k,n,c])=>linhaI(icoT(k,c),n,'',fmtP(Z[k][0])+'–'+fmtP(Z[k][1]))).join(''),'Método Daniels'):'')
+  +(V?gc('Projeção de prova',[[5000,'5K','5 km'],[10000,'10K','10 km'],[21097.5,'21K','Meia maratona'],[42195,'42K','Maratona']].map(([d,ic,n])=>{const s=predict(V.v,d);return linhaI(icoDist(ic,{'5K':'#34c77b','10K':'#4a9eff','21K':'#8f7bff','42K':'#f0b72f'}[ic]),n,fmtP(s/d*1000)+' /km',fmtT(s))}).join(''),'Condicionamento atual')
+    +gc('Ritmos de treino',[['E','Leve / rodagem','#4a9eff'],['M','Maratona','#7cc4ff'],['T','Limiar','#f0c24b'],['I','Intervalado','#ff8a3d'],['R','Repetição','#e0442f']].map(([k,n,c])=>linhaI(icoPace(k,c),n,'',fmtP(Z[k][0])+'–'+fmtP(Z[k][1]))).join(''),'Método Daniels'):'')
   +gc('Forma × fadiga · 180 dias',pmcSvg(S,180));
   const k4=h.length;
   const z=run.hr_zones||[148,157,166,175,180,185,194],zn=['Z1 Recuperação','Z2 Aeróbico','Z3 Tempo','Z4 Sub-limiar','Z5a Limiar','Z5b Capacidade','Z5c Anaeróbico'];
   h+=`<div class="sec">Parâmetros fisiológicos</div>`+gc('Frequência cardíaca',linhaI(icoC('fc','red'),'FC máxima','',(run.max_hr||CFG.fcmax)+' bpm')+linhaI(icoC('fc','red'),'FC limiar','',(run.lthr||'--')+' bpm')+linhaI(icoC('fc'),'FC de repouso','',(a.rhr||CFG.fcrep)+' bpm'),'Do Intervals.icu')
-  +gc('Zonas de frequência cardíaca',z.map((v,i)=>linhaI(icoT('Z'+(i<4?i+1:'5'+'abc'[i-4]),ZCOR[i]),zn[i].replace(/^Z\S+\s/,''),'',(i?z[i-1]+1:0)+'–'+v+' bpm')).join(''))
+  +gc('Zonas de frequência cardíaca',z.map((v,i)=>linhaI(icoZona(i,ZCOR[i]),zn[i].replace(/^Z\S+\s/,''),'',(i?z[i-1]+1:0)+'–'+v+' bpm')).join(''))
   +`<p class="meta" style="margin:4px 2px 0">As zonas vêm do Intervals.icu. Para mudar, edite lá (Configurações → Corrida) e sincronize.</p>`;
   {const sM=semSec(h.slice(k1,k2)),sB=semSec(h.slice(k2,mA)),sCo=semSec(h.slice(mA,kM)),sX=semSec(h.slice(kM,k4)),sF=semSec(h.slice(k4));
     const ini=h.slice(0,k1),p10=V?predict(V.v,10000):null;
@@ -1881,7 +1904,7 @@ window.verMais=()=>{LIM+=8;render()};
 function rPerf(){
   const a=D.athlete||{},runs=D.acts.filter(isRun),B=bests(0),yr=String(TODAY().getFullYear());
   const tot=runs.filter(x=>x.date.slice(0,4)===yr).reduce((s,x)=>s+(x.dist||0),0),nv=nivelXp(meuXp());
-  let h=`<div class="card cur pcab"><button onclick="pickFoto()" aria-label="Trocar foto" class="pfoto"><img src="${esc(myPic())}" alt=""><span>✎</span></button><div class="pnm"><h2>${esc(a.name||'Atleta')}</h2><div class="meta">${esc(a.city||'')}${a.weight?' · '+a.weight+' kg':''}</div><div class="meta">${runs.length} corridas · ${km(tot)} km em ${yr}</div>${LS.get('foto',null)?`<button class="lk" onclick="resetFoto()">Usar a foto do Intervals</button>`:''}</div>${escudo(nv,"openNiveis()")}</div>`;
+  let h=perfCab({eu:1,nome:a.name||'Atleta',pic:myPic(),perfil:LS.get('perfil',{}),nv,seq:semanasSeguidas(),runs:runs.length,tot,amigos:(FR.friends||[]).length,sub:esc(a.city||'')});
   h+=pTabs('PT',PT,'pTab');
   if(PT==='prog'){
     h+=progBox('me',semanas(D.acts.filter(isRun).map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))));
@@ -1938,7 +1961,7 @@ const MED_COR=i=>i===0?['#f0b72f','#1a1305']:i===1?['#b9c2cd','#20262e']:i===2?[
 function marcCorrida(x){
   const a=x.id?D.acts.find(q=>q.id===x.id):null,r=a||x,mp=a?(AX[a.id]||{}).map:x.map,mid=a?a.id:'mf'+String(x.date||'').replace(/\D/g,'')+(x.t||'');if(!a&&mp)MAPTR[mid]=mp;const nome=(a&&a.name)||x.name||'Corrida',h=String((a&&a.date)||x.date||'').slice(11,16);
   const det=[r.dist?km(r.dist).replace('.',',')+' km':null,r.elev!=null?Math.round(r.elev)+' m':null,r.mov?fmtTempo(r.mov):null].filter(Boolean).join(' · ');
-  return `<div class="mkc"${a&&!MKS.fr?` onclick="openAct('${a.id}')"`:''}><div class="mkm">${mp&&mp.length>2?mapBox(mid,72,10):''}</div><div class="mki"><b>${esc(nome)}</b><span>${MK_ICO.run}${det}</span><small>${dataLonga(x.date)}${h?' às '+h:''}</small></div>${a&&!MKS.fr?`<i class="mkg">${MK_ICO.seta}</i>`:''}</div>`;
+  return `<div class="mkc"${a&&!MKS.fr?` onclick="openAct('${a.id}')"`:''}><div class="mkm">${mp&&mp.length>2?mapBox(mid,72,10,1):''}</div><div class="mki"><b>${esc(nome)}</b><span>${MK_ICO.run}${det}</span><small>${dataLonga(x.date)}${h?' às '+h:''}</small></div>${a&&!MKS.fr?`<i class="mkg">${MK_ICO.seta}</i>`:''}</div>`;
 }
 const fmtTempo=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;return h?`${h}h ${m}min`:`${m}min ${ss}s`};
 function rMarc(){
@@ -2011,6 +2034,13 @@ const IC={
  cal:'<rect class="s" x="3.5" y="5" width="17" height="15.5" rx="3"/><path class="p" d="M3.5 8c0-1.7 1.3-3 3-3h11c1.7 0 3 1.3 3 3v2h-17z"/><path class="k" d="M8.5 3v4M15.5 3v4"/>'};
 // cor de cada assunto (a moldura e o desenho usam a mesma cor)
 const IC_COR={sono:'#8f7bff',fc:'#ff5a6e',vo2:'#25cbb8',forma:'#4a9eff',fadiga:'#ff8a3d',equil:'#f0b72f',vdot:'#4a9eff',prova:'#34c77b',modo:'#4a9eff',bib:'#4a9eff',corrida:'#4a9eff',cal:'#4a9eff'};
+// ícones das métricas avançadas, no mesmo estilo (duas tonalidades) de Forma, Fadiga e Equilíbrio
+const icoDist=(t,cor)=>{const f=t.length>2?7.1:8.4;return `<span class="li-ic ic2" style="--c:${cor}"><svg viewBox="0 0 24 24"><rect class="s" x="2.4" y="5" width="19.2" height="14.4" rx="3.4"/><path class="p" d="M2.4 8.4c0-1.9 1.5-3.4 3.4-3.4h12.4c1.9 0 3.4 1.5 3.4 3.4v1.2H2.4z"/><circle class="w" cx="5.4" cy="7.2" r=".85"/><circle class="w" cx="18.6" cy="7.2" r=".85"/><text class="lt" x="12" y="16.7" font-size="${f}">${t}</text></svg></span>`};
+// ritmos de treino: cinco barras que sobem (E=1 ... R=5) e a letra embaixo
+const icoPace=(k,cor)=>{const n='EMTIR'.indexOf(k)+1,H=[4.5,7,9.5,12,14.5];let b='';for(let i=0;i<5;i++)b+=`<rect class="${i<n?'p':'s'}" x="${3.1+i*3.9}" y="${15.2-H[i]}" width="3" height="${H[i]}" rx="1.2"/>`;return `<span class="li-ic ic2" style="--c:${cor}"><svg viewBox="0 0 24 24">${b}<text class="lk" x="12" y="22.2" font-size="8.6">${k}</text></svg></span>`};
+// zonas de frequência cardíaca: coração que enche conforme a zona
+const ZH='M12 21.2c-.3 0-.6-.1-.8-.3C7 17.6 2.6 14 2.6 9.4 2.6 6.4 4.9 4 7.8 4c1.7 0 3.2.8 4.2 2.1C13 4.8 14.5 4 16.2 4c2.9 0 5.2 2.4 5.2 5.4 0 4.6-4.4 8.2-8.6 11.5-.2.2-.5.3-.8.3z';
+const icoZona=(i,cor)=>{const lab=i<4?'Z'+(i+1):'5'+'abc'[i-4],y=(21.4-17.4*((i+1)/7)).toFixed(1);return `<span class="li-ic ic2" style="--c:${cor}"><svg viewBox="0 0 24 24"><defs><clipPath id="zh${i}"><rect x="0" y="${y}" width="24" height="24"/></clipPath></defs><path class="s" d="${ZH}"/><path class="p" clip-path="url(#zh${i})" d="${ZH}"/><text class="lt" x="12" y="14.4" font-size="7.2">${lab}</text></svg></span>`};
 const icoC=(k,cls)=>`<span class="li-ic ic2" style="--c:${IC_COR[k]||'#4a9eff'}"><svg viewBox="0 0 24 24">${IC[k]||''}</svg></span>`;
 const linhaI=(ic,tit,sub,dir,on)=>`<div class="mrow"${on?` onclick="event.stopPropagation();${on}"`:''}>${ic}<div class="mt"><b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>${dir!=null&&dir!==''?`<span class="mv">${dir}</span>`:''}${on?'<span class="li-ch">›</span>':''}</div>`;
 // tira o título antigo da seção ("sec") do começo do trecho
@@ -2156,7 +2186,10 @@ function desPorAtiv(runs){
   return o;
 }
 const TROFEU='<svg viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v4M9 20h6M10 16h4v4h-4z"/></svg>';
-const seloDes=L=>L&&L.length?`<div class="fdesw">${L.map(c=>`<span class="fdes"><i>${TROFEU}</i>Desafio concluído: <b>${c.n}</b></span>`).join('')}</div>`:'';
+// compacto (no feed): um chip só, mesmo com vários desafios; a lista completa fica dentro da corrida
+const seloDes=(L,compacto,abre)=>{if(!L||!L.length)return '';const clk=abre?` onclick="event.stopPropagation();openAct('${abre}')"`:'';
+  if(compacto&&L.length>1)return `<div class="fdesw"><span class="fdes"${clk}><i>${TROFEU}</i><b>${L.length} desafios concluídos</b></span></div>`;
+  return `<div class="fdesw">${L.map(c=>`<span class="fdes"${clk}><i>${TROFEU}</i>Desafio concluído: <b>${c.n}</b></span>`).join('')}</div>`};
 
 /* ---------- correu junto: marcar amigos numa corrida e receber as corridas em que fui marcado ---------- */
 let JUNTOS={};
@@ -2264,7 +2297,7 @@ function feedCard(o){
   const mapa=o.map==='own'?mapBox(o.id,190):Array.isArray(o.map)&&o.map.length>2?(MAPTR['f'+o.dono+o.id]=o.map,mapBox('f'+o.dono+o.id,190)):'';
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:''}>
   <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}${o.priv?` · <span class="fpriv">${PRIV_ROT[o.priv]}</span>`:''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div>${o.meu&&!o.mk?`<button class="fdots" aria-label="Mais opções do treino" onclick="event.stopPropagation();menuAtiv('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:''}</div>
-  <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2><div class="fjunto" data-jk="${k}">${o.com?comTxt(o.com):''}</div>${seloDes(o.des)}
+  <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2><div class="fjunto" data-jk="${k}">${o.com?comTxt(o.com):''}</div>${seloDes(o.des,1,o.meu?o.id:null)}
   <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
 }
@@ -2301,20 +2334,31 @@ async function socPost(dono,act,corpo){
 }
 window.socCurtir=(dono,act)=>{const k=dono+':'+act,s=SOC[k]||(SOC[k]={l:[],m:[]}),eu=s.l.includes(CFG.athlete);
   s.l=eu?s.l.filter(x=>x!==CFG.athlete):[...s.l,CFG.athlete];socPaint(k);socPost(dono,act,{acao:eu?'descurtir':'curtir'})};
-let SOCV=null; // para onde o botão Voltar dos comentários leva
-const quando=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'agora':m<60?m+' min':m<1440?Math.round(m/60)+' h':new Date(t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})};
+let SOCV=null;
+const quando=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'agora':m<60?m+' min':m<1440?Math.round(m/60)+' h':m<10080?Math.round(m/1440)+' d':Math.round(m/10080)+' sem'};
+const CM_HEART='<svg viewBox="0 0 24 24"><path d="M12 20.4S3.6 15.2 3.6 9a4.3 4.3 0 0 1 8.4-1.4A4.3 4.3 0 0 1 20.4 9c0 6.2-8.4 11.4-8.4 11.4z"/></svg>';
+// janela de baixo, como a do Instagram: lista no meio, campo fixo embaixo com a sua foto
 window.socAbrir=async(dono,act)=>{
-  const k=dono+':'+act;if(!SOC[k])await socLoad([k]);const s=SOC[k]||{l:[],m:[]};
-  const quem=s.l.map(id=>id===CFG.athlete?'você':frNome(id).split(' ')[0]);
-  openSheet(`<div class="hd"><b>Comentários</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  ${quem.length?`<p class="meta" style="margin-bottom:8px">❤ Curtido por ${esc(quem.slice(0,6).join(', '))}${quem.length>6?' e mais '+(quem.length-6):''}</p>`:''}
-  <div class="coms">${s.m.map(c=>`<div class="cm">${avatar({pic:c.id===CFG.athlete?myPic():frPic(c.id)},34)}<div><b>${esc(c.name)}</b> <span class="meta">${quando(c.t)}</span><p>${esc(c.txt)}</p>${c.id===CFG.athlete||dono===CFG.athlete?`<button class="lk" onclick="socApagar('${dono}','${act}','${c.i}')">Apagar</button>`:''}</div></div>`).join('')||'<p class="empty">Nenhum comentário ainda. Seja o primeiro.</p>'}</div>
-  <textarea id="cm-t" rows="2" maxlength="280" placeholder="Escreva um comentário" style="margin-top:10px"></textarea>
-  <div class="grid g2" style="margin-top:8px">${SOCV?`<button class="b" onclick="${SOCV}">◀ Voltar</button>`:'<span></span>'}<button class="b pri" onclick="socEnviar('${dono}','${act}')">Enviar</button></div>
-  <p class="meta" style="margin-top:8px">Quem usa o app e vê esta atividade também vê os comentários.</p>`);
+  const k=dono+':'+act;if(!SOC[k])await socLoad([k]);window._cmK=[dono,act];
+  const quem=dono===CFG.athlete?'você':frNome(dono).split(' ')[0];
+  openSheet(`<div class="cmh">Comentários</div><div class="cml" id="cml"></div>
+  <div class="cmf"><img src="${esc(myPic())}" alt=""><div class="cmw"><input id="cm-t" maxlength="280" placeholder="Comente para ${esc(quem)}…" autocomplete="off" oninput="cmTecla()" onkeydown="if(event.key==='Enter')socEnviar('${dono}','${act}')"><button id="cm-b" disabled onclick="socEnviar('${dono}','${act}')">Publicar</button></div></div>`);
+  $('#sheet').classList.add('baixo');cmLista();
 };
-window.socEnviar=async(dono,act)=>{const v=($('#cm-t').value||'').trim();if(!v)return toast('Escreva o comentário');const r=await socPost(dono,act,{acao:'comentar',txt:v});if(r)socAbrir(dono,act)};
-window.socApagar=async(dono,act,cid)=>{if(!confirm('Apagar este comentário?'))return;const r=await socPost(dono,act,{acao:'apagar',cid});if(r)socAbrir(dono,act)};
+function cmLista(rola){
+  const [dono,act]=window._cmK||[],el=$('#cml');if(!el||!dono)return;const k=dono+':'+act,s=SOC[k]||{l:[],m:[]},eu=CFG.athlete;
+  const quem=s.l.map(id=>id===eu?'você':frNome(id).split(' ')[0]);
+  el.innerHTML=(quem.length?`<div class="cmq">❤ Curtido por ${esc(quem.slice(0,5).join(', '))}${quem.length>5?' e mais '+(quem.length-5):''}</div>`:'')+
+   (s.m.length?s.m.map(c=>{const l=c.l||[],mine=c.id===eu,nome=mine?'Você':String(c.name||'').split(' ')[0];
+     return `<div class="cmi"><img src="${esc(mine?myPic():frPic(c.id))}" alt=""><div class="cmb"><div><b>${esc(nome)}</b><small>${quando(c.t)}</small></div><p>${esc(c.txt)}</p><div class="cmr"><button onclick="cmResp('${esc(String(c.name||'').split(' ')[0])}')">Responder</button>${mine||dono===eu?`<button onclick="socApagar('${dono}','${act}','${c.i}')">Apagar</button>`:''}</div></div><button class="cmc${l.includes(eu)?' on':''}" aria-label="Curtir comentário" onclick="socCurtirC('${c.i}')">${CM_HEART}<span>${l.length||''}</span></button></div>`}).join(''):'<p class="cme">Nenhum comentário ainda.<br>Comece a conversa.</p>');
+  if(rola)el.scrollTop=el.scrollHeight}
+window.cmTecla=()=>{const t=$('#cm-t'),b=$('#cm-b');if(t&&b){b.disabled=!t.value.trim();b.classList.toggle('on',!!t.value.trim())}};
+window.cmResp=n=>{const t=$('#cm-t');if(!t)return;t.value='@'+n+' ';t.focus();cmTecla()};
+window.socEnviar=async(dono,act)=>{const t=$('#cm-t'),v=(t.value||'').trim();if(!v)return;t.disabled=true;const r=await socPost(dono,act,{acao:'comentar',txt:v});t.disabled=false;if(r){t.value='';cmTecla();cmLista(1)}else t.focus()};
+window.socApagar=async(dono,act,cid)=>{if(!confirm('Apagar este comentário?'))return;const r=await socPost(dono,act,{acao:'apagar',cid});if(r)cmLista()};
+window.socCurtirC=async cid=>{const [dono,act]=window._cmK||[],k=dono+':'+act,s=SOC[k],c=s&&s.m.find(x=>x.i===cid);if(!c)return;
+  const eu=CFG.athlete,tinha=(c.l||[]).includes(eu);c.l=tinha?c.l.filter(x=>x!==eu):[...(c.l||[]),eu];cmLista();
+  const r=await socPost(dono,act,{acao:tinha?'descurtirc':'curtirc',cid});if(!r){c.l=tinha?[...(c.l||[]),eu]:(c.l||[]).filter(x=>x!==eu);cmLista()}else cmLista()};
 
 /* ================= etapas (voltas) do relógio: lê o arquivo original .fit da corrida ================= */
 // formato FIT da Garmin: cabeçalho, mensagens de definição e de dados; só as voltas (mensagem 19) interessam
@@ -2488,14 +2532,14 @@ window.openAct=async id=>{
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
   openSheet(h);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
-function openSheet(h){const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
+function openSheet(h){$('#sheet').classList.remove('baixo');const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
   // o X do topo vira a setinha de voltar, à esquerda do título
   const x=b.querySelector('.hd button[onclick="closeSheet()"]');if(x){x.className='shv';x.setAttribute('aria-label','Voltar');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
     // a seta fica fixa no canto enquanto a janela rola (só ela; o título rola junto)
     const fx=document.createElement('div');fx.className='shfx';fx.appendChild(x);b.insertBefore(fx,b.firstChild);const hd=b.querySelector('.hd');if(hd)hd.classList.add('cv')}
   $('#sheet').classList.add('on');drawMaps()}
 (()=>{const bx=$('#sbox');let y0=null,dy=0;
-  bx.addEventListener('touchstart',e=>{y0=bx.scrollTop<=0?e.touches[0].clientY:null;dy=0;bx.style.transition='none'},{passive:true});
+  bx.addEventListener('touchstart',e=>{y0=bx.scrollTop<=0&&!e.target.closest('.cml')?e.touches[0].clientY:null;dy=0;bx.style.transition='none'},{passive:true});
   bx.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>0)bx.style.transform=`translateY(${dy}px)`},{passive:true});
   bx.addEventListener('touchend',()=>{bx.style.transition='transform .2s';if(dy>90){bx.style.transform='translateY(100%)';setTimeout(()=>{closeSheet();bx.style.transition='none';bx.style.transform=''},200)}else bx.style.transform='';y0=null;dy=0});
 })();
@@ -3052,10 +3096,10 @@ async function publishMine(force,entrar){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
   const runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').slice(0,150).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null,dev:devNome(a).slice(0,40),...(PRIV[a.id]==='a'?{v:'a'}:{})}});
   const foto=await fotoMini();
-  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv2|'+JSON.stringify(PRIV)+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
+  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv3|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
   while(terr.length&&JSON.stringify({runs,terr,foto}).length>660000)terr.pop();
-  const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,...(entrar?{entrar:true}:{})})});
+  const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:LS.get('perfil',null),...(entrar?{entrar:true}:{})})});
   if(!r.ok)throw new Error('HTTP '+r.status);
   {const j=await r.clone().json().catch(()=>({}));if(j.fora){LS.set('comp','nao');return}}
   LS.set('pubh',sig);LS.set('pubErr',null);LS.set('pubOk',Date.now());
@@ -3319,7 +3363,7 @@ window.openPerfilAmigo=(id,tab)=>{
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
   let h=`<div class="hd"><b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="card cur pcab">${avatar({pic:frPic(id)},62)}<div class="pnm"><h2>${esc(frNome(id))}</h2><div class="meta">${runs.length} corridas · ${km(tot)} km no app${eAmigo?' · Amigo':''}</div></div>${nv?escudo(nv,''):''}</div>${eAmigo?'':`<div style="margin:-2px 0 10px">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'b full')}</div>`}`;
+  ${perfCab({nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sub:eAmigo?'Amigo':''})}${eAmigo?'':`<div style="margin:-2px 0 10px">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'b full')}</div>`}`;
   if(!u||!runs.length)h+=`<p class="empty" style="color:var(--txt)">${esc(frNome(id))} ainda não entrou no ranking, então o app não tem as corridas dessa pessoa. Quando ela entrar, o perfil aparece aqui sozinho.</p>`;
   else{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
@@ -3363,17 +3407,29 @@ function terrRegioes(geom){
   return Object.values(G).map(g=>{const polys=g.map(x=>x.poly),b=g.reduce((m,x)=>[Math.min(m[0],x.b[0]),Math.max(m[1],x.b[1]),Math.min(m[2],x.b[2]),Math.max(m[3],x.b[3])],[1e9,-1e9,1e9,-1e9]);
     return {polys,b,km2:geoKm2(polys),n:polys.length,c:[(b[0]+b[1])/2,(b[2]+b[3])/2]}}).sort((a,b)=>b.km2-a.km2);
 }
-// nome do lugar (parque ou bairro) pelo OpenStreetMap; coordenada arredondada, 1 pedido por segundo e guardado no aparelho
+// nome do lugar: o que a pessoa escreveu; senão o parque conhecido dentro da área; senão o bairro (OpenStreetMap, 1 pedido por segundo, guardado no aparelho)
+const nomesLoc=()=>LS.get('nomesLoc',{}),chaveLoc=c=>c[0].toFixed(2)+','+c[1].toFixed(2);
 let _geoFila=Promise.resolve();
-function nomeLocal(c,el){
-  const k=c[0].toFixed(2)+','+c[1].toFixed(2),G=LS.get('geon',{});
+const geoGet=async u=>{const r=await fetch(u);if(!r.ok)throw 0;return r.json()};
+const espera=ms=>new Promise(ok=>setTimeout(ok,ms));
+function nomeLocal(g,el){
+  const k=chaveLoc(g.c),P=nomesLoc(),G=LS.get('geon2',{});
+  if(P[k]){if(el)el.textContent=P[k];return}
   if(G[k]){if(el)el.textContent=G[k];return}
   _geoFila=_geoFila.then(async()=>{
-    try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=pt-BR&lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`);if(!r.ok)throw 0;const j=await r.json(),a=j.address||{};
-      const n=a.leisure||a.park||a.suburb||a.neighbourhood||a.quarter||a.city_district||a.village||a.town||a.city;
-      if(n){const G2=LS.get('geon',{});G2[k]=n;LS.set('geon',G2);if(el&&el.isConnected)el.textContent=n}}catch(e){}
-    await new Promise(ok=>setTimeout(ok,1100))});
+    try{let n=null;
+      if(g.km2<4){ // área pequena: procura um parque conhecido dentro dela (ex.: Parque do Sabiá)
+        const j=await geoGet(`https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=pt-BR&limit=8&bounded=1&q=parque&viewbox=${g.b[2]-.002},${g.b[1]+.002},${g.b[3]+.002},${g.b[0]-.002}`);
+        const pk=(j||[]).find(x=>x.name&&x.category==='leisure'&&/park|garden|nature_reserve|stadium|track|sports_centre/.test(x.type));if(pk)n=pk.name;await espera(1100)}
+      if(!n){const j=await geoGet(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=pt-BR&lat=${g.c[0].toFixed(5)}&lon=${g.c[1].toFixed(5)}`),a=j.address||{};
+        n=a.leisure||a.park||a.suburb||a.neighbourhood||a.quarter||a.city_district||a.village||a.town||a.city}
+      if(n){const G2=LS.get('geon2',{});G2[k]=n;LS.set('geon2',G2);if(el&&el.isConnected&&!nomesLoc()[k])el.textContent=n}}catch(e){}
+    await espera(1100)});
 }
+window.renomeiaLocal=i=>{const g=(window.__REG||[])[i];if(!g)return;const k=chaveLoc(g.c),el=document.getElementById('rg-'+i),atual=(el&&el.textContent)||'';
+  const n=prompt('Nome deste local (deixe vazio para voltar ao nome automático):',atual);if(n===null)return;
+  const P=nomesLoc(),v=n.trim().slice(0,40);if(v)P[k]=v;else delete P[k];LS.set('nomesLoc',P);
+  if(v&&el)el.textContent=v;else nomeLocal(g,el)};
 window.openMeusTerr=()=>{
   try{terrData()}catch(e){}
   const o=(TD||[]).find(x=>x.u.me),hd=`<div class="hd"><b>Seu território</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
@@ -3383,8 +3439,8 @@ window.openMeusTerr=()=>{
   openSheet(hd+`<div class="card stc"><div class="stg c3"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Locais</span><b>${R.length}</b></div><div><span>Circuitos</span><b>${o.n}</b></div></div></div>
   <p class="meta" style="margin:2px 2px 10px">Valendo no mapa do modo ${MODO()==='g'?'Geral':'Amigos'}.</p>
   ${R.map((g,i)=>`<div class="card blc" style="margin-bottom:10px"><div class="blh"><b id="rg-${i}">Local ${i+1}</b><span>${fmtKm2(g.km2)}</span></div>${mapBox(g.id,170)}
-    <div class="row" style="justify-content:space-between;align-items:center;margin-top:10px"><span class="meta">${g.n} ${g.n===1?'área fechada':'áreas fechadas'}</span><button class="b sm" onclick="terrNoMapa(${i})">Ver no mapa</button></div></div>`).join('')}`);
-  R.forEach((g,i)=>nomeLocal(g.c,document.getElementById('rg-'+i)));
+    <div class="row" style="justify-content:space-between;align-items:center;margin-top:10px"><span class="meta">${g.n} ${g.n===1?'área fechada':'áreas fechadas'}</span><span style="display:flex;gap:8px"><button class="b sm" onclick="renomeiaLocal(${i})">Editar nome</button><button class="b sm" onclick="terrNoMapa(${i})">Ver no mapa</button></span></div></div>`).join('')}`);
+  R.forEach((g,i)=>nomeLocal(g,document.getElementById('rg-'+i)));
 };
 window.terrNoMapa=i=>{const g=(window.__REG||[])[i];if(!g)return;closeSheet();go('comp');let t=0;
   const f=()=>{if(CM&&CM.isStyleLoaded&&CM.isStyleLoaded()){CM.fitBounds([[g.b[2],g.b[0]],[g.b[3],g.b[1]]],{padding:70,maxZoom:16,duration:600});return}if(++t<40)setTimeout(f,200)};setTimeout(f,300)};
@@ -3450,6 +3506,55 @@ window.openNiveis=()=>{
   <div class="card" style="margin-top:10px"><div class="lbl">COMO GANHAR PONTOS</div><table style="margin-top:6px"><tr><td style="font-family:var(--f)">Cada km corrido</td><td class="r">1</td></tr><tr><td style="font-family:var(--f)">Cada treino (a partir de 1 km)</td><td class="r">3</td></tr></table></div>
   <div class="card"><div class="lbl">NÍVEIS</div><table style="margin-top:6px"><tr><th>Nível</th><th>Faixa</th><th class="r">Pontos</th></tr>${rows.join('')}</table><p class="meta" style="margin-top:8px">Depois do 16, os níveis continuam subindo.</p></div>`);
 };
+/* ================= perfil estilo rede social: capa, foto, bio, link e selos ================= */
+const svgBg=(i,bg)=>`url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 130' preserveAspectRatio='xMidYMid slice'>${i}</svg>`).replace(/'/g,'%27')}') center/cover no-repeat,${bg}`;
+// para somar capas novas é só incluir mais um item aqui (id curto, nome e o fundo CSS)
+const CAPAS=[
+ {id:'azul',n:'Azul',css:'linear-gradient(135deg,#6bb3ff,#2a6fe0)'},
+ {id:'noite',n:'Noite',css:'linear-gradient(160deg,#000 15%,#0b1d36 60%,#1d4a80)'},
+ {id:'aurora',n:'Aurora',css:'radial-gradient(120% 140% at 12% 0%,rgba(74,158,255,.55),transparent 55%),radial-gradient(100% 120% at 92% 100%,rgba(143,123,255,.5),transparent 50%),#050a14'},
+ {id:'amanhecer',n:'Amanhecer',css:'linear-gradient(180deg,#1a2a4a,#7a4d8a 55%,#ff9a5a)'},
+ {id:'trilha',n:'Trilha',css:'linear-gradient(160deg,#06140c,#0f3a24 60%,#2a7a4a)'},
+ {id:'pista',n:'Pista',css:svgBg("<g stroke='#4a9eff' stroke-opacity='.5' stroke-width='5'><path d='M-20 120 L420 20'/><path d='M-20 100 L420 0' stroke-opacity='.3'/><path d='M-20 140 L420 40' stroke-opacity='.7'/></g>",'#05080d')},
+ {id:'rota',n:'Rota',css:svgBg("<path d='M300 30 H190 a24 24 0 0 0 0 48 H280 a24 24 0 0 1 0 48 H170' fill='none' stroke='#4a9eff' stroke-width='9' stroke-linecap='round' stroke-opacity='.8'/><circle cx='300' cy='30' r='12' fill='#fff'/><circle cx='162' cy='126' r='10' fill='none' stroke='#4a9eff' stroke-width='5'/>",'#05080d')},
+ {id:'pontos',n:'Pontos',css:svgBg("<g fill='#fff'><circle cx='70' cy='98' r='3'/><circle cx='105' cy='88' r='4.5'/><circle cx='145' cy='76' r='6.5'/><circle cx='192' cy='62' r='9'/><circle cx='246' cy='46' r='12.5'/></g><circle cx='312' cy='28' r='17' fill='#4a9eff'/>",'#05080d')},
+ {id:'corte',n:'Corte',css:svgBg("<polygon points='200,0 400,0 400,130 168,130' fill='#4a9eff' fill-opacity='.9'/><polygon points='150,0 190,0 158,130 118,130' fill='#fff' fill-opacity='.9'/>",'#05080d')},
+ {id:'claro',n:'Claro',css:'linear-gradient(135deg,#cfe3ff,#f2f4ee)'}];
+const capaDe=id=>CAPAS.find(c=>c.id===id)||CAPAS[0];
+const CHAMA='<svg viewBox="0 0 24 24"><path d="M12 2.6c.7 3.4-2.6 4.9-2.6 8.2 0 1.4.8 2.4 1.8 3-.3-1.6.4-3 1.7-4 1.6 2.2 4 3.6 4 6.8a4.9 4.9 0 0 1-4.9 4.9A5.5 5.5 0 0 1 6.6 16c0-2.4 1.3-4 2.7-5.5C10.8 8.7 12.5 6.5 12 2.6z" fill="#ff7a2f"/></svg>';
+const SELO_IC='<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.4 6.8 19.2l1-5.9L3.5 9.2l5.9-.8z"/></svg>';
+const LINK_IC='<svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
+const linkOk=u=>/^https?:\/\/[^\s<>"']{3,118}$/i.test(u||'');
+const linkHost=u=>{try{return new URL(u).host.replace(/^www\./,'')}catch(e){return u}};
+function perfCab(o){
+  const pf=o.perfil||{},selos=(pf.selos||[]).filter(Boolean).slice(0,3),yr=String(TODAY().getFullYear());
+  return `<div class="card pcard"><div class="pcv" style="background:${capaDe(pf.capa).css}">${o.eu?`<button class="pedt" onclick="editaPerfil()">Editar perfil</button>`:''}</div>
+  <div class="pbd"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div>${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div>
+  <h2 class="pn">${esc(o.nome)}</h2>${o.sub?`<div class="meta">${o.sub}</div>`:''}
+  ${pf.bio?`<p class="pbio">${esc(pf.bio)}</p>`:''}
+  ${linkOk(pf.link)?`<a class="plk" href="${esc(pf.link)}" target="_blank" rel="noopener noreferrer nofollow">${LINK_IC}<span>${esc(linkHost(pf.link))}</span></a>`:''}
+  ${selos.length?`<div class="psl">${selos.map(t=>`<span>${SELO_IC}${esc(t)}</span>`).join('')}</div>`:''}
+  ${o.seq>=2?`<div class="pseq">${CHAMA}<span><b>${o.seq}</b> semanas seguidas</span></div>`:''}
+  <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}${o.amigos!=null?` · <b>${o.amigos}</b> ${o.amigos===1?'amigo':'amigos'}`:''}</div></div></div>`;
+}
+window.editaPerfil=()=>{
+  const pf=LS.get('perfil',{}),sl=pf.selos||[];window._capaSel=pf.capa||'azul';
+  openSheet(`<div class="hd"><b>Editar perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="lbl" style="margin-bottom:8px">CAPA</div><div class="capas">${CAPAS.map(c=>`<button class="cap ${c.id===window._capaSel?'on':''}" data-c="${c.id}" style="background:${c.css}" onclick="perfCapa('${c.id}')"><small>${c.n}</small></button>`).join('')}</div>
+  <label class="f" style="margin-top:14px">Bio</label><textarea id="pf-bio" maxlength="160" rows="3" placeholder="Fale de você em poucas palavras">${esc(pf.bio||'')}</textarea>
+  <label class="f" style="margin-top:10px">Link</label><input id="pf-link" type="url" inputmode="url" maxlength="120" placeholder="https://" value="${esc(pf.link||'')}">
+  <label class="f" style="margin-top:10px">Selos (até 3)</label>${[0,1,2].map(i=>`<input class="pf-sl" maxlength="28" placeholder="${['Ex.: 1x Ironman 70.3','Ex.: Maratona de Floripa 2025','Ex.: Corredor de madrugada'][i]}" value="${esc(sl[i]||'')}" style="margin-bottom:6px">`).join('')}
+  <div class="grid g2" style="margin-top:8px"><button class="b" onclick="pickFoto()">Trocar foto</button>${LS.get('foto',null)?`<button class="b" onclick="resetFoto()">Foto do Intervals</button>`:'<span></span>'}</div>
+  <p class="meta" style="margin:10px 2px">Capa, bio, link e selos aparecem no seu perfil para quem vê o ranking e o mapa.</p>
+  <button class="b pri full" onclick="perfSalva()">Salvar</button>`);
+};
+window.perfCapa=id=>{window._capaSel=id;document.querySelectorAll('.cap').forEach(b=>b.classList.toggle('on',b.dataset.c===id))};
+window.perfSalva=()=>{
+  const bio=($('#pf-bio').value||'').replace(/\s+/g,' ').trim().slice(0,160);let link=($('#pf-link').value||'').trim();
+  if(link&&!/^https?:\/\//i.test(link))link='https://'+link;if(link&&!linkOk(link))return toast('Link inválido. Confira o endereço.',3000);
+  const selos=[...document.querySelectorAll('.pf-sl')].map(i=>i.value.replace(/\s+/g,' ').trim().slice(0,28)).filter(Boolean);
+  LS.set('perfil',{bio,link,selos,capa:window._capaSel||'azul'});closeSheet();toast('Perfil atualizado',2200);render();
+  if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
 /* ================= foto de perfil ================= */
 window.pickFoto=()=>{
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
