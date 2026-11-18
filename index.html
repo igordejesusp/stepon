@@ -1177,7 +1177,7 @@ function coachLast(a){
     if(a.hrmax&&a.hrmax>=CFG.fcmax*0.95)msg.push('Chegou perto da FC máxima: estímulo forte, próximo treino deve ser leve.');
     return (p?`Planejado: ${p.titulo}. `:'')+msg.join(' ');
   }
-  if(p){const r=a.dist/1000/p.km;msg.push(r>=0.95?`Treino cumprido: ${km(a.dist)} de ${p.km} km planejados.`:r>=0.8?`Volume quase completo (${Math.round(r*100)}% do planejado).`:`Volume abaixo do planejado (${Math.round(r*100)}%). Sem problema na fase de retorno; não compensar no próximo treino.`)}
+  if(p){const r=a.dist/1000/p.km;msg.push(r>=0.95?`Treino concluído: ${km(a.dist)} de ${p.km} km planejados.`:r>=0.8?`Volume quase completo (${Math.round(r*100)}% do planejado).`:`Volume abaixo do planejado (${Math.round(r*100)}%). Sem problema na fase de retorno; não compensar no próximo treino.`)}
   if(a.hr){const zi=z.findIndex(v=>a.hr<=v)+1;msg.push(`FC média ${a.hr} bpm (Z${zi||7})${zi<=2?': esforço aeróbico, base sendo construída.':zi<=4?': sessão moderada a forte.':': sessão intensa, priorizar recuperação.'}`)}
   if(x.dec!=null&&!p?.tipo?.match(/qualidade/))msg.push(x.dec<=5?`Deriva cardíaca ${x.dec}%: boa resistência aeróbica para esta duração.`:`Deriva cardíaca ${x.dec}%: a FC subiu no fim. Sinal de base aeróbica ainda curta; manter rodagens leves.`);
   if(x.splits&&x.splits.length>=3){const s=x.splits.filter(s=>!s.part);if(s.length>=3){const f=s[0].t,l=s[s.length-1].t;msg.push(l<f-5?'Parciais em progressão negativa: boa disciplina de ritmo.':l>f+15?'Ritmo caiu no fim; segurar mais o início.':'Ritmo estável do começo ao fim.')}}
@@ -1278,7 +1278,7 @@ function pmcSvg(S,days=90){
   <div class="row meta" style="gap:14px;margin-top:4px"><span><span style="color:var(--blue)">━</span> Forma</span><span><span style="color:var(--red)">━</span> Fadiga</span><span><span style="color:var(--amber)">┅</span> Equilíbrio</span></div>`;
 }
 function stepsHtml(p){return `<div class="steps">${p.steps.map(s=>`<div><span>${esc(s[0])}</span><span>${s[3]?s[3]+'× ':''}${esc(s[1])}${s[2]?' @ '+fmtP(Math.min(...s[2]))+'–'+fmtP(Math.max(...s[2]))+'/km':/Caminh|Parado|Pausa/.test(s[0])?'':' leve'}</span></div>`).join('')}</div>`}
-const tagSt={cumprido:'<span class="tag ok">CUMPRIDO</span>',parcial:'<span class="tag warn">PARCIAL</span>',perdido:'<span class="tag bad">PERDIDO</span>',enviado:'<span class="tag ok">NO RELÓGIO</span>',planejado:'<span class="tag">PLANEJADO</span>'};
+const tagSt={cumprido:'<span class="tag ok">CONCLUÍDO</span>',parcial:'<span class="tag warn">PARCIAL</span>',perdido:'<span class="tag bad">PERDIDO</span>',enviado:'<span class="tag ok">NO RELÓGIO</span>',planejado:'<span class="tag">PLANEJADO</span>'};
 const tipoIc={qualidade:'QLD',rodagem:'ROD',longo:'LNG',prova:'ALVO',caminhada:'CAM'};
 const typeIc=a=>isRun(a)?'RUN':/Walk|Hike/.test(a.type)?'MCH':/Swim/.test(a.type)?'NAT':/Weight/.test(a.type)?'FOR':/Ride/.test(a.type)?'BIK':'OUT';
 
@@ -1545,22 +1545,22 @@ function rCal(){
   if(calMode==='sem'){
     const m=monday(calRef),e=addD(m,6);let tk=0,pk=0;
     h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${m.getDate()} ${MES[m.getMonth()]} — ${e.getDate()} ${MES[e.getMonth()]}</b><button class="b sm" onclick="calGo(1)">▶</button></div>`;
-    h+=glw('d')+'<div class="week">';
+    h+='<div class="week">';
     for(let i=0;i<7;i++){const d=addD(m,i),ds=ymd(d),p=planOn(ds),ex=actsOn(ds),w=W(ds)||{};
       const rk=ex.filter(isRun).reduce((s,a)=>s+(a.dist||0),0);tk+=rk;pk+=p?p.km*1000:0;
       h+=`<div class="day ${ds===ds0?'today':''}" onclick="openDay('${ds}')"><div class="d"><span>${DOW[d.getDay()]}</span><b>${pad(d.getDate())}</b></div><div style="min-width:0">
       ${p?`<div class="pl"><span class="tag ${status(p)==='cumprido'?'ok':status(p)==='perdido'?'bad':''}">${tipoIc[p.tipo]}</span> ${esc(p.titulo)} <span class="dim">· ${p.km} km</span></div>`:`<div class="pl dim">${ex.length?'':'Descanso'}</div>`}
       ${ex.map(a=>`<div class="ex">✓ ${typeIc(a)} ${a.dist?km(a.dist)+' km':fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>`).join('')}</div>
       <div class="vt">${w.sleep?'☾ '+fmtSleep(w.sleep):''}<br>${w.rhr?'♥ '+w.rhr:''}</div></div>`}
-    h+='</div>';
+    h+='</div>'+glw('e',1);
     h+=`<div class="card" style="margin-top:8px"><div class="row" style="justify-content:space-between"><span class="lbl">Volume da semana</span><span class="num">${pk?km(tk)+' / '+km(pk):km(tk)} km</span></div>${pk?`<div class="bar"><i style="width:${clamp(tk/pk*100,0,100)}%"></i></div>`:'<div class="meta" style="margin-top:4px">Sem treinos planejados nesta semana.</div>'}</div>`;
   }else{
     const y=calRef.getFullYear(),mo=calRef.getMonth(),f=monday(new Date(y,mo,1));
-    h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${MES[mo]} ${y}</b><button class="b sm" onclick="calGo(1)">▶</button></div>${glw('d')}<div class="mgrid">${['SEG','TER','QUA','QUI','SEX','SÁB','DOM'].map(x=>`<div class="h">${x}</div>`).join('')}`;
+    h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${MES[mo]} ${y}</b><button class="b sm" onclick="calGo(1)">▶</button></div><div class="mgrid">${['SEG','TER','QUA','QUI','SEX','SÁB','DOM'].map(x=>`<div class="h">${x}</div>`).join('')}`;
     let tot=0;
     for(let i=0;i<42;i++){const d=addD(f,i),ds=ymd(d);if(i>=35&&d.getMonth()!==mo)break;const p=planOn(ds),rk=runsOn(ds).reduce((s,a)=>s+(a.dist||0),0),st=p&&status(p);if(d.getMonth()===mo)tot+=rk;
       h+=`<div class="mc ${d.getMonth()!==mo?'out':''} ${ds===ds0?'today':''}" onclick="openDay('${ds}')"><span class="n">${d.getDate()}</span>${rk?`<span class="k">${(rk/1000).toFixed(1)}</span>`:p?`<span class="k p">${p.km}</span>`:'<span></span>'}${p?`<span class="dot ${st==='cumprido'||st==='parcial'?'f':st==='perdido'?'x':''}"></span>`:rk?'<span class="dot f"></span>':'<span></span>'}</div>`}
-    h+=`</div><div class="row meta" style="gap:14px;margin-top:8px"><span><span style="color:var(--blue)">●</span> cumprido</span><span><span style="color:var(--blue)">○</span> planejado</span><span style="color:var(--bad)">● perdido</span></div><div class="card" style="margin-top:10px"><div class="row" style="justify-content:space-between"><span class="lbl">Total corrido no mês</span><span class="num">${km(tot)} km</span></div></div>`;
+    h+=`</div>${glw('e',1)}<div class="row meta" style="gap:14px;margin-top:8px"><span><span style="color:var(--blue)">●</span> concluído</span><span><span style="color:var(--blue)">○</span> planejado</span><span style="color:var(--bad)">● perdido</span></div><div class="card" style="margin-top:10px"><div class="row" style="justify-content:space-between"><span class="lbl">Total corrido no mês</span><span class="num">${km(tot)} km</span></div></div>`;
   }
   $('#cal').innerHTML=h;
 }
@@ -1569,10 +1569,10 @@ window.calGo=n=>{if(!n)calRef=TODAY();else if(calMode==='sem')calRef=addD(calRef
 window.openDay=ds=>{
   const p=planOn(ds),ex=actsOn(ds),w=W(ds)||{},d=parseD(ds);
   let h=`<div class="hd"><b>${DOW[d.getDay()]} ${ds.split('-').reverse().join('/')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}${p.aj?' · ritmos ajustados pelo teste de '+fmtD(p.aj):''}</div>${stepsHtml(p)}${p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
+  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}${p.aj?' · ritmos ajustados pelo teste de '+fmtD(p.aj):''}</div>${stepsHtml(p)}${p.teste&&testeFeito(ds)!==undefined?testeFeitoTxt(ds):p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
     ${ds>=ymd(TODAY())?`<button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${ds}')">▶ Fazer treino agora</button>`:''}
-    ${ds>=ymd(TODAY())&&status(p)!=='cumprido'?(p.planoB?`<button class="pbb on" onclick="closeSheet();pbVolta('${ds}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${ds}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`):''}<div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
-  ex.forEach(a=>h+=`<div class="card" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
+    ${ds>=ymd(TODAY())&&status(p)!=='cumprido'?(p.planoB?`<button class="pbb on" onclick="closeSheet();pbVolta('${ds}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${ds}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`):''}<div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())&&testeFeito(ds)===undefined?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
+  ex.forEach(a=>h+=`<div class="card cur grad" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
   if(!p&&ex.some(isRun)&&contouPara(ds))h+=`<p class="meta" style="margin:-4px 0 10px">Esta corrida contou como o treino planejado de ${fmtD(contouPara(ds))}.</p>`;
   if(!p&&!ex.length)h+=`<p class="empty">Dia de descanso.</p>`;
   if(!p&&ds>=ymd(TODAY()))h+=`<button class="b full" style="margin:8px 0" onclick="openBib('${ds}')">+ Treino neste dia</button>`;
@@ -2701,6 +2701,9 @@ function devApp(lastRun){
 // quem tem plano gerado guarda o condicionamento no plano; quem tem plano próprio (como o Igor) guarda por 90 dias em 'vt'
 const testesFeitos=()=>PF?(PF.tests||{}):LS.get('vtests',{});
 // melhor trecho da corrida do dia do teste (ou nada, se o app ainda não analisou); ignora testes já aplicados
+// teste já aplicado (ou ignorado): o tempo fica fixado e o app não pede de novo
+const testeFeito=ds=>{const T=testesFeitos();return ds in T?T[ds]:undefined};
+const testeFeitoTxt=ds=>{const t=testeFeito(ds);return t>0?`<p class="empty" style="margin-top:8px;color:var(--txt)">✓ Teste concluído: <b style="color:var(--hi)">${fmtT(t)}</b>. Os ritmos dos treinos já foram atualizados com este resultado.</p>`:`<p class="empty" style="margin-top:8px">Teste ignorado: os ritmos não foram alterados por ele.</p>`};
 function testeAchado(){
   const hoje=ymd(TODAY()),T=testesFeitos();
   const p=plan().filter(x=>x.teste&&x.date<=hoje&&!(x.date in T)).pop();if(!p||!runsOn(p.date).length)return null;
