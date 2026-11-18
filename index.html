@@ -8,7 +8,9 @@
 <meta name="theme-color" content="#000000">
 <title>StepOn</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v3.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v4.png">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32-v4.png">
 <script>
 // no iPhone aberto pela Tela de Início (barra de status transparente) a página recebe a altura da tela menos a barra de status,
 // e sobra uma faixa preta embaixo; aqui o app ocupa a altura real da tela, em qualquer modelo e orientação
@@ -591,7 +593,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
   <button data-v="cal"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
   <button data-v="des"><svg viewBox="0 0 24 24"><path d="M6 3v18M6 4h11l-2 4 2 4H6"/></svg>Desafios</button>
   <button data-v="comp"><svg viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Mapa</button>
-  <button data-v="perf"><span class="tabav"><img id="avimg" src="logo.svg" alt=""><i id="avst"></i></span>Perfil</button>
+  <button data-v="perf"><span class="tabav"><img id="avimg" src="avatar.svg" alt=""><i id="avst"></i></span>Perfil</button>
 </nav>
 
 <div id="sheet"><div class="box" id="sbox"></div></div>
@@ -3009,7 +3011,7 @@ let CM=null;
 const MODO=()=>LS.get('mmode','g'); // 'a' = só amigos, 'g' = geral
 const CDIST=[[1000,'1 KM'],[3000,'3 KM'],[5000,'5 KM'],[10000,'10 KM'],[21097.5,'21 KM']];
 // o Intervals devolve "/no-profile-pic.png" (endereço relativo) para quem não tem foto: isso quebraria a imagem aqui
-const okPic=p=>typeof p==='string'&&/^(https:\/\/|data:image\/)/.test(p)?p:'logo.svg';
+const okPic=p=>typeof p==='string'&&/^(https:\/\/|data:image\/)/.test(p)?p:'avatar.svg';
 const myPic=()=>LS.get('foto',null)||okPic((D.athlete||{}).pic);
 // versão pequena (128 px) da foto escolhida no app, para mandar ao servidor e os amigos verem
 async function fotoMini(){
