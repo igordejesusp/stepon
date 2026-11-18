@@ -590,6 +590,15 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .pseq{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:15px;color:var(--txt)}.pseq svg{width:22px;height:22px}.pcnt{margin-top:12px;font-size:14px;color:var(--dim)}.pcnt b{color:var(--hi)}
 .capas{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cap{height:54px;border-radius:12px;border:2px solid transparent;position:relative;padding:0;overflow:hidden}.cap small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 0;text-align:center}.cap.on{border-color:var(--blue);box-shadow:0 0 0 2px rgba(74,158,255,.4)}
 .cap.capf{grid-column:1/-1;width:100%;height:76px;background:linear-gradient(135deg,#1b2735,#0d0d0d);border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;color:#fff}.cap.capf.on{border:2px solid var(--blue)}.cap.capf span{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;background:rgba(0,0,0,.5);padding:8px 14px;border-radius:99px}.cap.capf svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round}
+.pcvf{position:relative;height:calc(210px + env(safe-area-inset-top));margin:calc(-70px - env(safe-area-inset-top)) -12px 0;background:#05080d}
+.pcvf::after{content:'';position:absolute;left:0;right:0;bottom:0;height:110px;background:linear-gradient(transparent,var(--fd,var(--bg)))}
+.pcvf.sh{--fd:var(--panel2);height:150px;margin:0;border-radius:18px;overflow:hidden}
+.pbd2{position:relative;margin-top:-58px;padding:0 4px 4px}.pbd2.sh{margin-top:-46px}.pbd2 .pav img{border-color:var(--bg)}.pbd2.sh .pav img{border-color:var(--panel2)}.pbd2 .pcam{border-color:var(--bg)}
+.pact{display:flex;align-items:flex-end;gap:12px}.pedt2{background:transparent;color:var(--hi);border:1px solid var(--line);border-radius:99px;padding:9px 16px;font-size:14px;font-weight:600;margin-bottom:8px}
+body.vperf:not(.desk) #top{background:none}
+@media (min-width:760px){.pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidden}.pbd2:not(.sh){margin-top:-52px}}
+body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidden}
+.cap.capc{background:linear-gradient(135deg,#2c3541,#171c23);border:2px solid transparent;display:flex;align-items:center;justify-content:center}.cap.capc svg{width:22px;height:22px;fill:none;stroke:#cfd6df;stroke-width:1.8;stroke-linejoin:round;margin-bottom:8px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.cap.capc.on{border-color:var(--blue)}.cap.capc.tem svg{stroke:#fff}
 </style>
 </head>
 <body>
@@ -3518,7 +3527,6 @@ const CAPAS=[
  {id:'trilha',n:'Trilha',css:'linear-gradient(160deg,#06140c,#0f3a24 60%,#2a7a4a)'},
  {id:'pista',n:'Pista',css:svgBg("<g stroke='#4a9eff' stroke-opacity='.5' stroke-width='5'><path d='M-20 120 L420 20'/><path d='M-20 100 L420 0' stroke-opacity='.3'/><path d='M-20 140 L420 40' stroke-opacity='.7'/></g>",'#05080d')},
  {id:'rota',n:'Rota',css:svgBg("<path d='M300 30 H190 a24 24 0 0 0 0 48 H280 a24 24 0 0 1 0 48 H170' fill='none' stroke='#4a9eff' stroke-width='9' stroke-linecap='round' stroke-opacity='.8'/><circle cx='300' cy='30' r='12' fill='#fff'/><circle cx='162' cy='126' r='10' fill='none' stroke='#4a9eff' stroke-width='5'/>",'#05080d')},
- {id:'pontos',n:'Pontos',css:svgBg("<g fill='#fff'><circle cx='70' cy='98' r='3'/><circle cx='105' cy='88' r='4.5'/><circle cx='145' cy='76' r='6.5'/><circle cx='192' cy='62' r='9'/><circle cx='246' cy='46' r='12.5'/></g><circle cx='312' cy='28' r='17' fill='#4a9eff'/>",'#05080d')},
  {id:'corte',n:'Corte',css:svgBg("<polygon points='200,0 400,0 400,130 168,130' fill='#4a9eff' fill-opacity='.9'/><polygon points='150,0 190,0 158,130 118,130' fill='#fff' fill-opacity='.9'/>",'#05080d')},
  {id:'claro',n:'Claro',css:'linear-gradient(135deg,#cfe3ff,#f2f4ee)'}];
 const capaDe=id=>CAPAS.find(c=>c.id===id)||CAPAS[0];
@@ -3529,21 +3537,20 @@ const linkOk=u=>/^https?:\/\/[^\s<>"']{3,118}$/i.test(u||'');
 const linkHost=u=>{try{return new URL(u).host.replace(/^www\./,'')}catch(e){return u}};
 function perfCab(o){
   const pf=o.perfil||{},yr=String(TODAY().getFullYear()),capaCss=pf.capa==='foto'&&/^data:image\/jpeg;base64,/.test(pf.capaImg||'')?`url('${pf.capaImg}') center/cover no-repeat,#05080d`:capaDe(pf.capa).css;
-  return `<div class="card pcard"><div class="pcv" style="background:${capaCss}">${o.eu?`<button class="pedt" onclick="editaPerfil()">Editar perfil</button>`:''}</div>
-  <div class="pbd"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div>${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div>
+  // no perfil próprio a capa ocupa o topo inteiro, atrás dos botões, sem bloco; no perfil de amigo (janela) ela fica arredondada
+  return `<div class="pcvf${o.eu?'':' sh'}" style="background:${capaCss}"></div>
+  <div class="pbd2${o.eu?'':' sh'}"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div><div class="pact">${o.eu?`<button class="pedt2" onclick="editaPerfil()">Editar perfil</button>`:''}${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div></div>
   <h2 class="pn">${esc(o.nome)}</h2>${o.sub?`<div class="meta">${o.sub}</div>`:''}
   ${pf.bio?`<p class="pbio">${esc(pf.bio)}</p>`:''}
   ${linkOk(pf.link)?`<a class="plk" href="${esc(pf.link)}" target="_blank" rel="noopener noreferrer nofollow">${LINK_IC}<span>${esc(linkHost(pf.link))}</span></a>`:''}
   ${o.seq>=2?`<div class="pseq">${CHAMA}<span><b>${o.seq}</b> semanas seguidas</span></div>`:''}
-  <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}${o.amigos!=null?` · <b>${o.amigos}</b> ${o.amigos===1?'amigo':'amigos'}`:''}</div></div></div>`;
+  <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}${o.amigos!=null?` · <b>${o.amigos}</b> ${o.amigos===1?'amigo':'amigos'}`:''}</div></div>`;
 }
 window.editaPerfil=()=>{
   const pf=LS.get('perfil',{});window._capaSel=pf.capa||'azul';window._capaImg=pf.capaImg||'';
-  const fotoOn=window._capaSel==='foto'&&window._capaImg;
-  openSheet(`<div class="hd"><b>Editar perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+    openSheet(`<div class="hd"><b>Editar perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   <div class="lbl" style="margin-bottom:8px">CAPA</div>
-  <button class="cap capf ${window._capaSel==='foto'?'on':''}" id="cap-foto" data-c="foto" onclick="pickCapa()" style="${fotoOn?`background:url('${window._capaImg}') center/cover`:''}"><span>${CAM_IC}${window._capaImg?'Trocar foto da capa':'Escolher uma foto da galeria'}</span></button>
-  <div class="capas" style="margin-top:8px">${CAPAS.map(c=>`<button class="cap ${c.id===window._capaSel?'on':''}" data-c="${c.id}" style="background:${c.css}" onclick="perfCapa('${c.id}')"><small>${c.n}</small></button>`).join('')}</div>
+  <div class="capas"><button class="cap capc ${window._capaSel==='foto'?'on':''}${window._capaImg?' tem':''}" id="cap-foto" data-c="foto" aria-label="Escolher uma foto da galeria" onclick="pickCapa()" style="${window._capaImg?`background:url('${window._capaImg}') center/cover`:''}">${CAM_IC}<small>Foto</small></button>${CAPAS.map(c=>`<button class="cap ${c.id===window._capaSel?'on':''}" data-c="${c.id}" style="background:${c.css}" onclick="perfCapa('${c.id}')"><small>${c.n}</small></button>`).join('')}</div>
   <label class="f" style="margin-top:14px">Bio</label><textarea id="pf-bio" maxlength="160" rows="3" placeholder="Fale de você em poucas palavras">${esc(pf.bio||'')}</textarea>
   <label class="f" style="margin-top:10px">Link</label><input id="pf-link" type="url" inputmode="url" maxlength="120" placeholder="https://" value="${esc(pf.link||'')}">
   <div class="grid g2" style="margin-top:12px"><button class="b" onclick="pickFoto()">Trocar foto do perfil</button>${LS.get('foto',null)?`<button class="b" onclick="resetFoto()">Foto do Intervals</button>`:'<span></span>'}</div>
@@ -3557,7 +3564,7 @@ function capaDeImagem(im){const W=640,H=214,c=document.createElement('canvas');c
 window.pickCapa=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=()=>{const f=inp.files[0];if(!f)return;const im=new Image();
     im.onload=()=>{const u=capaDeImagem(im);URL.revokeObjectURL(im.src);window._capaImg=u;window._capaSel='foto';
-      const b=$('#cap-foto');if(b){b.style.background=`url('${u}') center/cover`;b.querySelector('span').lastChild.textContent='Trocar foto da capa'}
+      const b=$('#cap-foto');if(b){b.style.background=`url('${u}') center/cover`;b.classList.add('tem')}
       document.querySelectorAll('.cap').forEach(e=>e.classList.toggle('on',e.dataset.c==='foto'))};
     im.onerror=()=>toast('Não consegui abrir essa foto',3000);im.src=URL.createObjectURL(f)};inp.click()};
 window.perfCapa=id=>{window._capaSel=id;document.querySelectorAll('.cap').forEach(b=>b.classList.toggle('on',b.dataset.c===id))};
@@ -3969,7 +3976,7 @@ function render2(){if(_desk===null)marcaDesk();
   $('#ttl').textContent=TITLES[VIEW];
   $('#avimg').src=myPic();
   $('#avst').className=D.at&&Date.now()-D.at<864e5?'on':D.at?'off':'';
-  document.body.classList.toggle('vmarc',VIEW==='marc'||VIEW==='desaf');
+  document.body.classList.toggle('vmarc',VIEW==='marc'||VIEW==='desaf');document.body.classList.toggle('vperf',VIEW==='perf');
   ({ini:rIni,cal:rCal,des:rDes,comp:rComp,mais:rMais,perf:rPerf,marc:rMarc,desaf:rDesaf})[VIEW]();
   if(['ini','des','mais','perf'].includes(VIEW)&&!(VIEW==='ini'&&DESK()))groupBlocks($('#'+VIEW));
   drawMaps();
