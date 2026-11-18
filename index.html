@@ -599,6 +599,11 @@ body.vperf:not(.desk) #top{background:none}
 @media (min-width:760px){.pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidden}.pbd2:not(.sh){margin-top:-52px}}
 body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidden}
 .cap.capc{background:linear-gradient(135deg,#2c3541,#171c23);border:2px solid transparent;display:flex;align-items:center;justify-content:center}.cap.capc svg{width:22px;height:22px;fill:none;stroke:#cfd6df;stroke-width:1.8;stroke-linejoin:round;margin-bottom:8px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.cap.capc.on{border-color:var(--blue)}.cap.capc.tem svg{stroke:#fff}
+#crop{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.cr-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;color:#fff}.cr-top b{font-size:16px}.cr-b{background:none;border:0;color:#fff;font-size:15px;padding:8px 6px}.cr-b.ok{color:var(--blue);font-weight:700}
+.cr-st{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;background:#000}#cr-im{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none;will-change:transform}
+.cr-fr{position:absolute;box-shadow:0 0 0 3000px rgba(0,0,0,.66);border:2px solid rgba(255,255,255,.92);pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px);background-size:33.333% 33.333%}.cr-fr.ci{border-radius:50%;background-image:none}
+.cr-ft{padding:14px 22px calc(16px + env(safe-area-inset-bottom));color:#8a929e;text-align:center;font-size:13px}.cr-ft input{width:100%;accent-color:var(--blue)}.cr-ft p{margin-top:8px}
 </style>
 </head>
 <body>
@@ -3562,11 +3567,10 @@ const CAM_IC='<svg viewBox="0 0 24 24"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"
 function capaDeImagem(im){const W=640,H=214,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);
   let q=.78,u=c.toDataURL('image/jpeg',q);while(u.length>52000&&q>.4){q-=.08;u=c.toDataURL('image/jpeg',q)}return u}
 window.pickCapa=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
-  inp.onchange=()=>{const f=inp.files[0];if(!f)return;const im=new Image();
-    im.onload=()=>{const u=capaDeImagem(im);URL.revokeObjectURL(im.src);window._capaImg=u;window._capaSel='foto';
+  inp.onchange=()=>{const f=inp.files[0];if(!f)return;
+    abreRecorte({file:f,w:600,h:400,titulo:'Capa do perfil',q:.78,max:52000,ok:u=>{window._capaImg=u;window._capaSel='foto';
       const b=$('#cap-foto');if(b){b.style.background=`url('${u}') center/cover`;b.classList.add('tem')}
-      document.querySelectorAll('.cap').forEach(e=>e.classList.toggle('on',e.dataset.c==='foto'))};
-    im.onerror=()=>toast('Não consegui abrir essa foto',3000);im.src=URL.createObjectURL(f)};inp.click()};
+      document.querySelectorAll('.cap').forEach(e=>e.classList.toggle('on',e.dataset.c==='foto'))}})};inp.click()};
 window.perfCapa=id=>{window._capaSel=id;document.querySelectorAll('.cap').forEach(b=>b.classList.toggle('on',b.dataset.c===id))};
 window.perfSalva=()=>{
   const bio=($('#pf-bio').value||'').replace(/\s+/g,' ').trim().slice(0,160);let link=($('#pf-link').value||'').trim();
@@ -3574,14 +3578,48 @@ window.perfSalva=()=>{
   const capa=window._capaSel||'azul';if(capa==='foto'&&!window._capaImg)return toast('Escolha a foto da capa ou outra capa.',3000);
   LS.set('perfil',{bio,link,capa,...(capa==='foto'?{capaImg:window._capaImg}:{})});closeSheet();toast('Perfil atualizado',2200);render();
   if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
+/* ================= recorte de foto (perfil e capa): arrastar, aproximar com dois dedos ou pelo controle ================= */
+function abreRecorte(o){
+  const url=URL.createObjectURL(o.file),im=new Image();
+  im.onerror=()=>{URL.revokeObjectURL(url);toast('Não consegui abrir essa foto',3000)};
+  im.onload=()=>{
+    const el=document.createElement('div');el.id='crop';
+    el.innerHTML=`<div class="cr-top"><button class="cr-b" id="cr-c">Cancelar</button><b>${esc(o.titulo)}</b><button class="cr-b ok" id="cr-o">Concluir</button></div>
+    <div class="cr-st" id="cr-st"><img id="cr-im" alt="" draggable="false"><div class="cr-fr${o.circulo?' ci':''}" id="cr-fr"></div></div>
+    <div class="cr-ft"><input type="range" id="cr-z" min="1" max="5" step="0.01" value="1" aria-label="Aproximar"><p>Arraste a foto para posicionar e use dois dedos (ou o controle) para aproximar.</p></div>`;
+    document.body.appendChild(el);
+    const st=$('#cr-st'),img=$('#cr-im'),fr=$('#cr-fr'),sl=$('#cr-z');img.src=url;
+    const iw=im.naturalWidth,ih=im.naturalHeight,SW=st.clientWidth,SH=st.clientHeight,a=o.w/o.h;
+    let fw=Math.min(SW-36,(SH-36)*a),fh=fw/a;const cx=SW/2,cy=SH/2;
+    fr.style.cssText=`left:${cx-fw/2}px;top:${cy-fh/2}px;width:${fw}px;height:${fh}px`;
+    const s0=Math.max(fw/iw,fh/ih);let z=1,ox=0,oy=0;
+    const lay=()=>{const s=s0*z,w=iw*s,h=ih*s,mx=Math.max(0,(w-fw)/2),my=Math.max(0,(h-fh)/2);ox=Math.max(-mx,Math.min(mx,ox));oy=Math.max(-my,Math.min(my,oy));
+      img.style.width=w+'px';img.style.height=h+'px';img.style.transform=`translate(${cx+ox-w/2}px,${cy+oy-h/2}px)`;sl.value=z};
+    lay();
+    const P=new Map();let ini=null;
+    const snap=()=>{const v=[...P.values()];ini={z,ox,oy,v:v.map(q=>({...q})),d:v.length>1?Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y):0,m:v.length?{x:v.reduce((t,q)=>t+q.x,0)/v.length,y:v.reduce((t,q)=>t+q.y,0)/v.length}:null}};
+    st.addEventListener('pointerdown',e=>{st.setPointerCapture(e.pointerId);P.set(e.pointerId,{x:e.clientX,y:e.clientY});snap()});
+    st.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});const v=[...P.values()];
+      const m={x:v.reduce((t,q)=>t+q.x,0)/v.length,y:v.reduce((t,q)=>t+q.y,0)/v.length};ox=ini.ox+(m.x-ini.m.x);oy=ini.oy+(m.y-ini.m.y);
+      if(v.length>1&&ini.d){z=Math.max(1,Math.min(5,ini.z*Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y)/ini.d))}lay()});
+    const solta=e=>{P.delete(e.pointerId);snap()};st.addEventListener('pointerup',solta);st.addEventListener('pointercancel',solta);
+    st.addEventListener('wheel',e=>{e.preventDefault();z=Math.max(1,Math.min(5,z*Math.exp(-e.deltaY*.0015)));lay()},{passive:false});
+    sl.addEventListener('input',()=>{z=+sl.value;lay()});
+    const fecha=()=>{el.remove();URL.revokeObjectURL(url)};
+    $('#cr-c').onclick=fecha;
+    $('#cr-o').onclick=()=>{const s=s0*z,sw=fw/s,sh=fh/s,sx=iw/2-ox/s-sw/2,sy=ih/2-oy/s-sh/2,c=document.createElement('canvas');c.width=o.w;c.height=o.h;
+      const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,o.w,o.h);x.drawImage(im,sx,sy,sw,sh,0,0,o.w,o.h);
+      let q=o.q||.8,u=c.toDataURL('image/jpeg',q);while(u.length>o.max&&q>.35){q-=.07;u=c.toDataURL('image/jpeg',q)}
+      fecha();o.ok(u)};
+    window.__crop={set:(zz,xx,yy)=>{z=zz;ox=xx;oy=yy;lay()}};
+  };
+  im.src=url;
+}
 /* ================= foto de perfil ================= */
 window.pickFoto=()=>{
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
-  inp.onchange=()=>{const f=inp.files[0];if(!f)return;const im=new Image();
-    im.onload=()=>{const c=document.createElement('canvas'),s=320,k=Math.min(im.width,im.height);c.width=c.height=s;
-      c.getContext('2d').drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,s,s);URL.revokeObjectURL(im.src);
-      LS.set('foto',c.toDataURL('image/jpeg',.86));toast('FOTO ATUALIZADA');render();publishMine().catch(()=>{})};
-    im.src=URL.createObjectURL(f)};
+  inp.onchange=()=>{const f=inp.files[0];if(!f)return;
+    abreRecorte({file:f,w:320,h:320,circulo:1,titulo:'Foto do perfil',q:.86,max:38000,ok:u=>{LS.set('foto',u);toast('FOTO ATUALIZADA');render();publishMine().catch(()=>{})}})};
   inp.click();
 };
 window.resetFoto=()=>{LS.set('foto',null);render();publishMine().catch(()=>{})};
