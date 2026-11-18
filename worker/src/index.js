@@ -258,7 +258,7 @@ export default {
       const perfil = {
         bio: limpa(pr.bio, 160),
         link: /^https?:\/\/[^\s<>"']{3,118}$/i.test(String(pr.link || '')) ? String(pr.link) : '',
-        selos: (Array.isArray(pr.selos) ? pr.selos : []).map((x) => limpa(x, 28)).filter(Boolean).slice(0, 3),
+        capaImg: /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(pr.capaImg || '')) && String(pr.capaImg).length <= 60000 ? String(pr.capaImg) : '',
         capa: /^[a-z0-9]{2,12}$/.test(String(pr.capa || '')) ? String(pr.capa) : '',
       };
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, perfil, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };

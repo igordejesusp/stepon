@@ -589,6 +589,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .psl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.psl span{display:inline-flex;align-items:center;gap:6px;background:var(--cell);border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 8px;font-size:13px;color:var(--txt)}.psl svg{width:14px;height:14px;fill:#f0b72f}
 .pseq{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:15px;color:var(--txt)}.pseq svg{width:22px;height:22px}.pcnt{margin-top:12px;font-size:14px;color:var(--dim)}.pcnt b{color:var(--hi)}
 .capas{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cap{height:54px;border-radius:12px;border:2px solid transparent;position:relative;padding:0;overflow:hidden}.cap small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 0;text-align:center}.cap.on{border-color:var(--blue);box-shadow:0 0 0 2px rgba(74,158,255,.4)}
+.cap.capf{grid-column:1/-1;width:100%;height:76px;background:linear-gradient(135deg,#1b2735,#0d0d0d);border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;color:#fff}.cap.capf.on{border:2px solid var(--blue)}.cap.capf span{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;background:rgba(0,0,0,.5);padding:8px 14px;border-radius:99px}.cap.capf svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round}
 </style>
 </head>
 <body>
@@ -3099,7 +3100,7 @@ async function publishMine(force,entrar){
   const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv3|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
   while(terr.length&&JSON.stringify({runs,terr,foto}).length>660000)terr.pop();
-  const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:LS.get('perfil',null),...(entrar?{entrar:true}:{})})});
+  const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:(p=>p?{bio:p.bio,link:p.link,capa:p.capa,capaImg:p.capa==='foto'?p.capaImg:undefined}:null)(LS.get('perfil',null)),...(entrar?{entrar:true}:{})})});
   if(!r.ok)throw new Error('HTTP '+r.status);
   {const j=await r.clone().json().catch(()=>({}));if(j.fora){LS.set('comp','nao');return}}
   LS.set('pubh',sig);LS.set('pubErr',null);LS.set('pubOk',Date.now());
@@ -3527,33 +3528,44 @@ const LINK_IC='<svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 
 const linkOk=u=>/^https?:\/\/[^\s<>"']{3,118}$/i.test(u||'');
 const linkHost=u=>{try{return new URL(u).host.replace(/^www\./,'')}catch(e){return u}};
 function perfCab(o){
-  const pf=o.perfil||{},selos=(pf.selos||[]).filter(Boolean).slice(0,3),yr=String(TODAY().getFullYear());
-  return `<div class="card pcard"><div class="pcv" style="background:${capaDe(pf.capa).css}">${o.eu?`<button class="pedt" onclick="editaPerfil()">Editar perfil</button>`:''}</div>
+  const pf=o.perfil||{},yr=String(TODAY().getFullYear()),capaCss=pf.capa==='foto'&&/^data:image\/jpeg;base64,/.test(pf.capaImg||'')?`url('${pf.capaImg}') center/cover no-repeat,#05080d`:capaDe(pf.capa).css;
+  return `<div class="card pcard"><div class="pcv" style="background:${capaCss}">${o.eu?`<button class="pedt" onclick="editaPerfil()">Editar perfil</button>`:''}</div>
   <div class="pbd"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div>${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div>
   <h2 class="pn">${esc(o.nome)}</h2>${o.sub?`<div class="meta">${o.sub}</div>`:''}
   ${pf.bio?`<p class="pbio">${esc(pf.bio)}</p>`:''}
   ${linkOk(pf.link)?`<a class="plk" href="${esc(pf.link)}" target="_blank" rel="noopener noreferrer nofollow">${LINK_IC}<span>${esc(linkHost(pf.link))}</span></a>`:''}
-  ${selos.length?`<div class="psl">${selos.map(t=>`<span>${SELO_IC}${esc(t)}</span>`).join('')}</div>`:''}
   ${o.seq>=2?`<div class="pseq">${CHAMA}<span><b>${o.seq}</b> semanas seguidas</span></div>`:''}
   <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}${o.amigos!=null?` · <b>${o.amigos}</b> ${o.amigos===1?'amigo':'amigos'}`:''}</div></div></div>`;
 }
 window.editaPerfil=()=>{
-  const pf=LS.get('perfil',{}),sl=pf.selos||[];window._capaSel=pf.capa||'azul';
+  const pf=LS.get('perfil',{});window._capaSel=pf.capa||'azul';window._capaImg=pf.capaImg||'';
+  const fotoOn=window._capaSel==='foto'&&window._capaImg;
   openSheet(`<div class="hd"><b>Editar perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="lbl" style="margin-bottom:8px">CAPA</div><div class="capas">${CAPAS.map(c=>`<button class="cap ${c.id===window._capaSel?'on':''}" data-c="${c.id}" style="background:${c.css}" onclick="perfCapa('${c.id}')"><small>${c.n}</small></button>`).join('')}</div>
+  <div class="lbl" style="margin-bottom:8px">CAPA</div>
+  <button class="cap capf ${window._capaSel==='foto'?'on':''}" id="cap-foto" data-c="foto" onclick="pickCapa()" style="${fotoOn?`background:url('${window._capaImg}') center/cover`:''}"><span>${CAM_IC}${window._capaImg?'Trocar foto da capa':'Escolher uma foto da galeria'}</span></button>
+  <div class="capas" style="margin-top:8px">${CAPAS.map(c=>`<button class="cap ${c.id===window._capaSel?'on':''}" data-c="${c.id}" style="background:${c.css}" onclick="perfCapa('${c.id}')"><small>${c.n}</small></button>`).join('')}</div>
   <label class="f" style="margin-top:14px">Bio</label><textarea id="pf-bio" maxlength="160" rows="3" placeholder="Fale de você em poucas palavras">${esc(pf.bio||'')}</textarea>
   <label class="f" style="margin-top:10px">Link</label><input id="pf-link" type="url" inputmode="url" maxlength="120" placeholder="https://" value="${esc(pf.link||'')}">
-  <label class="f" style="margin-top:10px">Selos (até 3)</label>${[0,1,2].map(i=>`<input class="pf-sl" maxlength="28" placeholder="${['Ex.: 1x Ironman 70.3','Ex.: Maratona de Floripa 2025','Ex.: Corredor de madrugada'][i]}" value="${esc(sl[i]||'')}" style="margin-bottom:6px">`).join('')}
-  <div class="grid g2" style="margin-top:8px"><button class="b" onclick="pickFoto()">Trocar foto</button>${LS.get('foto',null)?`<button class="b" onclick="resetFoto()">Foto do Intervals</button>`:'<span></span>'}</div>
-  <p class="meta" style="margin:10px 2px">Capa, bio, link e selos aparecem no seu perfil para quem vê o ranking e o mapa.</p>
+  <div class="grid g2" style="margin-top:12px"><button class="b" onclick="pickFoto()">Trocar foto do perfil</button>${LS.get('foto',null)?`<button class="b" onclick="resetFoto()">Foto do Intervals</button>`:'<span></span>'}</div>
+  <p class="meta" style="margin:10px 2px">Capa, bio e link aparecem no seu perfil para quem vê o ranking e o mapa.</p>
   <button class="b pri full" onclick="perfSalva()">Salvar</button>`);
 };
+const CAM_IC='<svg viewBox="0 0 24 24"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.4"/></svg>';
+// foto da capa: recorta no formato da capa e reduz para caber no servidor
+function capaDeImagem(im){const W=640,H=214,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);
+  let q=.78,u=c.toDataURL('image/jpeg',q);while(u.length>52000&&q>.4){q-=.08;u=c.toDataURL('image/jpeg',q)}return u}
+window.pickCapa=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=()=>{const f=inp.files[0];if(!f)return;const im=new Image();
+    im.onload=()=>{const u=capaDeImagem(im);URL.revokeObjectURL(im.src);window._capaImg=u;window._capaSel='foto';
+      const b=$('#cap-foto');if(b){b.style.background=`url('${u}') center/cover`;b.querySelector('span').lastChild.textContent='Trocar foto da capa'}
+      document.querySelectorAll('.cap').forEach(e=>e.classList.toggle('on',e.dataset.c==='foto'))};
+    im.onerror=()=>toast('Não consegui abrir essa foto',3000);im.src=URL.createObjectURL(f)};inp.click()};
 window.perfCapa=id=>{window._capaSel=id;document.querySelectorAll('.cap').forEach(b=>b.classList.toggle('on',b.dataset.c===id))};
 window.perfSalva=()=>{
   const bio=($('#pf-bio').value||'').replace(/\s+/g,' ').trim().slice(0,160);let link=($('#pf-link').value||'').trim();
   if(link&&!/^https?:\/\//i.test(link))link='https://'+link;if(link&&!linkOk(link))return toast('Link inválido. Confira o endereço.',3000);
-  const selos=[...document.querySelectorAll('.pf-sl')].map(i=>i.value.replace(/\s+/g,' ').trim().slice(0,28)).filter(Boolean);
-  LS.set('perfil',{bio,link,selos,capa:window._capaSel||'azul'});closeSheet();toast('Perfil atualizado',2200);render();
+  const capa=window._capaSel||'azul';if(capa==='foto'&&!window._capaImg)return toast('Escolha a foto da capa ou outra capa.',3000);
+  LS.set('perfil',{bio,link,capa,...(capa==='foto'?{capaImg:window._capaImg}:{})});closeSheet();toast('Perfil atualizado',2200);render();
   if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
 /* ================= foto de perfil ================= */
 window.pickFoto=()=>{
