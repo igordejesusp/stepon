@@ -927,7 +927,8 @@ const marcaDe=t=>{t=String(t||'');for(const [k,rx] of MARCA_RX)if(rx.test(t))ret
 // o aparelho da corrida mais recente que tem nome (ex.: "Garmin Forerunner 165")
 const ultAparelho=()=>{const a=(D.acts||[]).find(x=>isRun(x)&&x.dev&&!/stepon/i.test(x.dev)&&x.src!=='MARCADO');return a?devNome(a):''};
 function marcaRel(){const r=PF?PF.relogio:LS.get('relogio',isIgor()?'garmin':null);if(r&&r!=='outro'&&r!=='sim')return r;return marcaDe(ultAparelho())||r||null}
-const hasWatch=()=>marcaRel()==='garmin';
+// o treino sai pelo calendário do Intervals.icu: o Garmin Connect e o Zepp (Amazfit) recebem de lá
+const hasWatch=()=>marcaRel()==='garmin'||marcaRel()==='amazfit';
 const META={cam:{n:'Caminhar e começar a correr',sem:12,d:0,cam:1},c:{n:'Constância',sem:8,d:0},5:{n:'5 km',sem:8,d:5,dist:5000},10:{n:'10 km',sem:10,d:10,dist:10000},21:{n:'Meia maratona',sem:16,d:21.1,dist:21097.5}};
 // objetivo escrito (meta 'x'): o app lê o texto e a pessoa confere os campos (tipo, distância, tempo-alvo e data)
 const MESN=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -1102,6 +1103,8 @@ function casaPlano(){
   // primeiro os treinos com corrida no próprio dia; depois os pares mais próximos na data e nos km (adiantado ganha no empate)
   const pend=[];for(const p of P){if(rd[p.date])M[p.date]={runs:rd[p.date],de:p.date};else pend.push(p)}
   const par=[];for(const p of pend)for(const d of orf){const df=Math.round((parseD(d)-parseD(p.date))/864e5);if(Math.abs(df)>2)continue;
+    if(p.teste)continue; // teste é um esforço específico: uma corrida de outro dia não vale por ele
+    if(df<0&&p.date>=ymd(TODAY()))continue; // corrida de antes não conta para um treino de hoje ou futuro (só depois que o dia passar)
     const kr=rd[d].reduce((s,a)=>s+(a.dist||0),0)/1000;if(kr<p.km*0.6)continue;par.push({p,d,df,dk:Math.abs(kr-p.km)})}
   par.sort((a,b)=>Math.abs(a.df)-Math.abs(b.df)||a.dk-b.dk||a.df-b.df);
   for(const x of par){if(usado.has(x.d)||M[x.p.date])continue;usado.add(x.d);M[x.p.date]={runs:rd[x.d],de:x.d}}
@@ -1153,12 +1156,12 @@ function toIcu(p){
 }
 async function sendWatch(ds){
   const p=planOn(ds);if(!p)return;
-  if(!confirm(`${evOn(ds)?'Atualizar':'Enviar'} "${p.titulo}" (${ds.split('-').reverse().join('/')}) no calendário do Intervals.icu?\n\nO Intervals repassa ao Garmin Connect, e o relógio recebe na próxima sincronização.`))return;
+  if(!confirm(`${evOn(ds)?'Atualizar':'Enviar'} "${p.titulo}" (${ds.split('-').reverse().join('/')}) no calendário do Intervals.icu?\n\n${marcaRel()==='amazfit'?'O Intervals repassa ao app Zepp (confere umas 3 vezes por dia). Depois abra o Zepp no celular para o relógio receber.':'O Intervals repassa ao Garmin Connect, e o relógio recebe na próxima sincronização.'}`))return;
   try{
     const old=evOn(ds),body=JSON.stringify({category:'WORKOUT',type:'Run',start_date_local:ds+'T00:00:00',name:p.titulo,description:toIcu(p)});
     const ev=old?await api(`/athlete/${CFG.athlete}/events/${old.id}`,{method:'PUT',body}):await api(`/athlete/${CFG.athlete}/events`,{method:'POST',body});
     D.ev=(D.ev||[]).filter(e=>e.d!==ds).concat([{id:ev.id,d:ds,name:ev.name}]);LS.set('data',D);
-    toast(D.athlete&&D.athlete.gUp?'TREINO ENVIADO AO RELÓGIO':'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN',3500);render();
+    toast(marcaRel()==='amazfit'?'ENVIADO AO INTERVALS // ABRA O ZEPP PARA SINCRONIZAR':D.athlete&&D.athlete.gUp?'TREINO ENVIADO AO RELÓGIO':'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN',4000);render();
   }catch(e){toast('FALHA NO ENVIO // '+e.message,3500)}
 }
 
@@ -1298,7 +1301,7 @@ function rIni(){
   // a conexão foi recusada (chave trocada ou acesso revogado): mostra o caminho para entrar de novo
   if(LS.get('authRuim',0))h+=CFG.token?`<div class="card alert"><div class="lbl bad">VOCÊ ENTROU EM OUTRO APARELHO</div><p class="empty" style="margin-top:4px">O Intervals só mantém um acesso ativo por vez. Como você entrou em outro aparelho, este perdeu o acesso. Toque em Reconectar para voltar a usar aqui. As suas corridas continuam todas lá.</p>${btnEntrar('margin-top:10px','Reconectar')}<p class="meta" style="margin-top:8px;line-height:1.5">Reconectar aqui desconecta o outro aparelho. Para usar dois aparelhos ao mesmo tempo, entre com o ID e a chave de API, em Mais.</p><button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`:`<div class="card alert"><div class="lbl bad">O INTERVALS NÃO ACEITOU A CONEXÃO</div><p class="empty" style="margin-top:4px">A chave ou o acesso deixou de valer. Entre de novo com a sua conta; as suas corridas continuam lá.</p>${btnEntrar('margin-top:10px')}<button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`;
   if(!LS.get('guia'))h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">COMO USAR</div><p class="empty" style="margin-top:4px">Toque no <b style="color:var(--hi)">?</b> ao lado de cada título para ver o que o número significa. Os cartões de sono, VO2 e FC abrem um resumo com o histórico.</p><button class="b sm pri" style="margin-top:8px" onclick="LS.set('guia',1);render()">Entendi</button></div>`;
-  if(D.athlete&&!D.athlete.gAct&&hasWatch()&&D.acts.filter(isRun).length>=3)h+=`<div class="card alert"><div class="lbl bad">ALERTA // SINCRONIZAÇÃO</div><p class="empty" style="margin-top:4px">As corridas do Garmin não estão chegando ao Intervals.icu (último treino recebido: ${last?last.date.slice(0,10).split('-').reverse().join('/'):'nenhum'}). Veja MAIS → Dispositivos.</p></div>`;
+  if(D.athlete&&!D.athlete.gAct&&marcaRel()==='garmin'&&D.acts.filter(isRun).length>=3)h+=`<div class="card alert"><div class="lbl bad">ALERTA // SINCRONIZAÇÃO</div><p class="empty" style="margin-top:4px">As corridas do Garmin não estão chegando ao Intervals.icu (último treino recebido: ${last?last.date.slice(0,10).split('-').reverse().join('/'):'nenhum'}). Veja MAIS → Dispositivos.</p></div>`;
   // pessoa nova: corridas que chegam pelo Strava não podem ser lidas; sem nenhuma corrida, mostra como ligar o relógio
   const nRun=D.acts.filter(isRun).length;
   if(D.at&&D.strava&&nRun<3)h+=`<div class="card alert"><div class="lbl bad">Suas corridas vêm do Strava</div><p class="empty" style="margin-top:4px;color:var(--txt)">O Intervals recebeu ${D.strava} ${D.strava===1?'atividade':'atividades'} pelo Strava, mas o Strava não deixa outros apps lerem esses dados. Por isso elas não aparecem aqui nem contam no ranking e no mapa.</p><p class="empty" style="margin-top:8px;color:var(--txt)"><b>Como resolver (uma vez só):</b> no intervals.icu, vá em Configurações → Conexões e ligue o seu relógio direto (Garmin Connect, Coros, Polar, Suunto ou Wahoo), marcando <b>Baixar atividades</b>. Depois toque em sincronizar aqui. As corridas antigas também podem vir: na mesma tela do Garmin há a opção de importar o histórico.</p><a class="b sm pri" style="margin-top:10px;display:inline-block" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as conexões do Intervals</a></div>`;
@@ -2686,7 +2689,7 @@ function devMarca(mc,apar,lastRun){
   const chega=!!lastRun&&lastRun.date.slice(0,10)>=ymd(addD(TODAY(),-30)),nm=apar||MARCAS[mc]||'Relógio';
   return `<div class="sec">DISPOSITIVOS</div><div class="card ${chega?'cur grad':'alert'}"><div class="row" style="justify-content:space-between"><h2>${esc(nm)}</h2><span class="tag ${chega?'ok':'bad'}">${chega?'CONECTADO':'ATENÇÃO'}</span></div><div class="meta">Via Intervals.icu · última corrida recebida ${lastRun?lastRun.date.slice(0,10).split('-').reverse().join('/'):'--'}</div>
   ${chega?'':`<p class="empty" style="margin-top:8px;color:var(--txt)">${DICA_MARCA[mc]||DICA_MARCA.outro}</p><a class="b sm" style="margin-top:8px;display:inline-block" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as conexões do Intervals</a>`}
-  <p class="empty" style="margin-top:8px">Os treinos você segue pela tela do app (o envio direto para o pulso hoje funciona só com Garmin).</p>
+  ${mc==='amazfit'?`<p class="empty" style="margin-top:8px;color:var(--txt)"><b>Treinos no relógio:</b> toque em <b>Enviar ao relógio</b> no treino. No intervals.icu (Configurações → Conexões → Amazfit) deixe ligado o envio de treinos planejados e, no app Zepp, abra Treino → Meu plano de treino. Nem todo modelo Amazfit aceita treino por etapas; se o seu não aceitar, siga pela tela do StepOn.</p>`:`<p class="empty" style="margin-top:8px">Os treinos você segue pela tela do app (o envio direto para o pulso funciona com Garmin e Amazfit).</p>`}
   <div class="row" style="margin-top:10px"><button class="b sm pri" onclick="sync(1)">Sincronizar tudo</button></div>${trocaRel(mc)}</div>`;
 }
 function devApp(lastRun){
