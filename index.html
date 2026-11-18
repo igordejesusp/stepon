@@ -1223,10 +1223,12 @@ function vigiaMapa(m,refaz){let f=0,ok=0;m.on('error',e=>{if(e&&(e.tile||e.sourc
   m.once('idle',()=>{if(mapaRuim(m,f))tent();else ok=1});
   setTimeout(()=>{try{if(!ok&&(mapaRuim(m,f)||!m.areTilesLoaded()))tent()}catch(e){}},9000)}
 function rotaSimples(el,tr){if(!tr||tr.length<2||!el.isConnected)return;el.querySelectorAll('.mimg,.rsvg').forEach(x=>x.remove());
-  const W=el.clientWidth||300,H=+el.dataset.h||190,kx=Math.cos(tr[0][0]*Math.PI/180),P=tr.map(q=>[q[1]*kx,-q[0]]);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  const W=el.clientWidth||300,H=+el.dataset.h||190,kx=Math.cos(tr[0][0]*Math.PI/180),pl=MAPPOLY[el.dataset.map],P=tr.map(q=>[q[1]*kx,-q[0]]);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   P.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])});
-  const pd=26,s=Math.min((W-2*pd)/Math.max(x1-x0,1e-9),(H-2*pd)/Math.max(y1-y0,1e-9)),ox=(W-(x1-x0)*s)/2,oy=(H-(y1-y0)*s)/2,Q=P.map(p=>[(p[0]-x0)*s+ox,(p[1]-y0)*s+oy]),
-    d=Q.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(''),a=Q[0],b=Q[Q.length-1];
+  const pd=26,s=Math.min((W-2*pd)/Math.max(x1-x0,1e-9),(H-2*pd)/Math.max(y1-y0,1e-9)),ox=(W-(x1-x0)*s)/2,oy=(H-(y1-y0)*s)/2,T=p=>[(p[0]-x0)*s+ox,(p[1]-y0)*s+oy],Q=P.map(T);
+  if(pl){const cor=MAPCOR[el.dataset.map]||'#4a9eff',d=pl.map(poly=>poly.map(ring=>ring.map((q,i)=>{const t=T([q[0]*kx,-q[1]]);return (i?'L':'M')+t[0].toFixed(1)+' '+t[1].toFixed(1)}).join('')+'Z').join('')).join('');
+    el.insertAdjacentHTML('afterbegin',`<svg class="rsvg" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:100%;height:100%"><path d="${d}" fill="${cor}" fill-opacity=".45" fill-rule="evenodd" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round"/></svg>`);return}
+  const d=Q.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(''),a=Q[0],b=Q[Q.length-1];
   el.insertAdjacentHTML('afterbegin',`<svg class="rsvg" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:100%;height:100%"><path d="${d}" fill="none" stroke="${TM[TEMA()].sob}" stroke-opacity=".6" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#4a9eff" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${a[0]}" cy="${a[1]}" r="5" fill="#fff" stroke="#4a9eff" stroke-width="2.5"/><circle cx="${b[0]}" cy="${b[1]}" r="5" fill="#4a9eff" stroke="#fff" stroke-width="2.5"/></svg>`)}
 function mlLoad(){
   const t=TEMA(),T=TM[t];_ml=_ml||{};
@@ -1247,12 +1249,13 @@ function mlLoad(){
       return st}).catch(()=>{MLFB=true;return estiloRaster()}):estiloRaster()).catch(e=>{_ml[t]=null;throw e});
 }
 const MAPTR={}; // trajetos de outras pessoas (amigos), para desenhar o mapa pequeno
+const MAPPOLY={},MAPCOR={}; // áreas (polígonos) para o mapa pequeno do território, e a cor de cada uma
 const mapBox=(id,H,pad)=>{const im=(MAPIMG[id+'_'+H+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}"${pad?` data-pad="${pad}"`:''} style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
 function drawMaps(){
   document.querySelectorAll('.map[data-map]:not(.ok)').forEach(async el=>{
     // só tira a foto do mapa com o cartão visível e no tamanho certo; escondido (outra aba) tenta de novo depois
     const W=el.clientWidth;if(W<40)return;
-    el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+TEMA(),tr=(AX[id]||{}).map||MAPTR[id],pd=+el.dataset.pad||0;
+    el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+TEMA(),tr=(AX[id]||{}).map||MAPTR[id],pl=MAPPOLY[id],pd=+el.dataset.pad||0;
     if(!tr||(MAPIMG[key]&&Math.abs(MAPIMG[key].w-W)<=4))return;
     el.querySelectorAll('.mimg').forEach(x=>x.remove());
     try{
@@ -1265,12 +1268,16 @@ function drawMaps(){
         if(!MLFB&&!el.dataset.fb){MLFB=true;LS.set('mlfb',Date.now());_ml={};el.dataset.fb=1;el.classList.remove('ok');drawMaps()}else rotaSimples(el,tr)};
       const tmo=setTimeout(refazRota,9000);
       m.on('load',()=>{
+        if(pl){const cor=MAPCOR[id]||'#4a9eff';m.addSource('pg',{type:'geojson',data:{type:'Feature',geometry:{type:'MultiPolygon',coordinates:pl}}});
+          m.addLayer({id:'pg0',type:'fill',source:'pg',paint:{'fill-color':cor,'fill-opacity':.45}});m.addLayer({id:'pg1',type:'line',source:'pg',layout:{'line-join':'round'},paint:{'line-color':cor,'line-width':2.2}})}
+        else{
         m.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:ll}}});
         m.addSource('pt',{type:'geojson',data:{type:'FeatureCollection',features:[ll[0],ll[ll.length-1]].map((c,i)=>({type:'Feature',properties:{f:i},geometry:{type:'Point',coordinates:c}}))}});
         const lay={'line-join':'round','line-cap':'round'};
         m.addLayer({id:'rt0',type:'line',source:'rt',layout:lay,paint:{'line-color':TM[TEMA()].sob,'line-opacity':.6,'line-width':7}});
         m.addLayer({id:'rt1',type:'line',source:'rt',layout:lay,paint:{'line-color':'#4a9eff','line-width':3.5}});
         m.addLayer({id:'pt',type:'circle',source:'pt',paint:{'circle-radius':5,'circle-color':['case',['==',['get','f'],0],'#fff','#4a9eff'],'circle-stroke-width':2.5,'circle-stroke-color':['case',['==',['get','f'],0],'#4a9eff','#fff']}});
+        }
         m.once('idle',()=>{clearTimeout(tmo);if(feito)return;if(mapaRuim(m,falhas))return refazRota();feito=1;MAPIMG[key]={src:m.getCanvas().toDataURL('image/png'),w:W};m.remove();box.remove();
           if(!el.isConnected)return;const im=new Image();im.className='mimg';im.alt='';im.src=MAPIMG[key].src;el.prepend(im)});
       });
@@ -1381,7 +1388,7 @@ function painelDesk(avisos,ultimo,disp,vit,prox,rodape){
     <div class="dstat"><div><span>Corridas</span><b>${noAno.length}</b><small>em ${yr}</small></div><div><span>Km</span><b>${Math.round(kmAno/1000)}</b><small>em ${yr}</small></div><div><span>Semanas</span><b>${seq}</b><small>seguidas</small></div></div>
     <div class="dsem"><span>Esta semana</span><b>${km(semana).replace('.',',')} km</b></div>
     <button class="b full" style="margin-top:10px" onclick="go('perf')">Ver meu perfil</button></div>`;
-  const terr=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${tm?linhaI(`<span class="li-ic" style="background:${tm.cor}33"><span class="li-dot" style="background:${tm.cor}"></span></span>`,fmtKm2(tm.km2),tm.n+' '+(tm.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo','')}</div>`;
+  const terr=`<div class="card blc" onclick="openMeusTerr()"><div class="blh"><b>Seu território</b><span>›</span></div>${tm?linhaI(`<span class="li-ic" style="background:${tm.cor}33"><span class="li-dot" style="background:${tm.cor}"></span></span>`,fmtKm2(tm.km2),tm.n+' '+(tm.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo','')}</div>`;
   const L=D.acts.slice(0,4),DPA=desPorAtiv(runs);
   const feed=L.length?`<div class="sec">Atividades recentes<small><a onclick="PT='ativ';go('perf')" style="cursor:pointer;color:var(--blue)">Ver todas</a></small></div>`+L.map(x=>feedCard({id:x.id,dono:CFG.athlete,nome:a.name||'Atleta',pic:myPic(),date:x.date,titulo:x.name,src:devNome(x),cidade:a.city,dist:x.dist,mov:x.mov,hr:x.hr,run:isRun(x),map:(AX[x.id]||{}).map?'own':null,meu:1,mk:isMk(x),priv:PRIV[x.id],des:DPA[x.id],com:isMk(x)?[x.de]:null})).join(''):'';
   if(L.length)setTimeout(()=>{const K=L.map(x=>CFG.athlete+':'+x.id);socLoad(K);juntosLoad(K);fotosPede(CFG.athlete,render)},0);
@@ -1816,7 +1823,7 @@ function rPerf(){
     h+=progBox('me',semanas(D.acts.filter(isRun).map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))));
     h+=blocoMarcas(marcasTodas(),'openMarcas()');
     h+=glw('d')+blocoConq(badgeList(),'openBadges()');
-    {const me=(TD||[]).find(x=>x.u.me);h+=`<div class="card blc" onclick="go('comp')"><div class="blh"><b>Seu território</b><span>Mapa ›</span></div>${me?linhaI(`<span class="li-ic" style="background:${me.cor}33"><span class="li-dot" style="background:${me.cor}"></span></span>`,fmtKm2(me.km2),me.n+' '+(me.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo para dominar uma área','')}</div>`}
+    {const me=(TD||[]).find(x=>x.u.me);h+=`<div class="card blc" onclick="openMeusTerr()"><div class="blh"><b>Seu território</b><span>›</span></div>${me?linhaI(`<span class="li-ic" style="background:${me.cor}33"><span class="li-dot" style="background:${me.cor}"></span></span>`,fmtKm2(me.km2),me.n+' '+(me.n===1?'circuito':'circuitos')+' fechados',''):linhaI(icoC('prova'),'Nenhuma área ainda','Feche um circuito correndo para dominar uma área','')}</div>`}
     if(!SIMPLES()){const tr=rMais(1);const k=tr.lastIndexOf('<div class="card blc"');h+=k>0?tr.slice(0,k)+glw('e')+tr.slice(k):tr}
   }else if(PT==='ativ'){
     SOCV=null;fotosPede(CFG.athlete,render);const L=D.acts.slice(0,FLIM),DPA=desPorAtiv(D.acts.filter(isRun));
@@ -3274,6 +3281,41 @@ window.openTerr=id=>{
   <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`);
   $('#sbox').dataset.terr=eu?'me':'';
 };
+// "Seu território": separa as áreas em locais (cada pedaço da cidade) e mostra um mapinha de cada
+function terrRegioes(geom){
+  const P=geom.map(poly=>{const r=poly[0];let la0=1e9,la1=-1e9,lo0=1e9,lo1=-1e9;r.forEach(q=>{la0=Math.min(la0,q[1]);la1=Math.max(la1,q[1]);lo0=Math.min(lo0,q[0]);lo1=Math.max(lo1,q[0])});return {poly,b:[la0,la1,lo0,lo1]}});
+  const folga=(a,b)=>{const ky=111320,kx=111320*Math.cos(a[0]*Math.PI/180),dy=Math.max(0,b[0]-a[1],a[0]-b[1])*ky,dx=Math.max(0,b[2]-a[3],a[2]-b[3])*kx;return Math.hypot(dx,dy)};
+  const pai=P.map((_,i)=>i),raiz=i=>pai[i]===i?i:(pai[i]=raiz(pai[i]));
+  for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++)if(folga(P[i].b,P[j].b)<400)pai[raiz(j)]=raiz(i);
+  const G={};P.forEach((x,i)=>(G[raiz(i)]=G[raiz(i)]||[]).push(x));
+  return Object.values(G).map(g=>{const polys=g.map(x=>x.poly),b=g.reduce((m,x)=>[Math.min(m[0],x.b[0]),Math.max(m[1],x.b[1]),Math.min(m[2],x.b[2]),Math.max(m[3],x.b[3])],[1e9,-1e9,1e9,-1e9]);
+    return {polys,b,km2:geoKm2(polys),n:polys.length,c:[(b[0]+b[1])/2,(b[2]+b[3])/2]}}).sort((a,b)=>b.km2-a.km2);
+}
+// nome do lugar (parque ou bairro) pelo OpenStreetMap; coordenada arredondada, 1 pedido por segundo e guardado no aparelho
+let _geoFila=Promise.resolve();
+function nomeLocal(c,el){
+  const k=c[0].toFixed(2)+','+c[1].toFixed(2),G=LS.get('geon',{});
+  if(G[k]){if(el)el.textContent=G[k];return}
+  _geoFila=_geoFila.then(async()=>{
+    try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=pt-BR&lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`);if(!r.ok)throw 0;const j=await r.json(),a=j.address||{};
+      const n=a.leisure||a.park||a.suburb||a.neighbourhood||a.quarter||a.city_district||a.village||a.town||a.city;
+      if(n){const G2=LS.get('geon',{});G2[k]=n;LS.set('geon',G2);if(el&&el.isConnected)el.textContent=n}}catch(e){}
+    await new Promise(ok=>setTimeout(ok,1100))});
+}
+window.openMeusTerr=()=>{
+  try{terrData()}catch(e){}
+  const o=(TD||[]).find(x=>x.u.me),hd=`<div class="hd"><b>Seu território</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
+  if(!o||!o.geom.length){openSheet(hd+`<p class="empty">Você ainda não tem área. Feche um circuito correndo para dominar um local.</p><button class="b full" style="margin-top:10px" onclick="closeSheet();go('comp')">Abrir o mapa</button>`);return}
+  const R=terrRegioes(o.geom);window.__REG=R;
+  R.forEach((g,i)=>{const id='tm'+i+'_'+Math.round(g.km2*1e5)+'_'+g.n;g.id=id;MAPPOLY[id]=g.polys;MAPCOR[id]=o.cor;MAPTR[id]=g.polys.flatMap(p=>p[0].map(q=>[q[1],q[0]]))});
+  openSheet(hd+`<div class="card stc"><div class="stg c3"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Locais</span><b>${R.length}</b></div><div><span>Circuitos</span><b>${o.n}</b></div></div></div>
+  <p class="meta" style="margin:2px 2px 10px">Valendo no mapa do modo ${MODO()==='g'?'Geral':'Amigos'}.</p>
+  ${R.map((g,i)=>`<div class="card blc" style="margin-bottom:10px"><div class="blh"><b id="rg-${i}">Local ${i+1}</b><span>${fmtKm2(g.km2)}</span></div>${mapBox(g.id,170)}
+    <div class="row" style="justify-content:space-between;align-items:center;margin-top:10px"><span class="meta">${g.n} ${g.n===1?'área fechada':'áreas fechadas'}</span><button class="b sm" onclick="terrNoMapa(${i})">Ver no mapa</button></div></div>`).join('')}`);
+  R.forEach((g,i)=>nomeLocal(g.c,document.getElementById('rg-'+i)));
+};
+window.terrNoMapa=i=>{const g=(window.__REG||[])[i];if(!g)return;closeSheet();go('comp');let t=0;
+  const f=()=>{if(CM&&CM.isStyleLoaded&&CM.isStyleLoaded()){CM.fitBounds([[g.b[2],g.b[0]],[g.b[3],g.b[1]]],{padding:70,maxZoom:16,duration:600});return}if(++t<40)setTimeout(f,200)};setTimeout(f,300)};
 window.openRank=()=>{
   const {L,mes,dias}=ranking(),M=MODO(),meI=L.findIndex(x=>x.u.me),row=(x,j)=>`<div class="row" ${!x.u.me?`onclick="openPerfilAmigo('${esc(x.u.id)}')" `:''}style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)"><span class="num" style="width:28px;text-align:center;font-size:${j<3?17:12}px">${medal(j)}</span>${avatar(x.u,34)}<span style="flex:1;min-width:0"><b style="display:block;font-size:14px;${x.u.me?'color:var(--blue)':''}">${esc(x.u.name)}</b><span class="meta">Nível ${nivelXp(x.u.me?meuXp():xpDe(x.u)).L} · ${km(x.km*1000)} km · ${x.tr} ${x.tr===1?'treino':'treinos'}${!x.u.me&&x.u.at?` · ${atrasoTxt(x.u.at)}`:''}</span></span><span class="num" style="font-size:18px">${x.pts}<small class="dim"> pts</small></span></div>`;
   const vis=L.map((x,j)=>[x,j]).filter(([x,j])=>j<10||x.u.me);
