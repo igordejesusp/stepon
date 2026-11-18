@@ -556,6 +556,9 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .fjunto{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);margin:-4px 0 10px}.fjunto:empty{display:none}
 .fjav{display:flex}.fjav img{width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--panel);margin-left:-6px;background:var(--cell)}.fjav img:first-child{margin-left:0}
 .mkck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex:none}.mkck.on{background:var(--blue);border-color:var(--blue)}
+.fdesw{gap:8px}.fdes{display:flex;width:100%;box-sizing:border-box;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:0;color:var(--txt);border-radius:12px;padding:9px 12px;font-size:13.5px;line-height:1.3}
+.fdes b{color:var(--txt);font-weight:700}.fdes i{width:26px;height:26px}.fdes i svg{width:15px;height:15px}
+:root[data-theme="light"] .fdes{background:rgba(0,0,0,.06);color:var(--txt)}:root[data-theme="light"] .fdes b{color:var(--txt)}
 </style>
 </head>
 <body>
@@ -1197,12 +1200,32 @@ const MCORL={background:'#e3e9ee',water:'#a9c6dd',waterway:'#9fc0da',landuse_res
 const TEMA=()=>document.documentElement.dataset.theme==='light'?'light':'dark';
 const TM={dark:{cor:MCOR,txt:'#6b727c',halo:'#000',verde:'#0b1d11',parque:'#0e2416',sob:'#000'},light:{cor:MCORL,txt:'#5f6b77',halo:'#eef2f5',verde:'#cddfcd',parque:'#c3d8c3',sob:'#ffffff'}};
 let _mlj=null;
+// mapa reserva: se o OpenFreeMap não carregar (rede, bloqueio, provedor), usa os mapas da CARTO; se nem isso, desenha só o trajeto
+let MLFB=(Date.now()-LS.get('mlfb',0))<6*3600e3,_sonda=null;
+function estiloRaster(){const t=TEMA(),k=t==='light'?'light_all':'dark_all';
+  return {version:8,sources:{r:{type:'raster',tiles:['a','b','c','d'].map(x=>`https://${x}.basemaps.cartocdn.com/${k}/{z}/{x}/{y}@2x.png`),tileSize:256,maxzoom:19,attribution:'© CARTO · © OpenStreetMap'}},layers:[{id:'fundo',type:'background',paint:{'background-color':t==='light'?'#e3e9ee':'#000'}},{id:'r',type:'raster',source:'r'}]}}
+// testa de verdade se chega um pedaço do mapa (a lista de estilos pode chegar e os blocos do mapa não)
+function sondaMapa(){return _sonda=_sonda||(MLFB?Promise.resolve(false):new Promise(ok=>{const t=setTimeout(()=>ok(false),4000);
+  fetch('https://tiles.openfreemap.org/planet').then(r=>r.json()).then(j=>fetch(String(j.tiles[0]).replace('{z}',5).replace('{x}',11).replace('{y}',17))).then(r=>{clearTimeout(t);ok(r.ok)}).catch(()=>{clearTimeout(t);ok(false)})})
+  .then(v=>{if(v)LS.set('mlfb',0);else{MLFB=true;LS.set('mlfb',Date.now())}return v}))}
+// conta os blocos do mapa que chegaram (loaded) e os que falharam (errored); o evento 'error' nem sempre avisa
+function mapaRuim(m,f){try{let ok=0,er=0;for(const sc of Object.values(m.style.sourceCaches))for(const t of Object.values(sc._tiles)){if(t.state==='loaded')ok++;else if(t.state==='errored')er++}return f>2||(er>0&&ok===0)}catch(e){return f>2}}
+function vigiaMapa(m,refaz){let f=0,ok=0;m.on('error',e=>{if(e&&(e.tile||e.sourceId))f++});
+  const tent=()=>{if(ok||MLFB||document.hidden)return;ok=1;MLFB=true;LS.set('mlfb',Date.now());_ml={};refaz()};
+  m.once('idle',()=>{if(mapaRuim(m,f))tent();else ok=1});
+  setTimeout(()=>{try{if(!ok&&(mapaRuim(m,f)||!m.areTilesLoaded()))tent()}catch(e){}},9000)}
+function rotaSimples(el,tr){if(!tr||tr.length<2||!el.isConnected)return;el.querySelectorAll('.mimg,.rsvg').forEach(x=>x.remove());
+  const W=el.clientWidth||300,H=+el.dataset.h||190,kx=Math.cos(tr[0][0]*Math.PI/180),P=tr.map(q=>[q[1]*kx,-q[0]]);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  P.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])});
+  const pd=26,s=Math.min((W-2*pd)/Math.max(x1-x0,1e-9),(H-2*pd)/Math.max(y1-y0,1e-9)),ox=(W-(x1-x0)*s)/2,oy=(H-(y1-y0)*s)/2,Q=P.map(p=>[(p[0]-x0)*s+ox,(p[1]-y0)*s+oy]),
+    d=Q.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(''),a=Q[0],b=Q[Q.length-1];
+  el.insertAdjacentHTML('afterbegin',`<svg class="rsvg" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:100%;height:100%"><path d="${d}" fill="none" stroke="${TM[TEMA()].sob}" stroke-opacity=".6" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#4a9eff" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${a[0]}" cy="${a[1]}" r="5" fill="#fff" stroke="#4a9eff" stroke-width="2.5"/><circle cx="${b[0]}" cy="${b[1]}" r="5" fill="#4a9eff" stroke="#fff" stroke-width="2.5"/></svg>`)}
 function mlLoad(){
   const t=TEMA(),T=TM[t];_ml=_ml||{};
   if(_ml[t])return _ml[t];
   _mlj=_mlj||new Promise((ok,er)=>{const c=document.createElement('link');c.rel='stylesheet';c.href=ML+'.css';document.head.appendChild(c);
     const s=document.createElement('script');s.src=ML+'.js';s.onload=ok;s.onerror=er;document.head.appendChild(s)}).catch(e=>{_mlj=null;throw e});
-  return _ml[t]=_mlj.then(()=>fetch('https://tiles.openfreemap.org/styles/dark')).then(r=>r.json()).then(st=>{
+  return _ml[t]=_mlj.then(()=>sondaMapa()).then(v=>v?fetch('https://tiles.openfreemap.org/styles/dark').then(r=>r.json()).then(st=>{
       for(const l of st.layers){const c=T.cor[l.id],pt=l.paint=l.paint||{},k=l.type==='background'?'background-color':l.type==='fill'?'fill-color':l.type==='line'?'line-color':null;
         if(c&&k)pt[k]=c;else if(t==='light'&&k)pt[k]=l.type==='line'?'#c9d2da':'#dfe6ec';
         if(t==='light'&&pt['fill-outline-color'])pt['fill-outline-color']='#c3ccd5'; // contorno escuro dos prédios
@@ -1213,7 +1236,7 @@ function mlLoad(){
       st.layers.splice(at<0?1:at,0,
         {id:'bn_verde',type:'fill',source:'openmaptiles','source-layer':'landcover',filter:['match',['get','class'],['grass','wood'],true,false],paint:{'fill-color':T.verde,'fill-opacity':.85}},
         {id:'bn_parque',type:'fill',source:'openmaptiles','source-layer':'park',paint:{'fill-color':T.parque,'fill-opacity':.9}});
-      return st}).catch(e=>{_ml[t]=null;throw e});
+      return st}).catch(()=>{MLFB=true;return estiloRaster()}):estiloRaster()).catch(e=>{_ml[t]=null;throw e});
 }
 const MAPTR={}; // trajetos de outras pessoas (amigos), para desenhar o mapa pequeno
 const mapBox=(id,H,pad)=>{const im=(MAPIMG[id+'_'+H+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}"${pad?` data-pad="${pad}"`:''} style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
@@ -1228,6 +1251,11 @@ function drawMaps(){
       const st=await mlLoad(),box=document.createElement('div');box.style.cssText='position:absolute;inset:0';el.prepend(box);
       const ll=tr.map(p=>[p[1],p[0]]),b=ll.reduce((b,p)=>b.extend(p),new maplibregl.LngLatBounds(ll[0],ll[0]));
       const m=new maplibregl.Map({container:box,style:structuredClone(st),interactive:false,pitch:0,bearing:0,maxPitch:0,attributionControl:false,preserveDrawingBuffer:true,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:pd?{top:pd,bottom:pd,left:pd,right:pd}:{top:24,bottom:24,left:28,right:28},maxZoom:17}});
+      let falhas=0,feito=0;m.on('error',e=>{if(e&&(e.tile||e.sourceId))falhas++});
+      const refazRota=()=>{if(feito++)return;try{m.remove()}catch(e){}box.remove();if(!el.isConnected)return;
+        if(document.hidden){el.classList.remove('ok');return} // aba escondida não desenha o mapa: não é falha, tenta de novo depois
+        if(!MLFB&&!el.dataset.fb){MLFB=true;LS.set('mlfb',Date.now());_ml={};el.dataset.fb=1;el.classList.remove('ok');drawMaps()}else rotaSimples(el,tr)};
+      const tmo=setTimeout(refazRota,9000);
       m.on('load',()=>{
         m.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:ll}}});
         m.addSource('pt',{type:'geojson',data:{type:'FeatureCollection',features:[ll[0],ll[ll.length-1]].map((c,i)=>({type:'Feature',properties:{f:i},geometry:{type:'Point',coordinates:c}}))}});
@@ -1235,10 +1263,10 @@ function drawMaps(){
         m.addLayer({id:'rt0',type:'line',source:'rt',layout:lay,paint:{'line-color':TM[TEMA()].sob,'line-opacity':.6,'line-width':7}});
         m.addLayer({id:'rt1',type:'line',source:'rt',layout:lay,paint:{'line-color':'#4a9eff','line-width':3.5}});
         m.addLayer({id:'pt',type:'circle',source:'pt',paint:{'circle-radius':5,'circle-color':['case',['==',['get','f'],0],'#fff','#4a9eff'],'circle-stroke-width':2.5,'circle-stroke-color':['case',['==',['get','f'],0],'#4a9eff','#fff']}});
-        m.once('idle',()=>{MAPIMG[key]={src:m.getCanvas().toDataURL('image/png'),w:W};m.remove();box.remove();
+        m.once('idle',()=>{clearTimeout(tmo);if(feito)return;if(mapaRuim(m,falhas))return refazRota();feito=1;MAPIMG[key]={src:m.getCanvas().toDataURL('image/png'),w:W};m.remove();box.remove();
           if(!el.isConnected)return;const im=new Image();im.className='mimg';im.alt='';im.src=MAPIMG[key].src;el.prepend(im)});
       });
-    }catch(e){el.classList.add('err')}
+    }catch(e){el.classList.add('err');rotaSimples(el,tr)}
   });
 }
 function ringSvg(v,cls){const c=2*Math.PI*36,col=cls==='ok'?'var(--blue)':cls==='warn'?'var(--amber)':'var(--red)';return `<svg viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" style="stroke:var(--track)" stroke-width="7" fill="none"/><circle cx="43" cy="43" r="36" stroke="${col}" stroke-width="7" fill="none" stroke-dasharray="${c*v/100} ${c}" transform="rotate(-90 43 43)"/><text x="43" y="49" text-anchor="middle" style="fill:var(--hi)" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="700">${v}</text></svg>`}
@@ -1916,8 +1944,8 @@ window.openBlk=(k,manter)=>{const B=BLK[k];if(!B)return;const sb=$('#sbox'),top=
   openSheet(`<div class="hd"><b>${B.t}</b><button class="b sm" onclick="closeSheet()">✕</button></div>${B.h}`);sb.dataset.blk=k;if(manter)sb.scrollTop=top};
 let PT=LS.get('pt','prog'),FLIM=6;
 window.pTab=v=>{PT=v;LS.set('pt',v);render();$('#v-perf').scrollTop=0};
-const PTI={prog:'<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 16v-3M12 16v-6M15 16v-4"/></svg>',ativ:'<svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>',gal:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M9.5 4v16M14.5 4v16"/></svg>'};
-const pTabs=(_,cur,fn)=>`<div class="ptabs">${[['prog','Progresso'],['ativ','Atividades'],['gal','Galeria']].map(([k,n])=>`<button class="${cur===k?'on':''}" onclick="${fn}('${k}')">${PTI[k]}<span>${n}</span></button>`).join('')}</div>`;
+const PTI={prog:'<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',ativ:'<svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M8 21l3-5-2.5-2.5L10.5 9l3 2.5 3 .5M10.5 9L7 11M13 13.5l1.5 4 3.5 3"/></svg>',gal:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M9.5 4v16M14.5 4v16"/></svg>'};
+const pTabs=(_,cur,fn)=>`<div class="ptabs">${[['prog','Desempenho'],['ativ','Atividades'],['gal','Galeria']].map(([k,n])=>`<button class="${cur===k?'on':''}" onclick="${fn}('${k}')">${PTI[k]}<span>${n}</span></button>`).join('')}</div>`;
 // escudo com o número do nível
 let _esq=0;
 const escudo=(nv,on)=>{const gid='esg'+(++_esq);return `<button class="escudo" onclick="${on}" aria-label="Nível ${nv.L}"><svg viewBox="0 0 40 46"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4e9ff"/><stop offset=".3" stop-color="#4a9eff"/><stop offset="1" stop-color="#1f6fe0"/></linearGradient></defs><path d="M20 2 36 8v13c0 11-7 19-16 23C11 40 4 32 4 21V8z" fill="url(#${gid})"/><text x="20" y="29" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">${nv.L}</text></svg><small>${FAIXA[nv.faixa]}</small></button>`};
@@ -3113,7 +3141,7 @@ function rComp(){
     if(CM){CM.resize();if(CM.isStyleLoaded()&&CM.getSource('terr'))pintaTerr();return}
     const lp=LS.get('lastpos',null),c0=TD.length?[TD[0].geom[0][0][0][0],TD[0].geom[0][0][0][1]]:null;
     CM=new maplibregl.Map({container:'cmap',style:structuredClone(st),center:lp||c0||[-48.277,-18.918],zoom:lp?14:13,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
-    CM.touchZoomRotate.disableRotation();
+    CM.touchZoomRotate.disableRotation();vigiaMapa(CM,()=>{try{CM.remove()}catch(e){}CM=null;render()});
     CM.on('load',()=>{
       CM.addSource('terr',{type:'geojson',data:terrGeo()});CM.addSource('eu',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
       CM.addLayer({id:'terr',type:'fill',source:'terr',paint:{'fill-color':['get','cor'],'fill-opacity':.42}});
@@ -3511,6 +3539,7 @@ window.openRec=d=>{
   mlLoad().then(st=>{
     if(RM){RM.resize();recDraw();return}
     RM=new maplibregl.Map({container:'rmap',style:structuredClone(st),center:FIX?[FIX.ll[1],FIX.ll[0]]:[-48.277,-18.918],zoom:FIX?16:12,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
+    vigiaMapa(RM,()=>{try{RM.remove()}catch(e){}RM=null});
     RM.on('load',()=>{
       RM.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'MultiLineString',coordinates:[]}}});RM.addSource('me',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
       RM.addLayer({id:'rt0',type:'line',source:'rt',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':TM[TEMA()].sob,'line-opacity':.6,'line-width':8}});
