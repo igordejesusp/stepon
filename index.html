@@ -604,6 +604,10 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .cr-st{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;background:#000}#cr-im{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none;will-change:transform}
 .cr-fr{position:absolute;box-shadow:0 0 0 3000px rgba(0,0,0,.66);border:2px solid rgba(255,255,255,.92);pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px);background-size:33.333% 33.333%}.cr-fr.ci{border-radius:50%;background-image:none}
 .cr-ft{padding:14px 22px calc(16px + env(safe-area-inset-bottom));color:#8a929e;text-align:center;font-size:13px}.cr-ft input{width:100%;accent-color:var(--blue)}.cr-ft p{margin-top:8px}
+#ntp{position:fixed;inset:0;z-index:55;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.ntp-h{display:flex;align-items:center;gap:14px;padding:14px 16px 10px;flex:none}.ntp-h b{font-size:22px;font-weight:700;color:var(--hi)}
+.ntp-v{width:42px;height:42px;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:0;color:var(--hi)}.ntp-v svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ntp-l{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:6px 14px calc(28px + env(safe-area-inset-bottom));max-width:620px;width:100%;margin:0 auto}
 </style>
 </head>
 <body>
@@ -3903,6 +3907,9 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
+const BUILD='2026-11-18d'; // troque a cada publicação: o app confere sozinho se há versão nova
+setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
+  if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tipo:'novo',txt:'Novo: notificações aqui. Curtidas, comentários, território, recordes e conquistas.',t:Date.parse('2026-11-18T12:00:00')},
   {id:'v1118b',tipo:'novo',txt:'Novo: se o app não reconheceu um circuito, toque nos três pontinhos do treino e use "Contestar circuito".',t:Date.parse('2026-11-18T11:00:00')}];
 let NT=LS.get('nt',null)||{items:[],base:null};
@@ -3967,18 +3974,20 @@ async function notifRefresh(force){
   }catch(e){}finally{_ntBusy=0}
 }
 window.notifRefresh=notifRefresh;
-const ntMostrando=()=>$('#sheet').classList.contains('on')&&(($('#sbox').querySelector('.hd b')||{}).innerText==='Notificações');
+const ntMostrando=()=>!!$('#ntp');
+// as notificações abrem em uma página inteira, com o fundo do app, e não mais em uma janelinha
 function ntRender(){
-  const L=[...NT.items].sort((a,b)=>b.t-a.t);
-  openSheet(`<div class="hd"><b>Notificações</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  ${L.length?`<div class="ntl">${L.map(i=>`<button class="nti ${i.lido?'':'nv'}" onclick="ntGo('${esc(i.id)}')"><span class="nic" style="--c:${NT_COR[i.tipo]||'#4a9eff'}"><svg viewBox="0 0 24 24">${NT_ICO[i.tipo]||''}</svg></span><span class="ntx"><b>${esc(i.txt)}</b><small>${quando(i.t)}</small></span></button>`).join('')}</div>
-  <button class="b full" style="margin-top:12px" onclick="ntLimpa()">Limpar notificações</button>`:`<p class="empty">Nada por aqui ainda. Curtidas, comentários, território, recordes e conquistas aparecem neste sino.</p>`}`);
+  const L=[...NT.items].sort((a,b)=>b.t-a.t);let el=$('#ntp');if(!el){el=document.createElement('div');el.id='ntp';document.body.appendChild(el)}
+  const rola=el.querySelector('.ntp-l'),top=rola?rola.scrollTop:0;
+  el.innerHTML=`<div class="ntp-h"><button class="ntp-v" onclick="ntFecha()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>Notificações</b></div>
+  <div class="ntp-l">${L.length?`<div class="ntl">${L.map(i=>`<button class="nti ${i.lido?'':'nv'}" onclick="ntGo('${esc(i.id)}')"><span class="nic" style="--c:${NT_COR[i.tipo]||'#4a9eff'}"><svg viewBox="0 0 24 24">${NT_ICO[i.tipo]||''}</svg></span><span class="ntx"><b>${esc(i.txt)}</b><small>${quando(i.t)}</small></span></button>`).join('')}</div>`:`<p class="empty" style="padding:30px 6px;text-align:center">Nada por aqui ainda.<br>Curtidas, comentários, território, recordes e conquistas aparecem neste sino.</p>`}</div>`;
+  if(rola)el.querySelector('.ntp-l').scrollTop=top;
   NT.items.forEach(i=>i.lido=1);ntSave();sinoIcone();
 }
-window.openNotif=()=>{ntRender();const n0=NT.items.length;notifRefresh(1).then(()=>{if(ntMostrando()&&NT.items.length!==n0)ntRender()})};
-window.ntGo=id=>{const i=NT.items.find(x=>x.id===id);closeSheet();if(!i||!i.go)return;const g=i.go;
+window.ntFecha=()=>{const e=$('#ntp');if(e)e.remove()};
+window.openNotif=()=>{closeSheet();ntRender();const n0=NT.items.length;notifRefresh(1).then(()=>{if(ntMostrando()&&NT.items.length!==n0)ntRender()})};
+window.ntGo=id=>{const i=NT.items.find(x=>x.id===id);ntFecha();if(!i||!i.go)return;const g=i.go;
   if(g.k==='soc')socAbrir(g.dono,g.act);else if(g.k==='comp')go('comp');else if(g.k==='marc')openMarcas();else if(g.k==='badges')openBadges();else if(g.k==='home')go('ini')};
-window.ntLimpa=()=>{NT.items=[];ntSave();sinoIcone();ntRender()};
 
 /* ================= tema claro (gelo) e escuro ================= */
 const SOL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>';
