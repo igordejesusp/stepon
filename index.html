@@ -1163,6 +1163,31 @@ function toIcu(p){
   }
   return out.trim();
 }
+// diagnóstico do envio ao relógio: lê no Intervals da própria pessoa se o treino chegou e como o Intervals o entendeu
+window.diagRelogio=async()=>{
+  const hd=`<div class="hd"><b>Testar envio ao relógio</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
+  openSheet(hd+`<p class="empty" style="color:var(--txt)">Conferindo no Intervals…</p>`);
+  const L=[],lin=(ok,t,sub)=>L.push(`<div class="row" style="gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line2);flex-wrap:nowrap"><span class="tag ${ok===true?'ok':ok===false?'bad':''}" style="flex:none">${ok===true?'OK':ok===false?'FALHOU':'VER'}</span><span style="min-width:0"><b style="display:block;font-size:13.5px;color:var(--hi)">${t}</b>${sub?`<span class="meta" style="display:block;margin-top:2px;line-height:1.4">${sub}</span>`:''}</span></div>`);
+  let falha=null;
+  try{
+    const j=await api('/athlete/'+CFG.athlete);
+    const fl=Object.entries(j).filter(([k])=>/zepp|amazfit/i.test(k)).map(([k,v])=>[k,typeof v==='object'&&v!==null?'(dados)':String(v)]);
+    const up=fl.find(([k])=>/upload|workout|plan|push/i.test(k));
+    const ss=(j.sportSettings||[]).find(x=>(x.types||[]).includes('Run'));
+    // 1) treinos no calendário do Intervals nos próximos dias
+    const hoje=ymd(TODAY()),ev=await api(`/athlete/${CFG.athlete}/events?oldest=${hoje}&newest=${ymd(addD(TODAY(),9))}&category=WORKOUT`);
+    if(!ev.length)lin(false,'Nenhum treino no calendário do Intervals','O envio pelo StepOn não chegou lá. Toque em "Enviar ao relógio" num treino dos próximos dias e teste de novo.');
+    else{lin(true,ev.length+(ev.length===1?' treino no calendário do Intervals':' treinos no calendário do Intervals'),ev.slice(0,4).map(e=>String(e.start_date_local||'').slice(8,10)+'/'+String(e.start_date_local||'').slice(5,7)+' · '+esc(e.name||'')).join('<br>'));
+      const e0=ev[0],doc=JSON.stringify(e0.workout_doc||{}),temPace=/pace|speed/i.test(doc);
+      lin(e0.workout_doc?(temPace?true:null):false,e0.workout_doc?(temPace?'O Intervals entendeu o treino com ritmo':'O Intervals leu o treino, mas sem ritmo nas etapas'):'O Intervals não conseguiu ler as etapas do treino',null)}
+    // 2) conexão do Intervals com o Zepp
+    if(fl.length){const off=up&&/^(false|null)$/i.test(up[1]);lin(off?false:null,off?'Envio de treinos ao Zepp está desligado no Intervals':'Conexão do Intervals com o Zepp',off?'No Intervals: Configurações → Conexões → Amazfit. Marque o envio de treinos planejados e autorize de novo.':`Campos que o Intervals mostra: ${fl.map(([k,v])=>esc(k)+' = '+esc(v)).join(' · ')}`)}
+    else lin(null,'Nenhuma conexão com o Zepp aparece na conta','No Intervals: Configurações → Conexões → Amazfit. Conecte, marque o envio de treinos planejados e autorize.');
+    lin(ss&&ss.threshold_pace?true:null,ss&&ss.threshold_pace?'Ritmo de limiar preenchido':'Ritmo de limiar vazio no Intervals','O StepOn pergunta e preenche quando você manda um treino.');
+  }catch(e){falha=String(e&&e.message||e).slice(0,80)}
+  openSheet(hd+(falha?`<p class="empty" style="color:var(--txt)">Não consegui falar com o Intervals agora (${esc(falha)}). Tente de novo em instantes.</p>`:`<div>${L.join('')}</div>
+  <div class="card dica" style="margin-top:12px"><p><b>Se o treino está no Intervals e nada chega ao Zepp:</b> o Intervals envia a próxima semana de treinos quando você muda algo e umas 3 vezes por dia. No Zepp, vá em Perfil → Vinculação de contas de terceiros, confirme o Intervals e abra Treino → Meus Planos de Treinamento. O Zepp só lista o T-Rex 3 Pro e o Balance 2 como compatíveis; o Active 2 pode não receber. Nesse caso, siga o treino pelo botão "Fazer treino agora" do StepOn.</p></div>`)+`<button class="b full" style="margin-top:10px" onclick="diagRelogio()">Testar de novo</button>`);
+};
 // o Intervals precisa do ritmo de limiar do esporte para levar a faixa de ritmo ao relógio; se faltar, configura com a confirmação da pessoa
 async function limiarGarante(){
   if(LS.get('limiarOk',null)===CFG.athlete)return true;
@@ -1187,7 +1212,7 @@ async function sendWatch(ds){
     const old=evOn(ds),body=JSON.stringify({category:'WORKOUT',type:'Run',target:'PACE',start_date_local:ds+'T00:00:00',name:p.titulo,description:toIcu(p)});
     const ev=old?await api(`/athlete/${CFG.athlete}/events/${old.id}`,{method:'PUT',body}):await api(`/athlete/${CFG.athlete}/events`,{method:'POST',body});
     D.ev=(D.ev||[]).filter(e=>e.d!==ds).concat([{id:ev.id,d:ds,name:ev.name}]);LS.set('data',D);
-    toast(marcaRel()==='amazfit'?'ENVIADO AO INTERVALS // ABRA O ZEPP PARA SINCRONIZAR':D.athlete&&D.athlete.gUp?'TREINO ENVIADO AO RELÓGIO':'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN',4000);render();
+    toast(marcaRel()==='amazfit'?'ENVIADO AO INTERVALS // NO ZEPP: TREINO > MEUS PLANOS DE TREINAMENTO':D.athlete&&D.athlete.gUp?'TREINO ENVIADO AO RELÓGIO':'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN',4000);render();
   }catch(e){toast('FALHA NO ENVIO // '+e.message,3500)}
 }
 
@@ -1315,6 +1340,8 @@ function pmcSvg(S,days=90){
 }
 function stepsHtml(p){return `<div class="steps">${p.steps.map(s=>`<div><span>${esc(s[0])}</span><span>${s[3]?s[3]+'× ':''}${esc(s[1])}${s[2]?' @ '+fmtP(Math.min(...s[2]))+'–'+fmtP(Math.max(...s[2]))+'/km':/Caminh|Parado|Pausa/.test(s[0])?'':' leve'}</span></div>`).join('')}</div>`}
 const tagSt={cumprido:'<span class="tag ok">CONCLUÍDO</span>',parcial:'<span class="tag warn">PARCIAL</span>',perdido:'<span class="tag bad">PERDIDO</span>',enviado:'<span class="tag ok">NO RELÓGIO</span>',planejado:'<span class="tag">PLANEJADO</span>'};
+// no Amazfit "enviado" só quer dizer que foi para o Intervals: o relógio recebe depois, pelo Zepp
+const tagStx=k=>k==='enviado'&&marcaRel()==='amazfit'?'<span class="tag ok">NO INTERVALS</span>':tagSt[k];
 const tipoIc={qualidade:'QLD',rodagem:'ROD',longo:'LNG',prova:'ALVO',caminhada:'CAM'};
 const typeIc=a=>isRun(a)?'RUN':/Walk|Hike/.test(a.type)?'MCH':/Swim/.test(a.type)?'NAT':/Weight/.test(a.type)?'FOR':/Ride/.test(a.type)?'BIK':'OUT';
 
@@ -1372,7 +1399,7 @@ function rIni(){
   h+=`<div class="sec">PRÓXIMA ATIVIDADE</div>`;
   if(pbLivreHoje())h+=`<div class="card"><p class="empty" style="color:var(--txt)">Hoje é dia livre: você escolheu descansar. O plano segue normal amanhã.</p><button class="b full" style="margin-top:8px" onclick="pbVolta('${ds}')">Voltar ao treino de hoje</button></div>`;
   if(nx){const adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
-    h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagSt[st]}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
+    h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagStx(st)}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
     ${adj?`<div class="coach"><b class="bad" style="color:var(--bad)">COACH // AJUSTE PROPOSTO</b>${esc(adj.why)}<div class="row" style="margin-top:8px"><button class="b sm pri" onclick="acceptAdj('${nx.date}')">Aceitar ajuste</button></div></div>`:''}
     ${hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${nx.date}')">${st==='enviado'?'Reenviar ao relógio':'▲ Enviar ao relógio'}</button>`:''}
     <button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${nx.date}')">▶ Fazer treino agora</button>
@@ -1605,7 +1632,7 @@ window.calGo=n=>{if(!n)calRef=TODAY();else if(calMode==='sem')calRef=addD(calRef
 window.openDay=ds=>{
   const p=planOn(ds),ex=actsOn(ds),w=W(ds)||{},d=parseD(ds);
   let h=`<div class="hd"><b>${DOW[d.getDay()]} ${ds.split('-').reverse().join('/')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`;
-  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagSt[status(p)]}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}${p.aj?' · ritmos ajustados pelo teste de '+fmtD(p.aj):''}</div>${stepsHtml(p)}${p.teste&&testeFeito(ds)!==undefined?testeFeitoTxt(ds):p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
+  if(p)h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">PLANEJADO · ${tipoIc[p.tipo]}</span>${tagStx(status(p))}</div><h2 style="margin-top:4px">${esc(p.titulo)}</h2><div class="meta">${p.km} km${(()=>{const m=casaPlano()[ds];return m&&m.de!==ds?' · feito em '+fmtD(m.de):''})()}${p.aj?' · ritmos ajustados pelo teste de '+fmtD(p.aj):''}</div>${stepsHtml(p)}${p.teste&&testeFeito(ds)!==undefined?testeFeitoTxt(ds):p.dica?`<p class="empty" style="margin-top:8px">${esc(p.dica)}</p>`:''}${p.why?`<div class="coach"><b>AJUSTE DO COACH</b>${esc(p.why)}</div>`:''}${ds>=ymd(TODAY())&&hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${ds}')">▲ Enviar ao relógio</button>`:''}
     ${ds>=ymd(TODAY())?`<button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${ds}')">▶ Fazer treino agora</button>`:''}
     ${ds>=ymd(TODAY())&&status(p)!=='cumprido'?(p.planoB?`<button class="pbb on" onclick="closeSheet();pbVolta('${ds}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${ds}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`):''}<div class="grid g2" style="margin-top:8px">${ds<=ymd(TODAY())&&status(p)!=='cumprido'?`<button class="b" onclick="markDone('${ds}')">✓ Marcar feito</button>`:''}${ds>=ymd(TODAY())||status(p)!=='cumprido'?`<button class="b" onclick="openBuilder('${ds}')">${ds<ymd(TODAY())?'Editar ou mudar a data':'Editar treino'}</button>`:''}</div>${p.teste&&ds<=ymd(TODAY())&&testeFeito(ds)===undefined?`<button class="b full" style="margin-top:8px" onclick="abrirTeste('${ds}',null,${p.teste})">Informar o tempo do teste</button>`:''}</div>`;
   ex.forEach(a=>h+=`<div class="card cur grad" onclick="openAct('${a.id}')"><div class="row" style="justify-content:space-between"><span class="lbl">EXECUTADO · ${typeIc(a)}</span>${a.src==='MANUAL'?'<span class="tag">MARCADO À MÃO</span>':''}</div><h2 style="margin-top:4px">${esc(a.name)}</h2><div class="meta">${a.dist?km(a.dist)+' km · ':''}${fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>${isMan(a)?`<button class="b sm" style="margin-top:8px" onclick="event.stopPropagation();undoMan('${a.id}')">Desfazer</button>`:''}</div>`);
@@ -2723,7 +2750,7 @@ function devMarca(mc,apar,lastRun){
   return `<div class="sec">DISPOSITIVOS</div><div class="card ${chega?'cur grad':'alert'}"><div class="row" style="justify-content:space-between"><h2>${esc(nm)}</h2><span class="tag ${chega?'ok':'bad'}">${chega?'CONECTADO':'ATENÇÃO'}</span></div><div class="meta">Via Intervals.icu · última corrida recebida ${lastRun?lastRun.date.slice(0,10).split('-').reverse().join('/'):'--'}</div>
   ${chega?'':`<p class="empty" style="margin-top:8px;color:var(--txt)">${DICA_MARCA[mc]||DICA_MARCA.outro}</p><a class="b sm" style="margin-top:8px;display:inline-block" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as conexões do Intervals</a>`}
   ${mc==='amazfit'?`<p class="empty" style="margin-top:8px;color:var(--txt)"><b>Treinos no relógio:</b> toque em <b>Enviar ao relógio</b> no treino. No intervals.icu (Configurações → Conexões → Amazfit) deixe ligado o envio de treinos planejados e, no app Zepp, abra Treino → Meu plano de treino. Nem todo modelo Amazfit aceita treino por etapas; se o seu não aceitar, siga pela tela do StepOn.</p>`:`<p class="empty" style="margin-top:8px">Os treinos você segue pela tela do app (o envio direto para o pulso funciona com Garmin e Amazfit).</p>`}
-  <div class="row" style="margin-top:10px"><button class="b sm pri" onclick="sync(1)">Sincronizar tudo</button></div>${trocaRel(mc)}</div>`;
+  <div class="row" style="margin-top:10px;gap:8px"><button class="b sm pri" onclick="sync(1)">Sincronizar tudo</button>${mc==='amazfit'?`<button class="b sm" onclick="diagRelogio()">Testar envio ao relógio</button>`:''}</div>${trocaRel(mc)}</div>`;
 }
 function devApp(lastRun){
   const nm='Sem relógio';
@@ -3520,7 +3547,7 @@ window.fazerTreino=ds=>{
 window.rsel=m=>{RSEL.modo=m;prePaint();recUI()};
 function prePaint(){
   const el=$('#r-pre');if(!el)return;const p=RSEL.p,tr=RSEL.modo==='treino'&&p;
-  el.innerHTML=(p?`<div class="row" style="justify-content:space-between"><span class="lbl">TREINO DE HOJE</span>${tagSt[status(p)]}</div><h2 style="margin-top:2px">${esc(p.titulo)}</h2><div class="meta">${kmTxt(p.km)} km</div>${stepsHtml(p)}
+  el.innerHTML=(p?`<div class="row" style="justify-content:space-between"><span class="lbl">TREINO DE HOJE</span>${tagStx(status(p))}</div><h2 style="margin-top:2px">${esc(p.titulo)}</h2><div class="meta">${kmTxt(p.km)} km</div>${stepsHtml(p)}
     <div class="seg" style="margin:10px 0 0"><button class="${tr?'on':''}" onclick="rsel('treino')">TREINO GUIADO</button><button class="${tr?'':'on'}" onclick="rsel('livre')">CORRIDA LIVRE</button></div>`
     :`<div class="lbl">CORRIDA LIVRE</div><p class="empty" style="margin-top:4px">Hoje não há treino planejado. Toque em Iniciar para gravar uma corrida livre.</p>`)
     +`<div id="r-gatew" style="margin-top:10px"><p class="empty" id="r-gate"></p><button class="b sm" id="r-force" style="margin-top:6px" onclick="recGo(1)">Iniciar sem esperar o GPS</button></div>
