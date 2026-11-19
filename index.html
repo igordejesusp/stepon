@@ -342,6 +342,7 @@ body.ob .view{padding-bottom:30px}
 .pfoto{position:relative;flex:none;background:none;border:0;padding:0}.pfoto img{width:62px;height:62px;border-radius:50%;border:1px solid var(--blue);object-fit:cover;display:block}
 .pfoto span{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#000;font-size:13px;line-height:22px;font-weight:700}
 .mdt{display:flex;align-items:center;gap:4px}.mdt input{flex:1;min-width:0;width:0;text-align:center;padding-left:4px;padding-right:4px}.mdt span{font-weight:700;color:var(--dim)}.mdtl{display:flex;gap:4px;margin-top:3px}.mdtl span{flex:1;text-align:center;font-size:11px;color:var(--dim)}
+.cartes{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.cartes::-webkit-scrollbar{display:none}.cartes .b{flex:none;white-space:nowrap}
 .lk{background:none;border:0;padding:4px 0 0;color:var(--blue);font-size:12px;text-decoration:underline}
 .escudo{flex:none;background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--dim)}.escudo svg{width:44px;height:50px;filter:drop-shadow(0 3px 8px rgba(74,158,255,.35))}.escudo small{font-size:10px}
 .ptabs{display:flex;border-bottom:1px solid var(--line);margin:14px 0 12px}.ptabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:8px 0 10px;color:var(--dim);font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:5px}
@@ -2641,34 +2642,57 @@ function cartTrack(id,corta){
   const st=Math.max(1,Math.ceil(t.length/700));return t.filter((_,k)=>k%st===0||k===t.length-1);
 }
 const tempoCart=s=>{s=Math.round(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}h ${pad(m)}min`:`${m}min ${pad(x)}s`};
-// imagem com fundo transparente: três dados empilhados (nome em cima, número embaixo), o trajeto em azul e o símbolo branco no pé
+// imagens com fundo transparente para stories (estilo dos modelos do Strava, na identidade do StepOn: azul, "StepOn" branco e o S com ponto)
+const CART_TPL=[['c','Completo'],['h','Em linha'],['p','Parciais por km'],['g','Trajeto'],['f','Trajeto fino'],['m','Trajeto pequeno']];
+const CART_AZUL='#4a9eff',CART_F='-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+const CART_S=[[66,24],[27,35],[73,65],[14,79]];
+// o S com o ponto (símbolo do StepOn), só em branco
+function cartS(ctx,x,y,sz){const k=sz/100;ctx.save();ctx.translate(x,y);ctx.scale(k,k);ctx.strokeStyle='#fff';ctx.lineWidth=15;ctx.lineJoin='round';ctx.lineCap='butt';ctx.beginPath();CART_S.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(87,18.5,8.5,0,Math.PI*2);ctx.fill();ctx.restore()}
+// o nome "StepOn" em branco, inclinado como na logo; devolve a largura
+function cartNome(ctx,x,base,fs,align){ctx.save();ctx.font=`800 ${fs}px ${CART_F}`;const w=ctx.measureText('StepOn').width;const x0=align==='c'?x-w/2:x;ctx.translate(x0,base);ctx.transform(1,0,-0.194,1,0,0);ctx.fillStyle='#fff';ctx.textAlign='left';ctx.fillText('StepOn',0,0);ctx.restore();return w}
+function cartRota(ctx,id,corta,cx,cy,bw,bh,lw){
+  const tr=cartTrack(id,corta);if(tr.length<2)return;
+  const la0=tr.reduce((s,q)=>s+q[0],0)/tr.length,cs=Math.cos(la0*Math.PI/180),P=tr.map(q=>[q[1]*cs,-q[0]]);
+  const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const sc=Math.min(bw/((x1-x0)||1e-9),bh/((y1-y0)||1e-9)),ox=cx-(x1-x0)*sc/2,oy=cy-(y1-y0)*sc/2;
+  ctx.save();ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=CART_AZUL;ctx.lineWidth=lw;ctx.shadowColor='rgba(0,0,0,.28)';ctx.shadowBlur=10;
+  ctx.beginPath();P.forEach((p,i)=>{const X=ox+(p[0]-x0)*sc,Y=oy+(p[1]-y0)*sc;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();ctx.restore();
+}
 function drawCart(cv){
   const a=D.acts.find(x=>x.id===CART.id);if(!a||!cv)return;
-  const W=1080,H=1440,ctx=cv.getContext('2d'),F='-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+  const W=1080,H=1920,ctx=cv.getContext('2d'),F=CART_F,t=CART.tpl||'c';
   cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=12;
-  const pace=a.dist?a.mov/a.dist*1000:null,dados=[['Distância',km(a.dist).replace('.',',')+' km'],['Ritmo',fmtP(pace)+' /km'],['Tempo',tempoCart(a.mov)]];
-  dados.forEach(([l,v],i)=>{const y=150+i*215;ctx.font=`600 40px ${F}`;ctx.fillText(l,W/2,y);ctx.font=`800 100px ${F}`;ctx.fillText(v,W/2,y+108)});
-  const tr=cartTrack(CART.id,CART.corta);
-  if(tr.length>1){
-    const la0=tr.reduce((s,q)=>s+q[0],0)/tr.length,cs=Math.cos(la0*Math.PI/180),P=tr.map(q=>[q[1]*cs,-q[0]]);
-    const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
-    const top=790,bw=700,bh=430,sc=Math.min(bw/((x1-x0)||1e-9),bh/((y1-y0)||1e-9)),ox=(W-(x1-x0)*sc)/2,oy=top+(bh-(y1-y0)*sc)/2;
-    ctx.shadowBlur=10;ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle='#4a9eff';ctx.lineWidth=11;
-    ctx.beginPath();P.forEach((p,i)=>{const X=ox+(p[0]-x0)*sc,Y=oy+(p[1]-y0)*sc;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();
-  }
-  // rodapé: nome StepOn e o símbolo à direita, os dois juntos e centralizados
-  ctx.shadowBlur=8;ctx.fillStyle='#fff';ctx.textAlign='left';
-  const nome='StepOn',fs=58,gap=20,sz=70;ctx.font=`800 ${fs}px ${F}`;
-  const tw=ctx.measureText(nome).width,x0=(W-(tw+gap+sz))/2,base=1322,cy0=base-fs*0.36;
-  ctx.fillText(nome,x0,base);
-  const sx=x0+tw+gap,sy=cy0-sz/2;
-  for(const [cx,cy,r] of SIMB){ctx.beginPath();ctx.arc(sx+cx/100*sz,sy+cy/100*sz,r/100*sz,0,Math.PI*2);ctx.fill()}
+  ctx.fillStyle='#fff';ctx.textBaseline='alphabetic';ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=10;
+  const pace=a.dist?a.mov/a.dist*1000:null,st={Distância:km(a.dist).replace('.',',')+' km',Ritmo:fmtP(pace)+' /km',Tempo:tempoCart(a.mov),'Elevação':a.elev!=null?Math.round(a.elev)+' m':null,'FC méd':a.hr?a.hr+' bpm':null};
+  if(t==='c'){
+    cartRota(ctx,CART.id,CART.corta,W/2,1000,620,640,15);
+    cartNome(ctx,W/2,470,86,'c');
+    const L=Object.entries(st).filter(([,v])=>v);ctx.textAlign='center';
+    L.forEach(([l,v],i)=>{const y=590+i*168;ctx.font=`600 40px ${F}`;ctx.fillText(l,W/2,y);ctx.font=`800 78px ${F}`;ctx.fillText(v,W/2,y+82)});
+  }else if(t==='h'){
+    cartS(ctx,60,790,118);cartNome(ctx,215,885,104,'l');
+    ctx.textAlign='left';[['Distância',60],['Ritmo',385],['Tempo',705]].forEach(([l,x])=>{ctx.font=`600 38px ${F}`;ctx.fillText(l,x,1030);ctx.font=`800 62px ${F}`;ctx.fillText(st[l],x,1102)});
+  }else if(t==='p'){
+    const S=((AX[CART.id]||{}).splits||[]).filter(s=>!s.part).slice(0,14);
+    ctx.textAlign='left';ctx.font=`800 74px ${F}`;ctx.fillText('Parciais por KM',118,900);
+    if(S.length>=2){const lo=Math.min(...S.map(s=>s.t)),hi=Math.max(...S.map(s=>s.t)),x0=244,xm=860;
+      S.forEach((s,i)=>{const y=990+i*66,w=(xm-x0)*(hi>lo?0.45+0.55*(hi-s.t)/(hi-lo):1);
+        ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.font=`600 36px ${F}`;ctx.textAlign='left';ctx.fillText(String(s.km),118,y+12);
+        ctx.fillStyle=CART_AZUL;ctx.beginPath();ctx.roundRect(x0,y-14,w,30,15);ctx.fill();
+        ctx.fillStyle='#fff';ctx.font=`600 36px ${F}`;ctx.textAlign='right';ctx.fillText(fmtP(s.t),1000,y+12)});
+      ctx.shadowBlur=8;cartNome(ctx,W/2,990+S.length*66+70,60,'c');
+    }else{ctx.font=`600 44px ${F}`;ctx.fillText('Este treino não tem parciais por km.',118,1000)}
+  }else if(t==='g'){cartRota(ctx,CART.id,CART.corta,W/2,900,820,1000,22)}
+  else if(t==='f'){cartRota(ctx,CART.id,CART.corta,W/2,900,820,1000,9)}
+  else{cartRota(ctx,CART.id,CART.corta,W/2,1240,460,460,9)}
 }
-window.openCartao=id=>{
-  CART.id=id;
+window.cartTpl=k=>{CART.tpl=k;document.querySelectorAll('.cartes button').forEach(b=>b.classList.toggle('pri',b.dataset.k===k));drawCart($('#cart'))};
+window.openCartao=async id=>{
+  CART.id=id;CART.tpl=CART.tpl||'c';
+  if(!AX[id]){try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
   openSheet(`<div class="hd"><b>COMPARTILHAR TREINO</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="cartbg dark"><canvas id="cart" style="display:block;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:56vh"></canvas></div>
+  <div class="cartes">${CART_TPL.map(([k,n])=>`<button class="b sm${k===CART.tpl?' pri':''}" data-k="${k}" onclick="cartTpl('${k}')">${n}</button>`).join('')}</div>
+  <div class="cartbg dark"><canvas id="cart" style="display:block;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:52vh"></canvas></div>
   <label class="row" style="gap:10px;margin-top:12px;flex-wrap:nowrap;font-size:13px"><input type="checkbox" ${CART.corta?'checked':''} onchange="cartCorta(this.checked)" style="width:22px;height:22px;flex:none"><span>Esconder os 200 m do começo e do fim, para não mostrar onde você mora</span></label>
   <div class="grid g2" style="margin-top:12px"><button class="b pri" onclick="cartShare()">Compartilhar</button><button class="b" onclick="cartSave()">Salvar imagem</button></div>
   <p class="meta" style="margin-top:8px">A imagem tem fundo transparente: dá para colocar em cima de uma foto nos stories.</p>
@@ -4330,7 +4354,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19o'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19p'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
