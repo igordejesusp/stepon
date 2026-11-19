@@ -3742,8 +3742,15 @@ window.perfSalva=()=>{
 
 /* ================= medalhas: provas e corridas guardadas no perfil, no formato real da medalha (recorte pelo contorno + cordinha) ================= */
 const MEDS_MAX=20,MEDS_PUB=12,MEDS_FIX=3,MED_PX=288,MED_CAP=22000;
+const MED_SP=[['co','Corrida'],['tl','Trail run'],['tr','Triatlo'],['du','Duatlo'],['ci','Ciclismo'],['na','Natação'],['ou','Outro']];
+const medSpNome=sp=>(MED_SP.find(x=>x[0]===sp)||MED_SP[0])[1];
+// ritmo só faz sentido em corrida e trail (min/km), ciclismo (km/h) e natação (min/100 m); triatlo e duatlo não mostram
+const medRitmo=m=>{if(!(m.k&&m.t))return null;const sp=m.sp||'co';
+  if(sp==='co'||sp==='tl')return ['Ritmo',fmtP(m.t/m.k*1000)+' /km'];
+  if(sp==='ci')return ['Velocidade',(m.k/1000/(m.t/3600)).toFixed(1).replace('.',',')+' km/h'];
+  if(sp==='na')return ['Ritmo',fmtP(m.t/m.k*100)+' /100 m'];return null};
 const medsGet=()=>{const l=LS.get('meds',[]);return Array.isArray(l)?l:[]};
-const medsPub=()=>medsGet().filter(m=>m.v!=='x'&&m.st!=='pend'&&m.st!=='rej').slice(0,MEDS_PUB).map(m=>({id:m.id,n:m.n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,v:m.v==='p'?'p':'l',e:m.e,img:m.u?undefined:m.img,s:m.u?undefined:m.s,c:m.u?undefined:m.c,u:m.u}));
+const medsPub=()=>medsGet().filter(m=>m.v!=='x'&&m.st!=='pend'&&m.st!=='rej').slice(0,MEDS_PUB).map(m=>({id:m.id,n:m.n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,v:m.v==='p'?'p':'l',e:m.e,sp:m.sp,img:m.u?undefined:m.img,s:m.u?undefined:m.s,c:m.u?undefined:m.c,u:m.u}));
 const medsSig=()=>'|m'+medsGet().map(m=>m.id+m.v+m.n+(m.u||'')+(m.st||'')+(m.c||'')+(m.img||'').length+(Array.isArray(m.s)?m.s.length:m.s||'')).join(',');
 const medSalva=l=>{LS.set('meds',l);if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
 const MED_CORES=['#1c4f9e','#16335f','#1b1b1b','#c8312b','#e8872b','#2f8f55','#cf9f1f','#e8edf2','#d6559b'];
@@ -3782,10 +3789,10 @@ window.medLista=k=>{
   ${eu?`<button class="b pri full" onclick="medForm()"${L.length>=MEDS_MAX?' disabled':''}>+ Adicionar medalha</button>${L.length>=MEDS_MAX?`<p class="meta" style="margin-top:8px">Limite de ${MEDS_MAX} medalhas.</p>`:''}`:''}`,1);
 };
 window.medAbre=(k,i)=>{
-  const m=((window._medL||{})[k]||[])[i];if(!m)return;const eu=k==='eu',pace=m.k&&m.t?fmtP(m.t/m.k*1000)+' /km':'';
-  const dados=[m.k?[(m.k/1000).toFixed(m.k%1000?2:0).replace('.',',')+' km','Distância']:null,m.t?[fmtT(m.t),'Tempo']:null,pace?[pace,'Ritmo']:null].filter(Boolean);
+  const m=((window._medL||{})[k]||[])[i];if(!m)return;const eu=k==='eu',pace=medRitmo(m);
+  const dados=[m.k?[(m.k/1000).toFixed(m.k%1000?2:0).replace('.',',')+' km','Distância']:null,m.t?[fmtT(m.t),'Tempo']:null,pace?[pace[1],pace[0]]:null].filter(Boolean);
   openSheet(`<div class="hd"><b>Medalha</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="mdet"><div style="margin-top:6px">${medIcon(m,200)}</div><h2>${esc(m.n)}</h2><div class="meta">${[medData(m.d),m.l].filter(Boolean).map(esc).join(' · ')}</div>
+  <div class="mdet"><div style="margin-top:6px">${medIcon(m,200)}</div><h2>${esc(m.n)}</h2><div class="meta">${[medSpNome(m.sp||'co'),medData(m.d),m.l].filter(Boolean).map(esc).join(' · ')}</div>
   ${dados.length?`<div class="mfd" style="grid-template-columns:repeat(${dados.length},1fr)">${dados.map(d=>`<div><b>${esc(d[0])}</b><span>${d[1]}</span></div>`).join('')}</div>`:''}
   ${m.st==='pend'?'<p class="mo">Sua medalha está sendo refeita em estilo de jogo. Em alguns minutos ela fica pronta e avisamos você.</p>':m.st==='rej'?'<p class="mo">Não consegui refazer essa medalha. Edite e peça de novo com outra foto, ou exclua.</p>':''}
   ${m.o?`<p class="mo">${esc(m.o)}</p>`:''}
@@ -3810,7 +3817,8 @@ window.medForm=id=>{
   <div class="mfoto"><span id="md-prev"></span><div><button class="b" onclick="medPickPedido()">${souAdmin()?(m&&(m.u||m.img)?'Trocar a imagem pronta':'Imagem pronta da medalha'):m&&(m.u||m.img)?'Pedir de novo com outra foto':'Foto da medalha'}</button><p class="meta" style="margin-top:6px">${souAdmin()?'Como administrador, você envia a imagem já pronta e ela entra na hora, sem esperar.':'Tire a foto da medalha. O StepOn refaz ela em estilo de jogo e avisa quando ficar pronta (alguns minutos).'}</p></div></div>
   <button class="lk" onclick="medPickFoto()">Prefiro só o recorte da foto, sem esperar</button>
   <div id="md-cor" style="display:none"><div class="lbl" style="margin:12px 0 6px">COR DA CORDINHA</div><div class="mdsws">${MED_CORES.map(c=>`<button class="mdsw" style="background:${c}" onclick="medCor('${c}')" aria-label="Cor ${c}"></button>`).join('')}<button class="mdsw sem" onclick="medCor('n')" aria-label="Sem cordinha">Sem</button></div><p class="meta" style="margin-top:6px">Se a cordinha da foto já está no contorno, escolha "Sem".</p></div>
-  <label class="f" style="margin-top:14px">Nome da prova</label><input id="md-n" maxlength="60" placeholder="Ex.: Ironman 70.3 São Paulo" value="${esc(m?m.n:'')}">
+  <label class="f" style="margin-top:14px">Esporte</label><select id="md-sp">${MED_SP.map(x=>`<option value="${x[0]}"${(m&&m.sp||'co')===x[0]?' selected':''}>${x[1]}</option>`).join('')}</select>
+  <label class="f" style="margin-top:10px">Nome da prova</label><input id="md-n" maxlength="60" placeholder="Ex.: Ironman 70.3 São Paulo" value="${esc(m?m.n:'')}">
   ${runs.length?`<label class="f" style="margin-top:10px">Foi uma corrida registrada no StepOn?</label><select id="md-a" onchange="medVinc()"><option value="">Não, preencher à mão</option>${runs.map(a=>`<option value="${esc(a.id)}">${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)} · ${km(a.dist).replace('.',',')} km · ${fmtT(a.mov)}</option>`).join('')}</select>`:''}
   <div class="grid g2" style="margin-top:10px"><div><label class="f">Data</label><input id="md-d" type="date" value="${esc(m?m.d||'':'')}"></div><div><label class="f">Distância (km)</label><input id="md-k" inputmode="decimal" placeholder="42,2" value="${m&&m.k?esc(String(m.k/1000).replace('.',',')):''}"></div></div>
   <div class="grid g2" style="margin-top:10px"><div><label class="f">Tempo</label><input id="md-t" inputmode="numeric" placeholder="h:mm:ss" value="${m&&m.t?fmtT(m.t):''}"></div><div><label class="f">Local</label><input id="md-l" maxlength="40" placeholder="Cidade" value="${esc(m?m.l||'':'')}"></div></div>
@@ -3892,7 +3900,7 @@ window.medSalvaForm=async()=>{
   const dv=$('#md-d').value||'',kmv=parseFloat(String($('#md-k').value||'').replace(',','.')),t=medTempoPara($('#md-t').value);
   if(isNaN(t))return toast('Tempo inválido. Use h:mm:ss.',3000);
   const L=medsGet(),id=window._medEdit,vz=(document.querySelector('input[name=md-v]:checked')||{}).value||'p',old=id?L.find(x=>x.id===id):null;
-  const m={id:id||('m'+Date.now().toString(36)),n,d:/^\d{4}-\d{2}-\d{2}$/.test(dv)?dv:'',k:kmv>0&&kmv<1000?Math.round(kmv*1000):undefined,t:t||undefined,l:($('#md-l').value||'').trim().slice(0,40),o:($('#md-o').value||'').replace(/\s+/g,' ').trim().slice(0,140),v:vz};
+  const m={id:id||('m'+Date.now().toString(36)),n,d:/^\d{4}-\d{2}-\d{2}$/.test(dv)?dv:'',k:kmv>0&&kmv<1000?Math.round(kmv*1000):undefined,t:t||undefined,l:($('#md-l').value||'').trim().slice(0,40),o:($('#md-o').value||'').replace(/\s+/g,' ').trim().slice(0,140),v:vz,sp:($('#md-sp')||{}).value||'co'};
   if(vz==='p'&&L.filter(x=>x.v==='p'&&x.id!==m.id).length>=MEDS_FIX)return toast('Só cabem '+MEDS_FIX+' medalhas no perfil. Tire uma de lá primeiro ou escolha "Só na página Medalhas".',4200);
   if(old){m.e=old.e;m.u=old.u;m.st=old.st;m.img=old.img;m.s=old.s;m.c=old.c}
   let pedido=false;
@@ -3904,7 +3912,7 @@ window.medSalvaForm=async()=>{
   }else if(window._medFoto){
     if(!temConta())return toast('Entre com o Intervals para pedir a medalha.',3200);
     const b=$('#md-go');if(b){b.disabled=true;b.textContent='Enviando…'}
-    let j=null;try{j=await medApi({acao:'pedir',n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,foto:window._medFoto})}catch(e){}
+    let j=null;try{j=await medApi({acao:'pedir',n,sp:m.sp,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,foto:window._medFoto})}catch(e){}
     if(!j||!j.ok){medPrev();return toast(j&&j.erro?'Não deu certo: '+j.erro:'Não consegui enviar o pedido. Confira a conexão e tente de novo.',4200)}
     m.u=j.id;m.st='pend';m.img=undefined;m.s=undefined;m.c=undefined;pedido=true;
   }else if(window._medImg){m.img=window._medImg;m.s=window._medS||'c';m.c=window._medC;m.u=undefined;m.st=undefined}
@@ -3948,7 +3956,7 @@ window.medCtlVer=async id=>{
   openSheet(`<div class="hd"><b>Pedido de medalha</b><button class="b sm" onclick="medCtl()">✕</button></div><p class="empty">Carregando…</p>`,1);
   const j=await medApi({acao:'ver',id}).catch(()=>null);if(!j||!j.pedido){toast('Não consegui abrir o pedido.',3000);return medCtl()}
   const p=j.pedido;window._mcp={id,...p};window._mcImg='';
-  const dados=[p.k?(p.k/1000).toFixed(p.k%1000?2:0).replace('.',',')+' km':'',p.t?fmtT(p.t):'',medData(p.d),p.l].filter(Boolean).join(' · ');
+  const dados=[p.sp?medSpNome(p.sp):'',p.k?(p.k/1000).toFixed(p.k%1000?2:0).replace('.',',')+' km':'',p.t?fmtT(p.t):'',medData(p.d),p.l].filter(Boolean).join(' · ');
   openSheet(`<div class="hd"><b>Pedido de medalha</b><button class="b sm" onclick="medCtl()">✕</button></div>
   <img class="mcf" alt="" src="${p.foto||''}">
   <h3 style="margin:12px 0 2px">${esc(p.n)}</h3><div class="meta">${esc(p.nome)}${dados?' · '+esc(dados):''}</div>${p.o?`<p class="meta" style="margin-top:6px">${esc(p.o)}</p>`:''}
@@ -4317,7 +4325,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19m'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19n'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},

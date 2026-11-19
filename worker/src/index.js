@@ -233,7 +233,7 @@ async function medalha(env, a, b) {
     if (L.filter((p) => p.a === b.athlete && p.st === 'pend').length >= 3) return { erro: 'você já tem 3 pedidos em preparo' };
     const id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
     const num = (x, lo, hi) => (Number.isFinite(+x) && +x > lo && +x < hi ? Math.round(+x) : undefined);
-    const ped = { athlete: b.athlete, nome: limpa(a.name || b.athlete, 60), n, d: /^\d{4}-\d{2}-\d{2}$/.test(String(b.d || '')) ? b.d : '', k: num(b.k, 0, 1e6), t: num(b.t, 0, 864000), l: limpa(b.l, 40), o: limpa(b.o, 140), foto: b.foto, at: Date.now(), st: 'pend' };
+    const ped = { athlete: b.athlete, sp: /^(co|tl|tr|du|ci|na|ou)$/.test(String(b.sp || '')) ? b.sp : 'co', nome: limpa(a.name || b.athlete, 60), n, d: /^\d{4}-\d{2}-\d{2}$/.test(String(b.d || '')) ? b.d : '', k: num(b.k, 0, 1e6), t: num(b.t, 0, 864000), l: limpa(b.l, 40), o: limpa(b.o, 140), foto: b.foto, at: Date.now(), st: 'pend' };
     await env.BR.put('mp:' + id, JSON.stringify(ped));
     L.push({ id, a: b.athlete, nome: ped.nome, n, at: ped.at, st: 'pend' });
     await env.BR.put('mpl', JSON.stringify(L.slice(-300)));
@@ -346,7 +346,7 @@ export default {
             u: MP_ID.test(String(m.u || '')) ? String(m.u) : undefined,
             id: /^[a-z0-9]{3,16}$/i.test(String(m.id || '')) ? String(m.id) : undefined, n,
             d: /^\d{4}-\d{2}-\d{2}$/.test(String(m.d || '')) ? String(m.d) : '', k, t, l: limpa(m.l, 40), o: limpa(m.o, 140),
-            v: m.v === 'p' ? 'p' : 'l', e: /^(ouro|prata|bronze|final)$/.test(String(m.e || '')) ? String(m.e) : undefined, img, s: img ? s : undefined,
+            sp: /^(co|tl|tr|du|ci|na|ou)$/.test(String(m.sp || '')) ? String(m.sp) : undefined, v: m.v === 'p' ? 'p' : 'l', e: /^(ouro|prata|bronze|final)$/.test(String(m.e || '')) ? String(m.e) : undefined, img, s: img ? s : undefined,
             c: /^#[0-9a-f]{6}$/i.test(String(m.c || '')) || m.c === 'n' ? String(m.c) : undefined,
           };
         }).filter(Boolean),
