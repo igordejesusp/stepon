@@ -598,7 +598,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .mdsws{display:flex;gap:9px;flex-wrap:wrap}.mdsw.sem{background:none;color:var(--dim);font:600 10px Inter,sans-serif;border-style:dashed}.mdsw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0}
 #mdfm{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}.mdfb{width:100%;max-width:520px;background:#111;border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:grid;gap:10px}.mdfb b{text-align:center;font-size:16px;margin-bottom:4px}.mdfb button{background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--hi);font:600 15px Inter,sans-serif;padding:14px}.mdfb .x{background:none;border:0;color:var(--dim)}
 .cr-md{display:flex;gap:8px;justify-content:center;margin-bottom:10px}.cr-md button{background:#111;border:1px solid #2a2f37;color:#c9ced6;border-radius:99px;padding:8px 13px;font:600 13px Inter,sans-serif}.cr-md button.on{background:var(--blue);border-color:var(--blue);color:#06203d}
-.pmeds{flex:1;min-width:0;height:56px;display:flex;align-items:center;justify-content:flex-end;gap:0 6px;flex-wrap:nowrap;overflow:hidden;margin:0 10px 0 4px}.pmd{line-height:0;flex:none}.pmd{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pmeds{flex:1;min-width:0;height:42px;display:flex;align-items:center;justify-content:flex-end;gap:0 6px;flex-wrap:nowrap;overflow:hidden;margin:0 16px 0 4px}.pmd{line-height:0;flex:none}.pmd{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .pmdl{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--blue);font-weight:700;font-size:13px;padding:8px 13px;cursor:pointer}
 .mdi{display:inline-flex;flex:none;align-items:center;justify-content:center}.mdi.disc{border-radius:50%;padding:3px;background:linear-gradient(135deg,#e6f3ff,#4a9eff 55%,#1c4f9e);box-shadow:0 4px 10px rgba(0,0,0,.45)}.mdi.disc img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .mdi .evmed{width:100%;height:auto}.mdi svg{display:block}
@@ -611,6 +611,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .cap.capf{grid-column:1/-1;width:100%;height:76px;background:linear-gradient(135deg,#1b2735,#0d0d0d);border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;color:#fff}.cap.capf.on{border:2px solid var(--blue)}.cap.capf span{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;background:rgba(0,0,0,.5);padding:8px 14px;border-radius:99px}.cap.capf svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round}
 .pcvf{position:relative;height:calc(210px + env(safe-area-inset-top));margin:calc(-70px - env(safe-area-inset-top)) -12px 0;background:#05080d}
 .pcvf::after{content:'';position:absolute;left:0;right:0;bottom:0;height:110px;background:linear-gradient(transparent,var(--fd,var(--bg)))}
+.pcvf.sf{height:calc(210px + env(safe-area-inset-top));margin:calc(-16px - env(safe-area-inset-top)) -14px 0}.pbd2.sf{margin-top:-58px}.pfhd{position:absolute;top:calc(16px + env(safe-area-inset-top));left:14px;right:14px;z-index:4;margin:0!important}@media (min-width:760px){.pcvf.sf{margin:0;height:200px;border-radius:20px;overflow:hidden}.pbd2.sf{margin-top:-52px}.pfhd{left:calc(50% - 366px);right:calc(50% - 366px)}}
 .pcvf.sh{--fd:var(--panel2);height:150px;margin:0;border-radius:18px;overflow:hidden}
 .pbd2{position:relative;margin-top:-58px;padding:0 4px 4px}.pbd2.sh{margin-top:-46px}.pbd2 .pav img{border-color:var(--bg)}.pbd2.sh .pav img{border-color:var(--panel2)}.pbd2 .pcam{border-color:var(--bg)}
 .pact{display:flex;align-items:flex-end;gap:12px}.pedt2{background:transparent;color:var(--hi);border:1px solid var(--line);border-radius:99px;padding:9px 16px;font-size:14px;font-weight:600;margin-bottom:8px}
@@ -628,7 +629,7 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .ntp-v{width:42px;height:42px;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:0;color:var(--hi)}.ntp-v svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ntp-l{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:6px 14px calc(28px + env(safe-area-inset-bottom));max-width:620px;width:100%;margin:0 auto}
 .ntp-l{padding-top:2px}.nti{background:none!important;border:0!important;border-radius:0;padding:16px 2px;gap:14px;align-items:flex-start;width:100%;text-align:left}
-.nta{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none;background:var(--cell)}.nta.ap{border-radius:13px}.nta.em{display:flex;align-items:center;justify-content:center;border-radius:0;background:none}.nta.em .esc{width:54px;height:60px}.nta.em .medal{width:50px;height:50px}
+.nta{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none;background:var(--cell)}.nta.ap{border-radius:13px}.nta.em{display:flex;align-items:center;justify-content:center;border-radius:0;background:none}.nta.em .esc{width:54px;height:60px}.nta.em .medal{width:50px;height:50px}.nta.em .ntm{width:54px;height:54px;object-fit:contain;border-radius:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}.nta.em>svg{width:34px;height:34px}
 .nti .ntx{gap:3px}.nti .ntx b{font-size:18px;line-height:1.25;color:var(--hi)}.nti .nts{font-size:16px;line-height:1.4;color:var(--txt);display:block}.nti .ntx small{font-size:14px;color:var(--dim);margin-top:2px}.ntd{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);margin-left:8px;vertical-align:middle}
 #sheet.cheio{background:var(--bg)}#sheet.cheio.on{display:block;padding:0}
 #sheet.cheio .box{position:absolute;inset:0;width:100%;max-width:none;height:100%;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--bg);padding:calc(16px + env(safe-area-inset-top)) 14px calc(34px + env(safe-area-inset-bottom));animation:paginaEntra .2s ease-out}
@@ -720,7 +721,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
 // o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
 // Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
-const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont','nt','nomesLoc','perfil','meds'];
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont','nt','nomesLoc','perfil','meds','bonusTemp'];
 // privacidade de cada treino: 'a' = só amigos, 'e' = só eu (sem marca = todos)
 let PRIV=LS.get('priv',{});
 let CONT=LS.get('cont',{}); // circuitos contestados e aprovados pelo app: o que foi aprovado nunca volta ao cálculo original
@@ -2017,7 +2018,7 @@ window.marcVolta=()=>{const v=MKS.volta;go(MKS.prev&&MKS.prev!=='marc'?MKS.prev:
 const marcTopo=()=>{const v=$('#v-marc');if(v)v.scrollTop=0;window.scrollTo(0,0)};
 window.marcD=d=>{MKS.d=d;MKS.sel=0;MKS.ab={};render();marcTopo()};
 window.marcAb=i=>{MKS.ab[i]=!MKS.ab[i];const el=document.querySelector(`.mkr[data-i="${i}"]`);if(el)el.classList.toggle('on',!!MKS.ab[i]);drawMaps()};
-const MK_ICO={run:'<svg viewBox="0 0 24 24"><path d="M4 16c3 0 5-1 6-3l2-4c1-1 2-1 3 0l1 1c1 1 2 1 3 0M4 16h15c1 0 2 1 2 2H4zM13 6l2 2M11 8l2 2"/></svg>',bike:'<svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M9 8h3M14 8l-4 8"/></svg>',
+const MK_ICO={run:'<svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg>',bike:'<svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M9 8h3M14 8l-4 8"/></svg>',
   seta:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',baixo:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
 // ícone da medalha da marca (fita + medalha), usado no RP grande e nas posições 2 a 10
 const medIco=(n,cor,tinta,cls)=>`<svg viewBox="0 0 48 48" class="mdi ${cls||''}"><path d="M12 7h24l-6 13H18z" fill="${cor}"/><path d="M17 7l7 13 7-13" fill="none" stroke="${tinta}" stroke-width="3"/><circle cx="24" cy="30" r="12.5" fill="${cor}"/><text x="24" y="${n==='RP'?34.4:35}" text-anchor="middle" font-size="${n==='RP'?11.5:14}" font-weight="900" fill="${tinta}" font-family="var(--f)">${n}</text></svg>`;
@@ -3178,10 +3179,10 @@ async function publishMine(force,entrar){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
   const runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').slice(0,150).map(a=>{const x=AX[a.id]||{};return {id:a.id,date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null,dev:devNome(a).slice(0,40),...(PRIV[a.id]==='a'?{v:'a'}:{})}});
   const foto=await fotoMini();
-  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv3|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+medsSig()+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
+  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv3|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+medsSig()+'|s'+(FR.friends||[]).length+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
   while(terr.length&&JSON.stringify({runs,terr,foto,m:medsPub()}).length>640000)terr.pop();
-  const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:(p=>({bio:p.bio,link:p.link,capa:p.capa,capaImg:p.capa==='foto'?p.capaImg:undefined,meds:medsPub()}))(LS.get('perfil',null)||{}),...(entrar?{entrar:true}:{})})});
+  const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:(p=>({bio:p.bio,link:p.link,capa:p.capa,capaImg:p.capa==='foto'?p.capaImg:undefined,meds:medsPub(),seg:(FR.friends||[]).length}))(LS.get('perfil',null)||{}),...(entrar?{entrar:true}:{})})});
   if(!r.ok)throw new Error('HTTP '+r.status);
   {const j=await r.clone().json().catch(()=>({}));if(j.fora){LS.set('comp','nao');return}}
   LS.set('pubh',sig);LS.set('pubErr',null);LS.set('pubOk',Date.now());
@@ -3444,8 +3445,7 @@ window.openPerfilAmigo=(id,tab)=>{
   const med=[],cmd=(k,t,nome)=>med.push({f:'cmd',k,t,nome,on:true,date:null});[1,10,25,50,100,150,200,300,400,500].filter(c=>runs.length>=c).forEach(c=>cmd(c===1?'1ª':String(c),c===1?'corrida':'corridas',c+'ª corrida'));const her=(k,nome)=>med.push({f:'fe2',k,t:'km',nome,on:true,date:null});if(maxd>=5000)her('5','5 km');if(maxd>=10000)her('10','10 km');if(maxd>=21097)her('21','Meia maratona');if(maxd>=42195)her('42','Maratona');
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
-  let h=`<div class="hd"><b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  ${perfCab({nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sub:eAmigo?'Amigo':''})}${eAmigo?'':`<div style="margin:-2px 0 10px">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'b full')}</div>`}`;
+  let h=`${perfCab({hd:'<b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button>',nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sub:eAmigo?'Amigo':'',amigos:u&&u.perfil&&Number.isFinite(u.perfil.seg)?u.perfil.seg:null})}${eAmigo?'':`<div style="margin:-2px 0 10px">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'b full')}</div>`}`;
   if(!u||!runs.length)h+=`<p class="empty" style="color:var(--txt)">${esc(frNome(id))} ainda não entrou no ranking, então o app não tem as corridas dessa pessoa. Quando ela entrar, o perfil aparece aqui sozinho.</p>`;
   else{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
@@ -3531,7 +3531,7 @@ window.openRank=()=>{
   const vis=L.map((x,j)=>[x,j]).filter(([x,j])=>j<10||x.u.me);
   openSheet(`<div class="hd"><b>${M==='a'?'RANKING DOS AMIGOS':'RANKING GERAL'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   ${LS.get('pubErr',null)?`<p class="empty" style="color:var(--txt);margin-bottom:8px">Suas corridas mais recentes ainda não chegaram ao servidor (${esc(LS.get('pubErr',''))}). Toque em sincronizar no Início para tentar de novo.</p>`:''}<div class="row" style="gap:6px"><span class="tag ok">TEMPORADA DE ${mes.toUpperCase()}</span><span class="tag">ZERA EM ${dias} ${dias===1?'DIA':'DIAS'}</span></div>
-  <p class="empty" style="margin-top:8px">Todo mês o placar volta a zero. Vale 1 ponto por km corrido no mês e 3 por treino (a partir de 1 km). O ranking não depende do mapa. Os pontos não se perdem: no fim do mês eles ficam na conta e sobem o seu nível.</p>
+  <p class="empty" style="margin-top:8px">Todo mês o placar volta a zero. Vale 1 ponto por km corrido no mês e 3 por treino (a partir de 1 km). O ranking não depende do mapa. Os pontos não se perdem: no fim do mês eles ficam na conta e sobem o seu nível. Os 3 primeiros do mês ganham bônus de nível: 1º +30, 2º +20 e 3º +10 pontos (vale quando pelo menos 3 pessoas pontuaram).</p>
   <div style="margin-top:10px">${vis.map(([x,j])=>row(x,j)).join('')}</div>
   ${L.length<2?`<p class="empty">Por enquanto só você aparece.${M==='a'?' Siga amigos em "+ AMIGOS" para disputar com eles.':' Quando mais gente entrar no ranking, aparece aqui sozinha.'}</p>`:''}`,1);
 };
@@ -3563,9 +3563,24 @@ window.compSet=async(v,upd)=>{
 const NIVT=L=>L<=1?0:Math.round(25*Math.pow(L-1,1.8)); // pontos acumulados para chegar ao nível L
 const FAIXA=['Iniciante','Intermediário','Avançado'];
 const nivelXp=xp=>{let L=1;while(NIVT(L+1)<=xp)L++;return {L,base:NIVT(L),prox:NIVT(L+1),faixa:L<=5?0:L<=10?1:2}};
-function meuXp(){ // todas as corridas (também as marcadas à mão): 1 ponto por km e 3 por treino
+// bônus de temporada: no fim de cada mês, 1º, 2º e 3º colocados ganham pontos de nível (só vale se pelo menos 3 pessoas pontuaram). Uma vez dado, nunca se perde.
+const BONUS_TEMP=[30,20,10],BONUS_INI='2026-11';
+const bonusTotal=()=>Object.values(LS.get('bonusTemp',{})).reduce((s,x)=>s+(x.b||0),0);
+function bonusTemporada(atualTeste){
+  try{
+    const me=CFG.athlete,B=LS.get('bonusTemp',{}),hj=new Date(),atual=atualTeste||hj.getFullYear()+'-'+String(hj.getMonth()+1).padStart(2,'0'),meses=new Set();let mud=false;
+    for(const u of PUBL)for(const r of (u.runs||[])){const m=String(r.date).slice(0,7);if(m>=BONUS_INI&&m<atual)meses.add(m)}
+    if(!PUBL.some(u=>u.id===me))return;
+    for(const m of [...meses].sort()){if(B[m])continue;
+      const L=PUBL.map(u=>{const rm=(u.runs||[]).filter(r=>String(r.date).slice(0,7)===m),km=rm.reduce((t,r)=>t+(r.dist||0),0)/1000,tr=rm.filter(r=>(r.dist||0)>=1000).length;return {id:u.id,pts:Math.round(km)+3*tr}}).filter(x=>x.pts>0).sort((a,b)=>b.pts-a.pts);
+      const i=L.findIndex(x=>x.id===me),pos=L.length>=3&&i>=0&&i<3?i+1:0;B[m]={pos,b:pos?BONUS_TEMP[pos-1]:0,n:L.length};mud=true;
+      if(pos)ntAdd('bt:'+m,'ranking',`Você foi ${pos}º na temporada de ${MESES[+m.slice(5,7)-1]}`,`Bônus de ${B[m].b} pontos de nível pelo ${pos}º lugar. Parabéns!`,{go:{k:'comp'},av:{k:'rp'}})}
+    if(mud)LS.set('bonusTemp',B);
+  }catch(e){}
+}
+function meuXp(){ // todas as corridas (também as marcadas à mão): 1 ponto por km e 3 por treino, mais o bônus de temporada
   const runs=D.acts.filter(isRun),km=runs.reduce((s,r)=>s+(r.dist||0),0)/1000,tr=runs.filter(r=>(r.dist||0)>=1000).length;
-  return Math.round(km+3*tr);
+  return Math.round(km+3*tr)+bonusTotal();
 }
 function xpDe(u){ // de outra pessoa: o total que o app dela mandou; se não mandou, o que dá para calcular do que ela publicou
   if(Number.isFinite(u.xp)&&u.xp>0)return u.xp;
@@ -3690,12 +3705,12 @@ const linkHost=u=>{try{return new URL(u).host.replace(/^www\./,'')}catch(e){retu
 function perfCab(o){
   const pf=o.perfil||{},yr=String(TODAY().getFullYear()),capaCss=pf.capa==='foto'&&/^data:image\/jpeg;base64,/.test(pf.capaImg||'')?`url('${pf.capaImg}') center/cover no-repeat,#05080d`:capaDe(pf.capa).css;
   // no perfil próprio a capa ocupa o topo inteiro, atrás dos botões, sem bloco; no perfil de amigo (janela) ela fica arredondada
-  return `<div class="pcvf${o.eu?'':' sh'}" style="background:${capaCss}"></div>
-  <div class="pbd2${o.eu?'':' sh'}"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div><div class="pact">${o.eu?`<button class="pedt2" onclick="editaPerfil()">Editar perfil</button>`:''}<div class="pshc">${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div></div></div>
+  return `<div class="pcvf${o.eu?'':' sf'}" style="background:${capaCss}"></div>${o.hd?`<div class="hd pfhd">${o.hd}</div>`:''}
+  <div class="pbd2${o.eu?'':' sf'}"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div><div class="pact">${o.eu?`<button class="pedt2" onclick="editaPerfil()">Editar perfil</button>`:''}<div class="pshc">${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div></div></div>
   <div class="pnr"><h2 class="pn">${esc(o.nome)}</h2>${medBloco(o)}${medBtn(o)}</div>${o.sub?`<div class="meta">${o.sub}</div>`:''}
   ${pf.bio?`<p class="pbio">${esc(pf.bio)}</p>`:''}
   ${linkOk(pf.link)?`<a class="plk" href="${esc(pf.link)}" target="_blank" rel="noopener noreferrer nofollow">${LINK_IC}<span>${esc(linkHost(pf.link))}</span></a>`:''}
-  <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}${o.amigos!=null?` · <b>${o.amigos}</b> ${o.amigos===1?'amigo':'amigos'}`:''}</div></div>`;
+  <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}</div>${o.amigos!=null?`<div class="pcnt"><b>${o.amigos}</b> ${o.amigos===1?'seguidor':'seguidores'} · <b>${o.amigos}</b> seguindo</div>`:''}</div>`;
 }
 window.editaPerfil=()=>{
   const pf=LS.get('perfil',{});window._capaSel=pf.capa||'azul';window._capaImg=pf.capaImg||'';
@@ -3750,7 +3765,7 @@ function medBloco(o){
   const k=o.eu?'eu':'am',L=o.eu?medsGet():((o.perfil||{}).meds||[]);window._medL=window._medL||{};window._medL[k]=L;
   const fix=medFixas(L);
   if(!fix.length)return '';
-  return `<div class="pmeds">${fix.map(x=>`<button class="pmd" onclick="medAbre('${k}',${x.i})" aria-label="${esc(x.m.n)}">${medIcon(x.m,44)}</button>`).join('')}</div>`;
+  return `<div class="pmeds">${fix.map(x=>`<button class="pmd" onclick="medAbre('${k}',${x.i})" aria-label="${esc(x.m.n)}">${medIcon(x.m,32)}</button>`).join('')}</div>`;
 }
 // botãozinho da medalha, embaixo do brasão de nível: abre a página Medalhas
 function medBtn(o){
@@ -3913,10 +3928,10 @@ async function medSync(B){
   const L=medsGet(),pend=L.filter(m=>m.u&&m.st==='pend');
   if(pend.length){const j=await medApi({acao:'status',ids:pend.map(m=>m.u)});
     if(j&&j.st)for(const m of pend){const s=j.st[m.u];if(s==='ok'||s==='rej'){m.st=s==='ok'?'ok':'rej';mud=true;
-      ntAdd('mr:'+m.u,'medalha',s==='ok'?'Sua medalha ficou pronta':'Não deu certo com a sua medalha',s==='ok'?`A medalha "${m.n}" já está no seu perfil e na página Medalhas.`:`Não consegui refazer a medalha "${m.n}". Peça de novo com outra foto.`,{go:{k:'medlista'},av:{k:'med'}})}}
+      ntAdd('mr:'+m.u,'medalha',s==='ok'?'Sua medalha ficou pronta':'Não deu certo com a sua medalha',s==='ok'?`A medalha "${m.n}" já está no seu perfil e na página Medalhas.`:`Não consegui refazer a medalha "${m.n}". Peça de novo com outra foto.`,{go:{k:'medlista'},av:{k:'med',u:m.u}})}}
     if(mud)medSalva(L)}
   if(souAdmin()){const j=await medApi({acao:'fila'});
-    if(j&&j.fila){for(const p of j.fila){if(B.mp.includes(p.id))continue;B.mp.push(p.id);ntAdd('mp:'+p.id,'medalha','Novo pedido de medalha',`${p.nome} pediu a medalha "${p.n}".`,{t:p.at,go:{k:'medctl'},av:{k:'med'}})}
+    if(j&&j.fila){for(const p of j.fila){if(B.mp.includes(p.id))continue;B.mp.push(p.id);ntAdd('mp:'+p.id,'medalha','Novo pedido de medalha',`${p.nome} pediu a medalha "${p.n}".`,{t:p.at,go:{k:'medctl'},av:{k:'med',u:p.id}})}
       if(B.mp.length>200)B.mp=B.mp.slice(-200)}}
   return mud;
 }
@@ -4302,7 +4317,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19l'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19m'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -4328,6 +4343,7 @@ async function notifRefresh(force){
     B.nov=B.nov||[];for(const n of NT_NOVOS)if(!B.nov.includes(n.id)){B.nov.push(n.id);ntAdd(n.id,'novo',n.tit,n.desc,{t:n.t})}
     const titulo=a=>a.name||nomeHora(a.date);
     if(temConta()){try{await medSync(B)}catch(e){}}
+    bonusTemporada();
     // treinos novos e desafios concluídos
     {const corridas=D.acts.filter(a=>isRun(a)&&!isMk(a)),lim=ymd(addD(TODAY(),-10));
      const baseAct=semAct;
@@ -4383,11 +4399,12 @@ window.notifRefresh=notifRefresh;
 const ntMostrando=()=>!!$('#ntp');
 // foto de cada aviso: sua, de outro atleta, da medalha, do desafio ou da conquista
 const NT_TIT={curtida:'Nova curtida',coment:'Novo comentário',terr:'Território',perdeu:'Você perdeu território',recorde:'Novo recorde pessoal',conquista:'Conquista nova',saude:'Disposição baixa hoje',novo:'Novidade'};
+window.ntMedErr=i=>{i.parentNode.innerHTML=MED_BTN};
 function ntAv(a){a=a||{};
   if(a.k==='me')return `<img class="nta" src="${esc(myPic())}" alt="">`;
   if(a.k==='u')return `<img class="nta" src="${esc(frPic(a.id))}" alt="">`;
   if(a.k==='rp')return `<span class="nta em">${medalha(1,'RP')}</span>`;
-  if(a.k==='med')return `<span class="nta em">${MED_BTN}</span>`;
+  if(a.k==='med')return a.u?`<span class="nta em"><img class="ntm" alt="" src="${PUBURL}/medalha/img/${esc(a.u)}" onerror="ntMedErr(this)"></span>`:`<span class="nta em">${MED_BTN}</span>`;
   if(a.k==='bg')return `<span class="nta em">${escConq({f:a.f,k:a.kk,t:a.t,on:true})}</span>`;
   if(a.k==='des')return `<span class="nta em">${desEsc({cat:a.cat,ic:a.ic,t:a.t,ok:true})}</span>`;
   return `<img class="nta ap" src="logo.svg" alt="">`}

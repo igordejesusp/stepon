@@ -331,6 +331,7 @@ export default {
         link: /^https?:\/\/[^\s<>"']{3,118}$/i.test(String(pr.link || '')) ? String(pr.link) : '',
         capaImg: /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(pr.capaImg || '')) && String(pr.capaImg).length <= 60000 ? String(pr.capaImg) : '',
         capa: /^[a-z0-9]{2,12}$/.test(String(pr.capa || '')) ? String(pr.capa) : '',
+        seg: Number.isFinite(+pr.seg) && +pr.seg >= 0 && +pr.seg <= 99999 ? Math.round(+pr.seg) : undefined,
         // medalhas guardadas pela pessoa: até 12, texto curto e foto pequena (tudo validado)
         meds: (Array.isArray(pr.meds) ? pr.meds : []).slice(0, 12).map((m) => {
           if (!m || typeof m !== 'object') return null;
