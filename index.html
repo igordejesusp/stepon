@@ -587,7 +587,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .pn{font-size:23px;margin-top:10px;color:var(--hi)}.pbio{margin:8px 0 0;font-size:15px;line-height:1.5;color:var(--txt);white-space:pre-line;word-break:break-word}
 .plk{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--blue);font-size:14px;font-weight:600;text-decoration:none;max-width:100%}.plk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex:none}.plk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .psl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.psl span{display:inline-flex;align-items:center;gap:6px;background:var(--cell);border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 8px;font-size:13px;color:var(--txt)}.psl svg{width:14px;height:14px;fill:#f0b72f}
-.pshc{display:flex;flex-direction:column;align-items:center;gap:7px}.pnr{display:flex;align-items:center;justify-content:space-between;gap:10px}.pnr .pn{min-width:0}.pmedb{position:relative;flex:none;width:36px;height:36px;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--blue);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}.pmedb svg{width:24px;height:24px}.pmedb i{position:absolute;right:-5px;top:-5px;min-width:17px;height:17px;border-radius:9px;background:var(--blue);color:#06203d;font:700 10.5px/17px Inter,sans-serif;text-align:center;font-style:normal;padding:0 4px}
+.pshc{display:flex;flex-direction:column;align-items:center;gap:7px}.pnr{display:flex;align-items:center;gap:0;margin-top:8px}.pnr .pn{flex:0 1 auto;min-width:min(176px,52%);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pmw{flex:none;width:64px;display:flex;justify-content:center}.pshc{width:64px}.pmedb{position:relative;flex:none;width:36px;height:36px;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--blue);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}.pmedb svg{width:24px;height:24px}.pmedb i{position:absolute;right:-5px;top:-5px;min-width:17px;height:17px;border-radius:9px;background:var(--blue);color:#06203d;font:700 10.5px/17px Inter,sans-serif;text-align:center;font-style:normal;padding:0 4px}
 .lk{background:none;border:0;text-decoration:none;color:var(--blue);font:600 13px Inter,sans-serif;padding:4px 2px;cursor:pointer;text-align:left}
 .mdu{display:inline-flex;align-items:center;justify-content:center;flex:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}.mdu img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .mdm.pend .mdp{filter:grayscale(1) opacity(.4)}.mdsp{position:absolute;left:50%;top:58%;width:34%;height:34%;margin:-17% 0 0 -17%;border:3px solid rgba(255,255,255,.22);border-top-color:var(--blue);border-radius:50%;animation:mdspin 1s linear infinite;box-sizing:border-box}@keyframes mdspin{to{transform:rotate(360deg)}}
@@ -598,7 +598,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .mdsws{display:flex;gap:9px;flex-wrap:wrap}.mdsw.sem{background:none;color:var(--dim);font:600 10px Inter,sans-serif;border-style:dashed}.mdsw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0}
 #mdfm{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}.mdfb{width:100%;max-width:520px;background:#111;border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:grid;gap:10px}.mdfb b{text-align:center;font-size:16px;margin-bottom:4px}.mdfb button{background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--hi);font:600 15px Inter,sans-serif;padding:14px}.mdfb .x{background:none;border:0;color:var(--dim)}
 .cr-md{display:flex;gap:8px;justify-content:center;margin-bottom:10px}.cr-md button{background:#111;border:1px solid #2a2f37;color:#c9ced6;border-radius:99px;padding:8px 13px;font:600 13px Inter,sans-serif}.cr-md button.on{background:var(--blue);border-color:var(--blue);color:#06203d}
-.pmeds{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px}.pmd{line-height:0}.pmd{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pmeds{flex:1;min-width:0;height:30px;display:flex;align-items:center;align-content:flex-start;gap:0 6px;flex-wrap:wrap;overflow:hidden;margin:0 0 0 4px}.pmd{line-height:0;flex:none}.pmd{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .pmdl{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--blue);font-weight:700;font-size:13px;padding:8px 13px;cursor:pointer}
 .mdi{display:inline-flex;flex:none;align-items:center;justify-content:center}.mdi.disc{border-radius:50%;padding:3px;background:linear-gradient(135deg,#e6f3ff,#4a9eff 55%,#1c4f9e);box-shadow:0 4px 10px rgba(0,0,0,.45)}.mdi.disc img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .mdi .evmed{width:100%;height:auto}.mdi svg{display:block}
@@ -3675,10 +3675,9 @@ function perfCab(o){
   // no perfil próprio a capa ocupa o topo inteiro, atrás dos botões, sem bloco; no perfil de amigo (janela) ela fica arredondada
   return `<div class="pcvf${o.eu?'':' sh'}" style="background:${capaCss}"></div>
   <div class="pbd2${o.eu?'':' sh'}"><div class="prow"><div class="pav"><img src="${esc(o.pic)}" alt="">${o.eu?`<button class="pcam" onclick="pickFoto()" aria-label="Trocar foto">✎</button>`:''}</div><div class="pact">${o.eu?`<button class="pedt2" onclick="editaPerfil()">Editar perfil</button>`:''}<div class="pshc">${o.nv?escudo(o.nv,o.eu?'openNiveis()':''):''}</div></div></div>
-  <div class="pnr"><h2 class="pn">${esc(o.nome)}</h2>${medBtn(o)}</div>${o.sub?`<div class="meta">${o.sub}</div>`:''}
+  <div class="pnr"><h2 class="pn">${esc(o.nome)}</h2>${medBloco(o)}${medBtn(o)}</div>${o.sub?`<div class="meta">${o.sub}</div>`:''}
   ${pf.bio?`<p class="pbio">${esc(pf.bio)}</p>`:''}
   ${linkOk(pf.link)?`<a class="plk" href="${esc(pf.link)}" target="_blank" rel="noopener noreferrer nofollow">${LINK_IC}<span>${esc(linkHost(pf.link))}</span></a>`:''}
-  ${medBloco(o)}
   <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}${o.amigos!=null?` · <b>${o.amigos}</b> ${o.amigos===1?'amigo':'amigos'}`:''}</div></div>`;
 }
 window.editaPerfil=()=>{
@@ -3731,13 +3730,13 @@ const medData=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?d.slice(8,10)+'/'+d.slice(5,7
 function medBloco(o){
   const k=o.eu?'eu':'am',L=o.eu?medsGet():((o.perfil||{}).meds||[]);window._medL=window._medL||{};window._medL[k]=L;
   const fix=L.map((m,i)=>({m,i})).filter(x=>x.m.v==='p'&&x.m.st!=='pend'&&x.m.st!=='rej').slice(0,MEDS_FIX);
-  return fix.length?`<div class="pmeds">${fix.map(x=>`<button class="pmd" onclick="medAbre('${k}',${x.i})" aria-label="${esc(x.m.n)}">${medIcon(x.m,22)}</button>`).join('')}</div>`:'';
+  return `<div class="pmeds">${fix.map(x=>`<button class="pmd" onclick="medAbre('${k}',${x.i})" aria-label="${esc(x.m.n)}">${medIcon(x.m,22)}</button>`).join('')}</div>`;
 }
 // botãozinho da medalha, embaixo do brasão de nível: abre a página Medalhas
 function medBtn(o){
   const k=o.eu?'eu':'am',L=o.eu?medsGet():((o.perfil||{}).meds||[]);window._medL=window._medL||{};window._medL[k]=L;
   if(!o.eu&&!L.length)return '';
-  return `<button class="pmedb" onclick="medLista('${k}')" aria-label="Medalhas">${MED_BTN}${L.length?`<i>${L.length}</i>`:''}</button>`;
+  return `<span class="pmw"><button class="pmedb" onclick="medLista('${k}')" aria-label="Medalhas">${MED_BTN}${L.length?`<i>${L.length}</i>`:''}</button></span>`;
 }
 window.medLista=k=>{
   const L=(window._medL||{})[k]||[],eu=k==='eu';
@@ -4270,7 +4269,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19d'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19f'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
