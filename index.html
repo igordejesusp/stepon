@@ -598,13 +598,13 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .mdsws{display:flex;gap:9px;flex-wrap:wrap}.mdsw.sem{background:none;color:var(--dim);font:600 10px Inter,sans-serif;border-style:dashed}.mdsw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0}
 #mdfm{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}.mdfb{width:100%;max-width:520px;background:#111;border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:grid;gap:10px}.mdfb b{text-align:center;font-size:16px;margin-bottom:4px}.mdfb button{background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--hi);font:600 15px Inter,sans-serif;padding:14px}.mdfb .x{background:none;border:0;color:var(--dim)}
 .cr-md{display:flex;gap:8px;justify-content:center;margin-bottom:10px}.cr-md button{background:#111;border:1px solid #2a2f37;color:#c9ced6;border-radius:99px;padding:8px 13px;font:600 13px Inter,sans-serif}.cr-md button.on{background:var(--blue);border-color:var(--blue);color:#06203d}
-.pmeds{flex:1;min-width:0;height:30px;display:flex;align-items:center;align-content:flex-start;gap:0 6px;flex-wrap:wrap;overflow:hidden;margin:0 0 0 4px}.pmd{line-height:0;flex:none}.pmd{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pmeds{flex:1;min-width:0;height:30px;display:flex;align-items:center;justify-content:flex-end;gap:0 8px;flex-wrap:nowrap;overflow:hidden;margin:0 6px 0 4px}.pmd{line-height:0;flex:none}.pmd{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .pmdl{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--blue);font-weight:700;font-size:13px;padding:8px 13px;cursor:pointer}
 .mdi{display:inline-flex;flex:none;align-items:center;justify-content:center}.mdi.disc{border-radius:50%;padding:3px;background:linear-gradient(135deg,#e6f3ff,#4a9eff 55%,#1c4f9e);box-shadow:0 4px 10px rgba(0,0,0,.45)}.mdi.disc img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .mdi .evmed{width:100%;height:auto}.mdi svg{display:block}
 .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px}.mcard .mdm{margin-top:2px}.mcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;cursor:pointer;color:var(--hi);font:inherit}.mcard b{font-size:13px;line-height:1.2;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.mcard span{font-size:11.5px;color:var(--dim)}
 .mdet{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:6px 0 4px}.mdet h2{margin:8px 0 0;font-size:22px;line-height:1.2}.mdet .mo{color:var(--txt);font-size:15px;line-height:1.45;margin:6px 4px 0}
-.mfd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px;width:100%}.mfd div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 4px}.mfd b{display:block;font-size:16px}.mfd span{font-size:11.5px;color:var(--dim)}
+.mfd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 4px;width:100%}.mfd div{background:none;border:0;border-radius:0;padding:0}.mfd b{display:block;font-size:20px;font-weight:700;color:var(--hi);white-space:nowrap}.mfd span{display:block;font-size:13px;color:var(--dim);margin-top:2px}
 .mfoto{display:flex;align-items:center;gap:14px;margin:4px 0 12px}.mfoto .mdi{cursor:pointer}.mvz{display:grid;gap:8px;margin-top:6px}.mvz label{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:14px;color:var(--hi)}.mvz label small{display:block;color:var(--dim);font-size:12px}.mvz input{width:auto;min-width:0;flex:none;margin:3px 0 0;padding:0;accent-color:#4a9eff}.mvz label span{flex:1}
 .pseq{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:15px;color:var(--txt)}.pseq svg{width:22px;height:22px}.pcnt{margin-top:12px;font-size:14px;color:var(--dim)}.pcnt b{color:var(--hi)}
 .capas{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cap{height:54px;border-radius:12px;border:2px solid transparent;position:relative;padding:0;overflow:hidden}.cap small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 0;text-align:center}.cap.on{border-color:var(--blue);box-shadow:0 0 0 2px rgba(74,158,255,.4)}
@@ -1743,7 +1743,7 @@ window.openDay=ds=>{
   if(!p&&ds>=ymd(TODAY()))h+=`<button class="b full" style="margin:8px 0" onclick="openBib('${ds}')">+ Treino neste dia</button>`;
   if(!p&&!ex.some(isRun)&&ds<=ymd(TODAY()))h+=`<button class="b full" style="margin:8px 0" onclick="markDone('${ds}')">✓ Registrar corrida feita</button>`;
   h+=`<div class="grid g3" style="margin-top:6px"><div class="cell"><div class="lbl">Sono</div><span class="num">${fmtSleep(w.sleep)}</span></div><div class="cell"><div class="lbl">FC rep.</div><span class="num">${w.rhr||'--'}</span></div><div class="cell"><div class="lbl">Passos</div><span class="num">${w.steps?(w.steps/1000).toFixed(1)+'k':'--'}</span></div></div>`;
-  openSheet(h);
+  openSheet(h,1);
 };
 
 /* ================= DESAFIOS ================= */
@@ -3096,7 +3096,7 @@ function drawB(){
   ${hasWatch()?`<button class="b pri full" style="margin-top:8px" onclick="bSave(1)">Salvar e enviar ao relógio</button>`:''}
   ${o&&ex[o]&&orig?`<button class="b full" style="margin-top:8px" onclick="bOrig()">Voltar ao treino original</button>`:''}
   ${o?`<button class="b red full" style="margin-top:8px" onclick="bOff()">Tirar o treino deste dia</button>`:''}
-  <p class="empty" style="margin-top:10px">Os ritmos vêm do seu nível atual (VDOT) e se ajustam sozinhos quando você evolui.</p>`);
+  <p class="empty" style="margin-top:10px">Os ritmos vêm do seu nível atual (VDOT) e se ajustam sozinhos quando você evolui.</p>`,1);
 }
 function bClear(ex,ds){if(baseTemplate().some(p=>p.date===ds))ex[ds]={date:ds,off:1};else delete ex[ds];apagaEvento(ds)}
 // treino tirado ou movido: o envio antigo sai do calendário do Intervals (e do relógio) para não sobrar treino fantasma
@@ -3385,7 +3385,7 @@ window.openAmigos=nofetch=>{
   ${sec('PEDIDOS RECEBIDOS',FR.inc.map(id=>row(id,'',`<button class="b sm pri" onclick="frAcao('aceitar','${esc(id)}')">ACEITAR</button><button class="b sm" onclick="frAcao('recusar','${esc(id)}')">RECUSAR</button>`)))}
   ${sec('MEUS AMIGOS',FR.friends.map(id=>row(id,`onclick="openPerfilAmigo('${esc(id)}')"`,`<button class="b sm" onclick="openPerfilAmigo('${esc(id)}')">PERFIL</button>`)))}
   ${sec('PEDIDOS ENVIADOS',FR.out.map(id=>row(id,'',`<span class="meta">AGUARDANDO</span><button class="b sm" onclick="frAcao('remover','${esc(id)}')">CANCELAR</button>`)))}
-  ${FR.friends.length+FR.inc.length+FR.out.length?'':'<p class="empty" style="margin-top:12px">Você ainda não tem amigos adicionados.</p>'}`);
+  ${FR.friends.length+FR.inc.length+FR.out.length?'':'<p class="empty" style="margin-top:12px">Você ainda não tem amigos adicionados.</p>'}`,1);
   if(!nofetch)frCall('lista').then(()=>{const i=$('#am-id');if(i&&!i.value)openAmigos(1);if(VIEW==='comp')rComp()}).catch(()=>{});
 };
 // botão de amizade no cartão do mapa e no perfil: adicionar, aceitar, aguardando ou já amigo
@@ -3446,7 +3446,7 @@ window.openPerfilAmigo=(id,tab)=>{
     h+=`<p class="meta" style="margin-top:8px">Só aparece o que a pessoa publicou no ranking: as corridas com GPS mais recentes.</p>`;
   }
   h+=`<div class="grid g2" style="margin-top:14px"><button class="b" onclick="openAmigos(1)">◀ Voltar</button>${eAmigo?`<button class="b red" onclick="frAcao('remover','${esc(id)}')">Remover amigo</button>`:'<span></span>'}</div>`;
-  openSheet(h);
+  openSheet(h,1);
 };
 const medal=i=>['🥇','🥈','🥉'][i]||(i+1)+'º';
 const avatar=(u,s=30)=>`<img src="${esc(u.pic)}" alt="" style="width:${s}px;height:${s}px;border-radius:50%;object-fit:cover;border:1px solid ${u.me?'var(--blue)':'var(--line)'};flex:none">`;
@@ -3459,7 +3459,7 @@ window.openTerr=id=>{
   <div class="card stc"><div class="stg c3"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Circuitos</span><b>${o.n}</b></div><div><span>Última</span><b>${o.last?fmtD(o.last):'--'}</b></div></div></div>
   ${o.rit?`<div class="card dica"><p>${eu?`No Geral, as suas áreas estão defendidas pelo seu ritmo: <b>${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>. Só toma quem fechar o circuito mais rápido.`:`No Geral, para tomar estas áreas você precisa fechar o circuito mais rápido que ${esc(o.u.name.split(' ')[0])}: <b>abaixo de ${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>, conforme o pedaço.`}</p></div>`:''}
   ${eu?`<div class="card gcard"><div class="blh"><b>Sua cor no mapa</b></div>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="grid g2" style="margin-top:8px"><button class="b" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button>${btnAmizade(id,`openTerr('${esc(id)}')`)}</div>`}
-  <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`);
+  <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`,1);
   $('#sbox').dataset.terr=eu?'me':'';
 };
 // "Seu território": separa as áreas em locais (cada pedaço da cidade) e mostra um mapinha de cada
@@ -3516,7 +3516,7 @@ window.openRank=()=>{
   ${LS.get('pubErr',null)?`<p class="empty" style="color:var(--txt);margin-bottom:8px">Suas corridas mais recentes ainda não chegaram ao servidor (${esc(LS.get('pubErr',''))}). Toque em sincronizar no Início para tentar de novo.</p>`:''}<div class="row" style="gap:6px"><span class="tag ok">TEMPORADA DE ${mes.toUpperCase()}</span><span class="tag">ZERA EM ${dias} ${dias===1?'DIA':'DIAS'}</span></div>
   <p class="empty" style="margin-top:8px">Todo mês o placar volta a zero. Vale 1 ponto por km corrido no mês e 3 por treino (a partir de 1 km). O ranking não depende do mapa. Os pontos não se perdem: no fim do mês eles ficam na conta e sobem o seu nível.</p>
   <div class="card" style="padding:4px 12px;margin-top:10px">${vis.map(([x,j])=>row(x,j)).join('')}</div>
-  ${L.length<2?`<p class="empty">Por enquanto só você aparece.${M==='a'?' Siga amigos em "+ AMIGOS" para disputar com eles.':' Quando mais gente entrar no ranking, aparece aqui sozinha.'}</p>`:''}`);
+  ${L.length<2?`<p class="empty">Por enquanto só você aparece.${M==='a'?' Siga amigos em "+ AMIGOS" para disputar com eles.':' Quando mais gente entrar no ranking, aparece aqui sozinha.'}</p>`:''}`,1);
 };
 window.openCompCfg=first=>{
   const on=LS.get('comp',null)==='sim';
@@ -3709,7 +3709,7 @@ window.perfSalva=()=>{
   if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
 
 /* ================= medalhas: provas e corridas guardadas no perfil, no formato real da medalha (recorte pelo contorno + cordinha) ================= */
-const MEDS_MAX=20,MEDS_PUB=12,MEDS_FIX=6,MED_PX=288,MED_CAP=22000;
+const MEDS_MAX=20,MEDS_PUB=12,MEDS_FIX=3,MED_PX=288,MED_CAP=22000;
 const medsGet=()=>{const l=LS.get('meds',[]);return Array.isArray(l)?l:[]};
 const medsPub=()=>medsGet().filter(m=>m.v!=='x'&&m.st!=='pend'&&m.st!=='rej').slice(0,MEDS_PUB).map(m=>({id:m.id,n:m.n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,v:m.v==='p'?'p':'l',e:m.e,img:m.u?undefined:m.img,s:m.u?undefined:m.s,c:m.u?undefined:m.c,u:m.u}));
 const medsSig=()=>'|m'+medsGet().map(m=>m.id+m.v+m.n+(m.u||'')+(m.st||'')+(m.c||'')+(m.img||'').length+(Array.isArray(m.s)?m.s.length:m.s||'')).join(',');
@@ -3754,7 +3754,7 @@ window.medAbre=(k,i)=>{
   ${m.st==='pend'?'<p class="mo">Sua medalha está sendo refeita em estilo de jogo. Em alguns minutos ela fica pronta e avisamos você.</p>':m.st==='rej'?'<p class="mo">Não consegui refazer essa medalha. Edite e peça de novo com outra foto, ou exclua.</p>':''}
   ${m.o?`<p class="mo">${esc(m.o)}</p>`:''}
   ${eu?`<div class="meta" style="margin-top:6px">${m.v==='p'?'Aparece no seu perfil':m.v==='x'?'Só você vê':'Aparece só na página Medalhas'}</div>`:''}</div>
-  <div class="grid g2" style="margin-top:14px"><button class="b" onclick="medLista('${k}')">Todas as medalhas</button>${eu?`<button class="b" onclick="medForm('${esc(m.id)}')">Editar</button>`:'<span></span>'}</div>
+  <div style="text-align:center;margin-top:16px"><button class="lk" style="text-align:center;font-size:15px" onclick="medLista('${k}')">Ver todas as medalhas</button></div>${eu?`<button class="b full" style="margin-top:10px" onclick="medForm('${esc(m.id)}')">Editar</button>`:''}
   ${eu?`<button class="b full" style="margin-top:8px;color:#e0442f" onclick="medApaga('${esc(m.id)}')">Excluir medalha</button>`:''}`,1);
 };
 window.medApaga=id=>{if(!confirm('Excluir esta medalha? Isso não pode ser desfeito.'))return;medSalva(medsGet().filter(m=>m.id!==id));toast('Medalha excluída',2200);window._medL={eu:medsGet()};medLista('eu');render()};
@@ -3776,7 +3776,7 @@ window.medForm=id=>{
   <div class="grid g2" style="margin-top:10px"><div><label class="f">Tempo</label><input id="md-t" inputmode="numeric" placeholder="h:mm:ss" value="${m&&m.t?fmtT(m.t):''}"></div><div><label class="f">Local</label><input id="md-l" maxlength="40" placeholder="Cidade" value="${esc(m?m.l||'':'')}"></div></div>
   <label class="f" style="margin-top:10px">História (opcional)</label><textarea id="md-o" maxlength="140" rows="2" placeholder="Como foi essa prova">${esc(m?m.o||'':'')}</textarea>
   <div class="lbl" style="margin:14px 0 6px">ONDE APARECE</div>
-  <div class="mvz"><label><input type="radio" name="md-v" value="p" ${v==='p'?'checked':''}><span>No meu perfil<small>Fica pequena embaixo da bio (até ${MEDS_FIX}).</small></span></label>
+  <div class="mvz"><label><input type="radio" name="md-v" value="p" ${v==='p'?'checked':''}><span>No meu perfil<small>Aparece ao lado do botão de medalhas (até ${MEDS_FIX}).</small></span></label>
   <label><input type="radio" name="md-v" value="l" ${v==='l'?'checked':''}><span>Só na página Medalhas<small>Aparece ao tocar no botão de medalha do perfil.</small></span></label>
   <label><input type="radio" name="md-v" value="x" ${v==='x'?'checked':''}><span>Só eu<small>Fica guardada, ninguém mais vê.</small></span></label></div>
   <button id="md-go" class="b pri full" style="margin-top:14px" onclick="medSalvaForm()">Salvar medalha</button>`,1);
@@ -3853,6 +3853,7 @@ window.medSalvaForm=async()=>{
   if(isNaN(t))return toast('Tempo inválido. Use h:mm:ss.',3000);
   const L=medsGet(),id=window._medEdit,vz=(document.querySelector('input[name=md-v]:checked')||{}).value||'p',old=id?L.find(x=>x.id===id):null;
   const m={id:id||('m'+Date.now().toString(36)),n,d:/^\d{4}-\d{2}-\d{2}$/.test(dv)?dv:'',k:kmv>0&&kmv<1000?Math.round(kmv*1000):undefined,t:t||undefined,l:($('#md-l').value||'').trim().slice(0,40),o:($('#md-o').value||'').replace(/\s+/g,' ').trim().slice(0,140),v:vz};
+  if(vz==='p'&&L.filter(x=>x.v==='p'&&x.id!==m.id).length>=MEDS_FIX)return toast('Só cabem '+MEDS_FIX+' medalhas no perfil. Tire uma de lá primeiro ou escolha "Só na página Medalhas".',4200);
   if(old){m.e=old.e;m.u=old.u;m.st=old.st;m.img=old.img;m.s=old.s;m.c=old.c}
   let pedido=false;
   if(window._medFoto){
@@ -4269,7 +4270,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19f'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19g'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
