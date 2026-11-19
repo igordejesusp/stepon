@@ -216,6 +216,51 @@ async function evento(env, a, b) {
 }
 const evLista = (d) => ({ n: Object.keys(d.ins).length, ins: Object.entries(d.ins).sort((x, y) => x[1].t - y[1].t).slice(0, 300).map(([id, v]) => ({ id, name: v.n })) });
 
+
+// ---------- medalhas feitas à mão: pedidos, fila do administrador e imagens prontas ----------
+// 'mp:<id>' = pedido { athlete, nome, n, d, k, t, l, o, foto, at, st }  ·  'mpl' = lista leve da fila  ·  'mi:<id>' = imagem pronta (data URL)
+const ADMIN_MED = 'i504491', MP_ID = /^[a-z0-9]{6,16}$/, MAX_FOTO_PED = 230_000, MAX_IMG_MED = 480_000;
+const dataImg = (s, max, tipos) => typeof s === 'string' && s.length <= max && new RegExp('^data:image/(' + tipos + ');base64,[A-Za-z0-9+/=]+$').test(s);
+async function medalha(env, a, b) {
+  const limpa = (x, n) => String(x || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+  const admin = b.athlete === ADMIN_MED;
+  const lista = async () => (await env.BR.get('mpl', 'json')) || [];
+  if (b.acao === 'pedir') {
+    if (!dataImg(b.foto, MAX_FOTO_PED, 'jpeg')) return { erro: 'foto inválida ou grande demais' };
+    const n = limpa(b.n, 60);
+    if (!n) return { erro: 'dê um nome para a medalha' };
+    const L = await lista();
+    if (L.filter((p) => p.a === b.athlete && p.st === 'pend').length >= 3) return { erro: 'você já tem 3 pedidos em preparo' };
+    const id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    const num = (x, lo, hi) => (Number.isFinite(+x) && +x > lo && +x < hi ? Math.round(+x) : undefined);
+    const ped = { athlete: b.athlete, nome: limpa(a.name || b.athlete, 60), n, d: /^\d{4}-\d{2}-\d{2}$/.test(String(b.d || '')) ? b.d : '', k: num(b.k, 0, 1e6), t: num(b.t, 0, 864000), l: limpa(b.l, 40), o: limpa(b.o, 140), foto: b.foto, at: Date.now(), st: 'pend' };
+    await env.BR.put('mp:' + id, JSON.stringify(ped));
+    L.push({ id, a: b.athlete, nome: ped.nome, n, at: ped.at, st: 'pend' });
+    await env.BR.put('mpl', JSON.stringify(L.slice(-300)));
+    return { ok: true, id };
+  }
+  if (b.acao === 'status') {
+    const ids = (Array.isArray(b.ids) ? b.ids : []).filter((i) => MP_ID.test(String(i))).slice(0, 20), st = {};
+    for (const i of ids) { const p = await env.BR.get('mp:' + i, 'json'); if (p && p.athlete === b.athlete) st[i] = p.st; }
+    return { ok: true, st };
+  }
+  if (!admin) return { erro: 'somente o administrador' };
+  if (b.acao === 'fila') return { ok: true, fila: (await lista()).filter((p) => p.st === 'pend').sort((x, y) => x.at - y.at).slice(0, 100) };
+  if (!MP_ID.test(String(b.id || ''))) return { erro: 'pedido inválido' };
+  const p = await env.BR.get('mp:' + b.id, 'json');
+  if (!p) return { erro: 'pedido não encontrado' };
+  const grava = async (st) => { p.st = st; delete p.foto; await env.BR.put('mp:' + b.id, JSON.stringify(p)); const L = await lista(); const i = L.findIndex((x) => x.id === b.id); if (i >= 0) { L[i].st = st; await env.BR.put('mpl', JSON.stringify(L)); } };
+  if (b.acao === 'ver') return { ok: true, pedido: p };
+  if (b.acao === 'entregar') {
+    if (!dataImg(b.img, MAX_IMG_MED, 'png|webp')) return { erro: 'imagem inválida ou grande demais' };
+    await env.BR.put('mi:' + b.id, b.img);
+    await grava('ok');
+    return { ok: true };
+  }
+  if (b.acao === 'recusar') { await grava('rej'); return { ok: true }; }
+  return { erro: 'ação inválida' };
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -288,6 +333,7 @@ export default {
           // formato da medalha: 'c' redonda, 'r' quadrada ou um contorno (até 90 pontos em milésimos da imagem)
           const s = m.s === 'r' ? 'r' : Array.isArray(m.s) && m.s.length >= 6 && m.s.length <= 180 && m.s.length % 2 === 0 && m.s.every((v) => Number.isFinite(+v)) ? m.s.map((v) => Math.max(0, Math.min(1000, Math.round(+v)))) : 'c';
           return {
+            u: MP_ID.test(String(m.u || '')) ? String(m.u) : undefined,
             id: /^[a-z0-9]{3,16}$/i.test(String(m.id || '')) ? String(m.id) : undefined, n,
             d: /^\d{4}-\d{2}-\d{2}$/.test(String(m.d || '')) ? String(m.d) : '', k, t, l: limpa(m.l, 40), o: limpa(m.o, 140),
             v: m.v === 'p' ? 'p' : 'l', e: /^(ouro|prata|bronze|final)$/.test(String(m.e || '')) ? String(m.e) : undefined, img, s: img ? s : undefined,
@@ -377,6 +423,28 @@ export default {
       const out = {};
       await Promise.all(ks.map(async (k) => { const v = await env.BR.get('mo:' + k, 'json'); if (v && v.amigos && v.amigos.length) out[k] = v.amigos; }));
       return json(req, out, 200, { 'Cache-Control': 'no-store' });
+    }
+
+    // imagem pronta de uma medalha (pública: o id é aleatório e a medalha aparece no perfil)
+    if (req.method === 'GET' && url.pathname.startsWith('/medalha/img/')) {
+      const id = url.pathname.slice(13);
+      if (!MP_ID.test(id)) return json(req, { erro: 'inválido' }, 400);
+      const s = await env.BR.get('mi:' + id);
+      const m = s && s.match(/^data:image\/(png|webp);base64,(.+)$/);
+      if (!m) return new Response('não encontrada', { status: 404, headers: cors(req) });
+      const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+      return new Response(bin, { headers: { 'Content-Type': 'image/' + m[1], 'Cache-Control': 'public, max-age=86400', ...cors(req) } });
+    }
+
+    if (req.method === 'POST' && url.pathname === '/medalha') {
+      const txt = await req.text();
+      if (txt.length > MAX_IMG_MED + 4000) return json(req, { erro: 'pedido grande demais' }, 413);
+      let b;
+      try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      const r = await medalha(env, a, b);
+      return json(req, r, r.erro ? 400 : 200, { 'Cache-Control': 'no-store' });
     }
 
     // cópia de segurança do app de cada pessoa (plano, treinos editados, esforço...): privada, só o dono lê e grava

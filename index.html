@@ -588,6 +588,12 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .plk{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--blue);font-size:14px;font-weight:600;text-decoration:none;max-width:100%}.plk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex:none}.plk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .psl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.psl span{display:inline-flex;align-items:center;gap:6px;background:var(--cell);border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 8px;font-size:13px;color:var(--txt)}.psl svg{width:14px;height:14px;fill:#f0b72f}
 .pshc{display:flex;flex-direction:column;align-items:center;gap:7px}.pnr{display:flex;align-items:center;justify-content:space-between;gap:10px}.pnr .pn{min-width:0}.pmedb{position:relative;flex:none;width:36px;height:36px;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--blue);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}.pmedb svg{width:24px;height:24px}.pmedb i{position:absolute;right:-5px;top:-5px;min-width:17px;height:17px;border-radius:9px;background:var(--blue);color:#06203d;font:700 10.5px/17px Inter,sans-serif;text-align:center;font-style:normal;padding:0 4px}
+.lk{background:none;border:0;text-decoration:none;color:var(--blue);font:600 13px Inter,sans-serif;padding:4px 2px;cursor:pointer;text-align:left}
+.mdu{display:inline-flex;align-items:center;justify-content:center;flex:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}.mdu img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.mdm.pend .mdp{filter:grayscale(1) opacity(.4)}.mdsp{position:absolute;left:50%;top:58%;width:34%;height:34%;margin:-17% 0 0 -17%;border:3px solid rgba(255,255,255,.22);border-top-color:var(--blue);border-radius:50%;animation:mdspin 1s linear infinite;box-sizing:border-box}@keyframes mdspin{to{transform:rotate(360deg)}}
+.mdfp{display:inline-block;width:84px;height:84px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}.mdfp img{width:100%;height:100%;object-fit:cover;display:block}
+.mpq{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;text-align:left;margin-bottom:8px;cursor:pointer;color:var(--hi);font:inherit}.mcf{width:100%;max-height:46vh;object-fit:contain;border-radius:16px;background:#000;display:block}
+.mcck{background:repeating-conic-gradient(#2a2e34 0 25%,#1a1d21 0 50%) 0 0/20px 20px;border-radius:16px;padding:12px;display:flex;justify-content:center}.mcck img{max-width:100%;max-height:300px;object-fit:contain}
 .mdm{position:relative;display:inline-block;flex:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}.mdc{position:absolute;left:0;top:0;display:block}.mdp{position:absolute;left:0;display:block}.mdp img,.mdp svg{width:100%;height:100%;display:block}
 .mdsws{display:flex;gap:9px;flex-wrap:wrap}.mdsw.sem{background:none;color:var(--dim);font:600 10px Inter,sans-serif;border-style:dashed}.mdsw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0}
 #mdfm{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}.mdfb{width:100%;max-width:520px;background:#111;border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:grid;gap:10px}.mdfb b{text-align:center;font-size:16px;margin-bottom:4px}.mdfb button{background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--hi);font:600 15px Inter,sans-serif;padding:14px}.mdfb .x{background:none;border:0;color:var(--dim)}
@@ -1838,6 +1844,7 @@ function rMais(soTres){
     ${M.alvo&&M.d?`<p class="empty" style="margin-top:8px;color:var(--txt)">Ritmo-alvo da prova: <b style="color:var(--hi)">${fmtP(M.alvo/M.d)}/km</b> (${kmTxt(M.d)} km em ${fmtT(M.alvo)})${M.data?' · dia '+fmtD(M.data):''}.${PF.Vsrc==='chute'&&!Object.keys(PF.tests||{}).length?' O teste de 1 km do plano vai medir o seu ritmo atual.':` Hoje a sua previsão é ${fmtP(predict(PF.V,M.dist)/M.d)}/km.`}</p>`:''}
     <p class="empty" style="margin-top:8px">Ritmo leve: ${fmtP(Z.E[0])}–${fmtP(Z.E[1])}/km. O volume sobe no máximo 8% por semana e, a cada 4 semanas, uma semana mais leve para o corpo assimilar.</p><p class="empty" style="margin-top:6px">Nível do plano: <b style="color:var(--hi)">${['iniciante','intermediário','avançado'][nivelDe(PF)]}</b>. Cada treino de qualidade se repete por 2 semanas antes de subir de degrau, e a cada 8 semanas o app marca um teste de 1 km para recalibrar os seus ritmos.</p>
     <button class="b full" style="margin-top:10px" onclick="redoPlan()">Refazer o questionário</button></div>`}
+  if(souAdmin())h+=`<div class="sec">ADMINISTRAÇÃO</div><button class="card mpq" onclick="medCtl()"><b>Controle de medalhas</b><span class="meta">Pedidos de medalha em estilo de jogo: baixar a foto e enviar a imagem pronta.</span></button>`;
   const k1=h.length;
   h+=`<div class="sec">MODO DO APP</div><div class="card"><div class="seg"><button class="${TEMA()==='light'?'on':''}" onclick="setTema(1)">DIURNO</button><button class="${TEMA()==='light'?'':'on'}" onclick="setTema(0)">NOTURNO</button></div><p class="empty" style="margin-top:8px">Diurno deixa o app claro; noturno deixa o fundo preto.</p></div>`;
   const k2=h.length;
@@ -3705,8 +3712,8 @@ window.perfSalva=()=>{
 /* ================= medalhas: provas e corridas guardadas no perfil, no formato real da medalha (recorte pelo contorno + cordinha) ================= */
 const MEDS_MAX=20,MEDS_PUB=12,MEDS_FIX=6,MED_PX=288,MED_CAP=22000;
 const medsGet=()=>{const l=LS.get('meds',[]);return Array.isArray(l)?l:[]};
-const medsPub=()=>medsGet().filter(m=>m.v!=='x').slice(0,MEDS_PUB).map(m=>({id:m.id,n:m.n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,v:m.v==='p'?'p':'l',e:m.e,img:m.img,s:m.s,c:m.c}));
-const medsSig=()=>'|m'+medsGet().map(m=>m.id+m.v+m.n+(m.c||'')+(m.img||'').length+(Array.isArray(m.s)?m.s.length:m.s||'')).join(',');
+const medsPub=()=>medsGet().filter(m=>m.v!=='x'&&m.st!=='pend'&&m.st!=='rej').slice(0,MEDS_PUB).map(m=>({id:m.id,n:m.n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,v:m.v==='p'?'p':'l',e:m.e,img:m.u?undefined:m.img,s:m.u?undefined:m.s,c:m.u?undefined:m.c,u:m.u}));
+const medsSig=()=>'|m'+medsGet().map(m=>m.id+m.v+m.n+(m.u||'')+(m.st||'')+(m.c||'')+(m.img||'').length+(Array.isArray(m.s)?m.s.length:m.s||'')).join(',');
 const medSalva=l=>{LS.set('meds',l);if(LS.get('comp',null)==='sim')publishMine(1).catch(pubFalha)};
 const MED_CORES=['#1c4f9e','#16335f','#1b1b1b','#c8312b','#e8872b','#2f8f55','#cf9f1f','#e8edf2','#d6559b'];
 const MED_GEN='<svg viewBox="0 0 100 100"><defs><linearGradient id="mgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6bb3ff"/><stop offset="1" stop-color="#1c4f9e"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="#e6f3ff"/><circle cx="50" cy="50" r="42" fill="url(#mgg)"/><g transform="translate(50 50) scale(.55) translate(-50 -50)"><path d="M66 24 L27 35 L73 65 L14 79" fill="none" stroke="#fff" stroke-width="15" stroke-linejoin="round"/><circle cx="87" cy="18.5" r="8.5" fill="#06203d"/></g></svg>';
@@ -3714,6 +3721,8 @@ const MED_BTN='<svg viewBox="0 0 24 24"><defs><linearGradient id="mbo" x1="0" y1
 const medClip=s=>{if(s==='r')return 'inset(0 round 16%)';if(Array.isArray(s)&&s.length>=6){const p=[];for(let i=0;i+1<s.length;i+=2)p.push((s[i]/10).toFixed(1)+'% '+(s[i+1]/10).toFixed(1)+'%');return 'polygon('+p.join(',')+')'}return 'circle(50% at 50% 50%)'};
 function medIcon(m,sz){
   if(m.e&&EV_MED[m.e])return `<span class="mdi" style="width:${Math.round(sz*.86)}px">${EV_MED[m.e]}</span>`;
+  if(m.st==='pend'||m.st==='rej')return `<span class="mdm pend" style="width:${sz}px;height:${Math.round(sz*1.15)}px"><span class="mdp" style="width:${sz}px;height:${sz}px;top:${Math.round(sz*.15)}px">${MED_GEN}</span>${m.st==='pend'?'<i class="mdsp"></i>':''}</span>`;
+  if(m.u)return `<span class="mdu" style="width:${sz}px;height:${Math.round(sz*1.2)}px"><img alt="" src="${PUBURL}/medalha/img/${esc(m.u)}"></span>`;
   const sem=m.c==='n',cor=/^#[0-9a-f]{6}$/i.test(m.c||'')?m.c:MED_CORES[0],tem=/^data:image\/jpeg;base64,/.test(m.img||''),H=sem?sz:Math.round(sz*1.2),cd=Math.round(sz*.4);
   return `<span class="mdm" style="width:${sz}px;height:${H}px">${sem?'':`<svg class="mdc" viewBox="0 0 100 40" style="width:${sz}px;height:${cd}px"><polygon points="82,0 64,0 40,40 58,40" fill="${cor}"/><polygon points="18,0 36,0 60,40 42,40" fill="${cor}"/><polygon points="18,0 36,0 60,40 42,40" fill="#fff" fill-opacity=".16"/></svg>`}<span class="mdp" style="width:${sz}px;height:${sz}px;top:${H-sz}px">${tem?`<img alt="" src="${m.img}" style="clip-path:${medClip(m.s)}">`:MED_GEN}</span></span>`;
 }
@@ -3721,7 +3730,7 @@ const medData=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?d.slice(8,10)+'/'+d.slice(5,7
 // medalhas pequenas embaixo da bio (só as marcadas "No meu perfil")
 function medBloco(o){
   const k=o.eu?'eu':'am',L=o.eu?medsGet():((o.perfil||{}).meds||[]);window._medL=window._medL||{};window._medL[k]=L;
-  const fix=L.map((m,i)=>({m,i})).filter(x=>x.m.v==='p').slice(0,MEDS_FIX);
+  const fix=L.map((m,i)=>({m,i})).filter(x=>x.m.v==='p'&&x.m.st!=='pend'&&x.m.st!=='rej').slice(0,MEDS_FIX);
   return fix.length?`<div class="pmeds">${fix.map(x=>`<button class="pmd" onclick="medAbre('${k}',${x.i})" aria-label="${esc(x.m.n)}">${medIcon(x.m,22)}</button>`).join('')}</div>`:'';
 }
 // botãozinho da medalha, embaixo do brasão de nível: abre a página Medalhas
@@ -3732,8 +3741,9 @@ function medBtn(o){
 }
 window.medLista=k=>{
   const L=(window._medL||{})[k]||[],eu=k==='eu';
+  if(eu&&L.some(m=>m.st==='pend')&&temConta())medSync({mp:[]}).then(ch=>{if(ch){window._medL={eu:medsGet()};if(document.querySelector('.mgrid'))medLista('eu');render()}}).catch(()=>{});
   openSheet(`<div class="hd"><b>Medalhas</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  ${L.length?`<div class="mgrid">${L.map((m,i)=>`<button class="mcard" onclick="medAbre('${k}',${i})">${medIcon(m,78)}<b>${esc(m.n)}</b><span>${medData(m.d)||'&nbsp;'}</span></button>`).join('')}</div>`:`<p class="empty" style="color:var(--txt)">${eu?'Você ainda não guardou nenhuma medalha. Tire uma foto da medalha de uma prova e ela vira um desenho dela aqui, no seu perfil.':'Nenhuma medalha para mostrar.'}</p>`}
+  ${L.length?`<div class="mgrid">${L.map((m,i)=>`<button class="mcard" onclick="medAbre('${k}',${i})">${medIcon(m,78)}<b>${esc(m.n)}</b><span>${m.st==='pend'?'Em preparo…':m.st==='rej'?'Não deu certo':medData(m.d)||'&nbsp;'}</span></button>`).join('')}</div>`:`<p class="empty" style="color:var(--txt)">${eu?'Você ainda não guardou nenhuma medalha. Tire uma foto da medalha de uma prova e ela vira um desenho dela aqui, no seu perfil.':'Nenhuma medalha para mostrar.'}</p>`}
   ${eu?`<button class="b pri full" onclick="medForm()"${L.length>=MEDS_MAX?' disabled':''}>+ Adicionar medalha</button>${L.length>=MEDS_MAX?`<p class="meta" style="margin-top:8px">Limite de ${MEDS_MAX} medalhas.</p>`:''}`:''}`,1);
 };
 window.medAbre=(k,i)=>{
@@ -3742,6 +3752,7 @@ window.medAbre=(k,i)=>{
   openSheet(`<div class="hd"><b>Medalha</b><button class="b sm" onclick="closeSheet()">✕</button></div>
   <div class="mdet"><div style="margin-top:6px">${medIcon(m,200)}</div><h2>${esc(m.n)}</h2><div class="meta">${[medData(m.d),m.l].filter(Boolean).map(esc).join(' · ')}</div>
   ${dados.length?`<div class="mfd" style="grid-template-columns:repeat(${dados.length},1fr)">${dados.map(d=>`<div><b>${esc(d[0])}</b><span>${d[1]}</span></div>`).join('')}</div>`:''}
+  ${m.st==='pend'?'<p class="mo">Sua medalha está sendo refeita em estilo de jogo. Em alguns minutos ela fica pronta e avisamos você.</p>':m.st==='rej'?'<p class="mo">Não consegui refazer essa medalha. Edite e peça de novo com outra foto, ou exclua.</p>':''}
   ${m.o?`<p class="mo">${esc(m.o)}</p>`:''}
   ${eu?`<div class="meta" style="margin-top:6px">${m.v==='p'?'Aparece no seu perfil':m.v==='x'?'Só você vê':'Aparece só na página Medalhas'}</div>`:''}</div>
   <div class="grid g2" style="margin-top:14px"><button class="b" onclick="medLista('${k}')">Todas as medalhas</button>${eu?`<button class="b" onclick="medForm('${esc(m.id)}')">Editar</button>`:'<span></span>'}</div>
@@ -3749,14 +3760,17 @@ window.medAbre=(k,i)=>{
 };
 window.medApaga=id=>{if(!confirm('Excluir esta medalha? Isso não pode ser desfeito.'))return;medSalva(medsGet().filter(m=>m.id!==id));toast('Medalha excluída',2200);window._medL={eu:medsGet()};medLista('eu');render()};
 const medTempoPara=s=>{s=String(s||'').trim();if(!s)return null;const p=s.split(':').map(x=>parseInt(x,10));if(p.some(x=>!isFinite(x)||x<0)||p.length>3)return NaN;let t=0;for(const x of p)t=t*60+x;return t};
-const medPrev=()=>{const p=$('#md-prev');if(p)p.innerHTML=medIcon({img:window._medImg,s:window._medS,c:window._medC},104)};
+const medPrev=()=>{const p=$('#md-prev'),c=window._medCur||{};if(p)p.innerHTML=window._medFoto?`<span class="mdfp"><img alt="" src="${window._medFoto}"></span>`:medIcon({img:window._medImg,s:window._medS,c:window._medC,u:window._medImg?undefined:c.u,st:window._medImg?undefined:c.st},104);
+  const co=$('#md-cor');if(co)co.style.display=window._medImg&&!window._medFoto?'':'none';
+  const g=$('#md-go');if(g){g.disabled=false;g.textContent=window._medFoto?'Pedir minha medalha':'Salvar medalha'}}
 window.medForm=id=>{
-  const m=id?medsGet().find(x=>x.id===id):null;window._medImg=m?m.img||'':'';window._medS=m?m.s:undefined;window._medC=m&&m.c?m.c:MED_CORES[0];window._medEdit=id||'';
+  const m=id?medsGet().find(x=>x.id===id):null;window._medCur=m||{};window._medFoto='';window._medImg=m&&!m.u?m.img||'':'';window._medS=m?m.s:undefined;window._medC=m&&m.c?m.c:MED_CORES[0];window._medEdit=id||'';
   const runs=(D.acts||[]).filter(a=>isRun(a)&&a.dist>=500).sort((a,b)=>b.date<a.date?-1:1).slice(0,40);
   const v=m?m.v:'p';
   openSheet(`<div class="hd"><b>${m?'Editar medalha':'Nova medalha'}</b><button class="b sm" onclick="medLista('eu')">✕</button></div>
-  <div class="mfoto"><span id="md-prev"></span><div><button class="b" onclick="medPickFoto()">${window._medImg?'Trocar foto':'Foto da medalha'}</button><p class="meta" style="margin-top:6px">O app recorta a medalha da foto e guarda só o desenho dela, no formato real.</p></div></div>
-  <div class="lbl" style="margin-bottom:6px">COR DA CORDINHA</div><div class="mdsws">${MED_CORES.map(c=>`<button class="mdsw" style="background:${c}" onclick="medCor('${c}')" aria-label="Cor ${c}"></button>`).join('')}<button class="mdsw sem" onclick="medCor('n')" aria-label="Sem cordinha">Sem</button></div><p class="meta" style="margin-top:6px">Se a cordinha da foto já está no contorno, escolha "Sem".</p>
+  <div class="mfoto"><span id="md-prev"></span><div><button class="b" onclick="medPickPedido()">${m&&(m.u||m.img)?'Pedir de novo com outra foto':'Foto da medalha'}</button><p class="meta" style="margin-top:6px">Tire a foto da medalha. O StepOn refaz ela em estilo de jogo e avisa quando ficar pronta (alguns minutos).</p></div></div>
+  <button class="lk" onclick="medPickFoto()">Prefiro só o recorte da foto, sem esperar</button>
+  <div id="md-cor" style="display:none"><div class="lbl" style="margin:12px 0 6px">COR DA CORDINHA</div><div class="mdsws">${MED_CORES.map(c=>`<button class="mdsw" style="background:${c}" onclick="medCor('${c}')" aria-label="Cor ${c}"></button>`).join('')}<button class="mdsw sem" onclick="medCor('n')" aria-label="Sem cordinha">Sem</button></div><p class="meta" style="margin-top:6px">Se a cordinha da foto já está no contorno, escolha "Sem".</p></div>
   <label class="f" style="margin-top:14px">Nome da prova</label><input id="md-n" maxlength="60" placeholder="Ex.: Ironman 70.3 São Paulo" value="${esc(m?m.n:'')}">
   ${runs.length?`<label class="f" style="margin-top:10px">Foi uma corrida registrada no StepOn?</label><select id="md-a" onchange="medVinc()"><option value="">Não, preencher à mão</option>${runs.map(a=>`<option value="${esc(a.id)}">${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)} · ${km(a.dist).replace('.',',')} km · ${fmtT(a.mov)}</option>`).join('')}</select>`:''}
   <div class="grid g2" style="margin-top:10px"><div><label class="f">Data</label><input id="md-d" type="date" value="${esc(m?m.d||'':'')}"></div><div><label class="f">Distância (km)</label><input id="md-k" inputmode="decimal" placeholder="42,2" value="${m&&m.k?esc(String(m.k/1000).replace('.',',')):''}"></div></div>
@@ -3766,7 +3780,7 @@ window.medForm=id=>{
   <div class="mvz"><label><input type="radio" name="md-v" value="p" ${v==='p'?'checked':''}><span>No meu perfil<small>Fica pequena embaixo da bio (até ${MEDS_FIX}).</small></span></label>
   <label><input type="radio" name="md-v" value="l" ${v==='l'?'checked':''}><span>Só na página Medalhas<small>Aparece ao tocar no botão de medalha do perfil.</small></span></label>
   <label><input type="radio" name="md-v" value="x" ${v==='x'?'checked':''}><span>Só eu<small>Fica guardada, ninguém mais vê.</small></span></label></div>
-  <button class="b pri full" style="margin-top:14px" onclick="medSalvaForm()">Salvar medalha</button>`,1);
+  <button id="md-go" class="b pri full" style="margin-top:14px" onclick="medSalvaForm()">Salvar medalha</button>`,1);
   medPrev();
 };
 window.medCor=c=>{window._medC=c;medPrev()};
@@ -3834,15 +3848,103 @@ function abreContorno(file,ok){
   };
   im.src=url;
 }
-window.medSalvaForm=()=>{
+window.medSalvaForm=async()=>{
   const n=($('#md-n').value||'').replace(/\s+/g,' ').trim().slice(0,60);if(!n)return toast('Dê um nome para a medalha.',3000);
   const dv=$('#md-d').value||'',kmv=parseFloat(String($('#md-k').value||'').replace(',','.')),t=medTempoPara($('#md-t').value);
   if(isNaN(t))return toast('Tempo inválido. Use h:mm:ss.',3000);
-  const L=medsGet(),id=window._medEdit,vz=(document.querySelector('input[name=md-v]:checked')||{}).value||'p';
-  const m={id:id||('m'+Date.now().toString(36)),n,d:/^\d{4}-\d{2}-\d{2}$/.test(dv)?dv:'',k:kmv>0&&kmv<1000?Math.round(kmv*1000):undefined,t:t||undefined,l:($('#md-l').value||'').trim().slice(0,40),o:($('#md-o').value||'').replace(/\s+/g,' ').trim().slice(0,140),v:vz,img:window._medImg||undefined,s:window._medImg?(window._medS||'c'):undefined,c:window._medC};
-  if(id){const i=L.findIndex(x=>x.id===id);if(i<0)return;m.e=L[i].e;L[i]=m}else{if(L.length>=MEDS_MAX)return toast('Limite de medalhas atingido.',3000);L.unshift(m)}
-  medSalva(L);window._medL={eu:L};toast('Medalha guardada',2200);medAbre('eu',L.findIndex(x=>x.id===m.id));render();
+  const L=medsGet(),id=window._medEdit,vz=(document.querySelector('input[name=md-v]:checked')||{}).value||'p',old=id?L.find(x=>x.id===id):null;
+  const m={id:id||('m'+Date.now().toString(36)),n,d:/^\d{4}-\d{2}-\d{2}$/.test(dv)?dv:'',k:kmv>0&&kmv<1000?Math.round(kmv*1000):undefined,t:t||undefined,l:($('#md-l').value||'').trim().slice(0,40),o:($('#md-o').value||'').replace(/\s+/g,' ').trim().slice(0,140),v:vz};
+  if(old){m.e=old.e;m.u=old.u;m.st=old.st;m.img=old.img;m.s=old.s;m.c=old.c}
+  let pedido=false;
+  if(window._medFoto){
+    if(!temConta())return toast('Entre com o Intervals para pedir a medalha.',3200);
+    const b=$('#md-go');if(b){b.disabled=true;b.textContent='Enviando…'}
+    let j=null;try{j=await medApi({acao:'pedir',n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,foto:window._medFoto})}catch(e){}
+    if(!j||!j.ok){medPrev();return toast(j&&j.erro?'Não deu certo: '+j.erro:'Não consegui enviar o pedido. Confira a conexão e tente de novo.',4200)}
+    m.u=j.id;m.st='pend';m.img=undefined;m.s=undefined;m.c=undefined;pedido=true;
+  }else if(window._medImg){m.img=window._medImg;m.s=window._medS||'c';m.c=window._medC;m.u=undefined;m.st=undefined}
+  if(old){const i=L.findIndex(x=>x.id===id);if(i<0)return;L[i]=m}else{if(L.length>=MEDS_MAX)return toast('Limite de medalhas atingido.',3000);L.unshift(m)}
+  medSalva(L);window._medL={eu:L};window._medFoto='';toast(pedido?'Pedido enviado. Avisamos quando a medalha ficar pronta.':'Medalha guardada',3200);medAbre('eu',L.findIndex(x=>x.id===m.id));render();
 };
+// ---- pedidos de medalha em estilo de jogo (feitos à mão pelo administrador por enquanto) ----
+const ADMIN_ID='i504491',souAdmin=()=>CFG.athlete===ADMIN_ID;
+const medApi=async b=>{const r=await fetch(PUBURL+'/medalha',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),...b})});return r.json().catch(()=>null)};
+function medImgDe(file,max,q0,cap){return new Promise((ok,er)=>{const url=URL.createObjectURL(file),im=new Image();im.onerror=()=>{URL.revokeObjectURL(url);er(new Error('foto'))};
+  im.onload=()=>{let S=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),u='';for(let k=0;k<6;k++){const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*S);c.height=Math.round(im.naturalHeight*S);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      let q=q0;u=c.toDataURL('image/jpeg',q);while(u.length>cap&&q>.45){q-=.07;u=c.toDataURL('image/jpeg',q)}if(u.length<=cap)break;S*=.8}
+    URL.revokeObjectURL(url);u.length<=cap?ok(u):er(new Error('grande'))};im.src=url})}
+window.medPickPedido=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=async()=>{const f=inp.files[0];if(!f)return;try{window._medFoto=await medImgDe(f,1100,.82,220000);window._medImg='';medPrev()}catch(e){toast('Não consegui abrir essa foto.',3000)}};inp.click()};
+// confere os pedidos: o dono vê quando ficou pronto; o administrador vê pedidos novos
+async function medSync(B){
+  B.mp=B.mp||[];let mud=false;
+  const L=medsGet(),pend=L.filter(m=>m.u&&m.st==='pend');
+  if(pend.length){const j=await medApi({acao:'status',ids:pend.map(m=>m.u)});
+    if(j&&j.st)for(const m of pend){const s=j.st[m.u];if(s==='ok'||s==='rej'){m.st=s==='ok'?'ok':'rej';mud=true;
+      ntAdd('mr:'+m.u,'medalha',s==='ok'?'Sua medalha ficou pronta':'Não deu certo com a sua medalha',s==='ok'?`A medalha "${m.n}" já está no seu perfil e na página Medalhas.`:`Não consegui refazer a medalha "${m.n}". Peça de novo com outra foto.`,{go:{k:'medlista'},av:{k:'med'}})}}
+    if(mud)medSalva(L)}
+  if(souAdmin()){const j=await medApi({acao:'fila'});
+    if(j&&j.fila){for(const p of j.fila){if(B.mp.includes(p.id))continue;B.mp.push(p.id);ntAdd('mp:'+p.id,'medalha','Novo pedido de medalha',`${p.nome} pediu a medalha "${p.n}".`,{t:p.at,go:{k:'medctl'},av:{k:'med'}})}
+      if(B.mp.length>200)B.mp=B.mp.slice(-200)}}
+  return mud;
+}
+// ---- controle de medalhas (só o administrador): fila, foto do pedido e envio da imagem pronta ----
+const medPrompt=p=>`Transforme esta foto de medalha em uma imagem digital no estilo de medalha de videogame: render 3D realista, relevo bem marcado, metal com brilho, sombras suaves e acabamento limpo. Mantenha fiel o formato, as cores, o desenho, os textos e a fita da medalha original. Fundo branco liso, medalha inteira centralizada, vista frontal, sem mãos, sem sombra no chão e sem outros objetos.${p&&p.n?' Medalha: '+p.n+'.':''}`;
+window.medCtl=async()=>{
+  openSheet(`<div class="hd"><b>Controle de medalhas</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="empty">Carregando pedidos…</p>`,1);
+  const j=await medApi({acao:'fila'}).catch(()=>null);
+  if(!j||!j.fila)return openSheet(`<div class="hd"><b>Controle de medalhas</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="empty" style="color:var(--txt)">Não consegui carregar a fila agora.</p>`,1);
+  openSheet(`<div class="hd"><b>Controle de medalhas</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  ${j.fila.length?`<p class="meta" style="margin:0 2px 10px">${j.fila.length} ${j.fila.length===1?'pedido':'pedidos'} na fila. Toque para abrir.</p>`+j.fila.map(p=>`<button class="card mpq" onclick="medCtlVer('${esc(p.id)}')"><b>${esc(p.n)}</b><span class="meta">${esc(p.nome)} · ${dataNt(p.at)}</span></button>`).join(''):`<p class="empty" style="color:var(--txt)">Nenhum pedido na fila. Quando alguém pedir uma medalha, ele aparece aqui e em Notificações.</p>`}`,1);
+};
+window.medCtlVer=async id=>{
+  openSheet(`<div class="hd"><b>Pedido de medalha</b><button class="b sm" onclick="medCtl()">✕</button></div><p class="empty">Carregando…</p>`,1);
+  const j=await medApi({acao:'ver',id}).catch(()=>null);if(!j||!j.pedido){toast('Não consegui abrir o pedido.',3000);return medCtl()}
+  const p=j.pedido;window._mcp={id,...p};window._mcImg='';
+  const dados=[p.k?(p.k/1000).toFixed(p.k%1000?2:0).replace('.',',')+' km':'',p.t?fmtT(p.t):'',medData(p.d),p.l].filter(Boolean).join(' · ');
+  openSheet(`<div class="hd"><b>Pedido de medalha</b><button class="b sm" onclick="medCtl()">✕</button></div>
+  <img class="mcf" alt="" src="${p.foto||''}">
+  <h3 style="margin:12px 0 2px">${esc(p.n)}</h3><div class="meta">${esc(p.nome)}${dados?' · '+esc(dados):''}</div>${p.o?`<p class="meta" style="margin-top:6px">${esc(p.o)}</p>`:''}
+  <div class="grid g2" style="margin-top:14px"><button class="b" onclick="medCtlBaixa()">Baixar foto</button><button class="b" onclick="medCtlCopia()">Copiar texto do pedido</button></div>
+  <div class="lbl" style="margin:16px 0 6px">IMAGEM PRONTA</div>
+  <button class="b full" onclick="medCtlSobe()">Enviar imagem pronta</button>
+  <div id="mc-pv" style="margin-top:10px"></div>
+  <button class="b full" style="margin-top:12px;color:#e0442f" onclick="medCtlRecusa()">Recusar pedido</button>`,1);
+};
+window.medCtlBaixa=()=>{const p=window._mcp;if(!p||!p.foto)return;const a=document.createElement('a');a.href=p.foto;a.download='medalha-'+String(p.n).replace(/[^\w]+/g,'-').toLowerCase()+'.jpg';document.body.appendChild(a);a.click();a.remove()};
+window.medCtlCopia=async()=>{const t=medPrompt(window._mcp);try{await navigator.clipboard.writeText(t);toast('Texto copiado. Cole no ChatGPT com a foto.',3200)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();try{document.execCommand('copy');toast('Texto copiado.',2500)}catch(e2){toast('Não consegui copiar.',2500)}x.remove()}};
+// tira o fundo branco da imagem pronta (se já vier sem fundo, mantém) e deixa leve
+async function medTiraFundo(file){
+  const url=URL.createObjectURL(file),im=await new Promise((ok,er)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>er(new Error('img'));i.src=url});
+  const S=Math.min(1,520/Math.max(im.naturalWidth,im.naturalHeight)),W=Math.round(im.naturalWidth*S),H=Math.round(im.naturalHeight*S);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,W,H);URL.revokeObjectURL(url);
+  const d=x.getImageData(0,0,W,H),px=d.data;
+  if(px[3]>=250||px[(W-1)*4+3]>=250){ // cantos opacos: tira o fundo claro a partir das bordas
+    const cl=i=>{const r=px[i*4],g=px[i*4+1],b=px[i*4+2];return r>226&&g>226&&b>226&&Math.max(r,g,b)-Math.min(r,g,b)<24},bg=new Uint8Array(W*H),q=[];
+    const add=i=>{if(!bg[i]&&cl(i)){bg[i]=1;q.push(i)}};
+    for(let xx=0;xx<W;xx++){add(xx);add((H-1)*W+xx)}for(let yy=0;yy<H;yy++){add(yy*W);add(yy*W+W-1)}
+    while(q.length){const i=q.pop(),xx=i%W,yy=(i-xx)/W;if(xx>0)add(i-1);if(xx<W-1)add(i+1);if(yy>0)add(i-W);if(yy<H-1)add(i+W)}
+    for(let i=0;i<W*H;i++){if(bg[i]){px[i*4+3]=0;continue}
+      const xx=i%W,yy=(i-xx)/W,borda=(xx>0&&bg[i-1])||(xx<W-1&&bg[i+1])||(yy>0&&bg[i-W])||(yy<H-1&&bg[i+W]);
+      if(borda){const l=(px[i*4]+px[i*4+1]+px[i*4+2])/3;px[i*4+3]=Math.max(40,Math.min(255,255-Math.max(0,l-205)*5))}}
+    x.putImageData(d,0,0)}
+  let x0=W,y0=H,x1=0,y1=0;for(let i=0;i<W*H;i++)if(px[i*4+3]>10){const xx=i%W,yy=(i-xx)/W;if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy}
+  if(x1<=x0||y1<=y0)throw new Error('vazia');
+  const pd=4,cw=x1-x0+1+pd*2,ch=y1-y0+1+pd*2;let out=document.createElement('canvas');out.width=cw;out.height=ch;out.getContext('2d').drawImage(c,x0,y0,x1-x0+1,y1-y0+1,pd,pd,x1-x0+1,y1-y0+1);
+  let u=out.toDataURL('image/webp',.9);if(!/^data:image\/webp/.test(u))u=out.toDataURL('image/png');
+  for(let k=0;k<5&&u.length>440000;k++){const o2=document.createElement('canvas');o2.width=Math.round(out.width*.82);o2.height=Math.round(out.height*.82);o2.getContext('2d').drawImage(out,0,0,o2.width,o2.height);out=o2;u=out.toDataURL('image/webp',.88);if(!/^data:image\/webp/.test(u))u=out.toDataURL('image/png')}
+  if(u.length>440000)throw new Error('grande');return u;
+}
+window.medCtlSobe=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=async()=>{const f=inp.files[0];if(!f)return;const pv=$('#mc-pv');if(pv)pv.innerHTML='<p class="meta">Tirando o fundo…</p>';
+    try{const u=await medTiraFundo(f);window._mcImg=u;if(pv)pv.innerHTML=`<div class="mcck"><img alt="" src="${u}"></div><p class="meta" style="margin:8px 2px">Confira se ficou sem fundo e sem cortes. Se não, tire o fundo de outro jeito e envie de novo.</p><button class="b pri full" onclick="medCtlEntrega()">Entregar para ${esc(window._mcp.nome)}</button>`}
+    catch(e){if(pv)pv.innerHTML='<p class="meta" style="color:#e0442f">Não consegui usar essa imagem. Tente outra.</p>'}};inp.click()};
+window.medCtlEntrega=async()=>{const p=window._mcp;if(!p||!window._mcImg)return;
+  const j=await medApi({acao:'entregar',id:p.id,img:window._mcImg}).catch(()=>null);
+  if(!j||!j.ok)return toast(j&&j.erro?'Não deu certo: '+j.erro:'Não consegui entregar. Tente de novo.',3500);
+  toast('Medalha entregue',2500);medCtl()};
+window.medCtlRecusa=async()=>{const p=window._mcp;if(!p||!confirm('Recusar este pedido? A pessoa será avisada de que não deu certo.'))return;
+  const j=await medApi({acao:'recusar',id:p.id}).catch(()=>null);if(!j||!j.ok)return toast('Não consegui recusar.',3000);toast('Pedido recusado',2500);medCtl()};
 /* ================= recorte de foto (perfil e capa): arrastar, aproximar com dois dedos ou pelo controle ================= */
 function abreRecorte(o){
   const url=URL.createObjectURL(o.file),im=new Image();
@@ -4168,7 +4270,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19d'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -4193,6 +4295,7 @@ async function notifRefresh(force){
     B.soc=B.soc||{};B.pr=B.pr||[];B.bg=B.bg||[];B.terr=B.terr||{};B.prox=B.prox||{};B.act=B.act||[];B.ds=B.ds||[];
     B.nov=B.nov||[];for(const n of NT_NOVOS)if(!B.nov.includes(n.id)){B.nov.push(n.id);ntAdd(n.id,'novo',n.tit,n.desc,{t:n.t})}
     const titulo=a=>a.name||nomeHora(a.date);
+    if(temConta()){try{await medSync(B)}catch(e){}}
     // treinos novos e desafios concluídos
     {const corridas=D.acts.filter(a=>isRun(a)&&!isMk(a)),lim=ymd(addD(TODAY(),-10));
      const baseAct=semAct;
@@ -4252,6 +4355,7 @@ function ntAv(a){a=a||{};
   if(a.k==='me')return `<img class="nta" src="${esc(myPic())}" alt="">`;
   if(a.k==='u')return `<img class="nta" src="${esc(frPic(a.id))}" alt="">`;
   if(a.k==='rp')return `<span class="nta em">${medalha(1,'RP')}</span>`;
+  if(a.k==='med')return `<span class="nta em">${MED_BTN}</span>`;
   if(a.k==='bg')return `<span class="nta em">${escConq({f:a.f,k:a.kk,t:a.t,on:true})}</span>`;
   if(a.k==='des')return `<span class="nta em">${desEsc({cat:a.cat,ic:a.ic,t:a.t,ok:true})}</span>`;
   return `<img class="nta ap" src="logo.svg" alt="">`}
@@ -4269,7 +4373,7 @@ function ntRender(){
 window.ntFecha=()=>{const e=$('#ntp');if(e)e.remove()};
 window.openNotif=()=>{closeSheet();ntRender();const n0=NT.items.length;notifRefresh(1).then(()=>{if(ntMostrando()&&NT.items.length!==n0)ntRender()})};
 window.ntGo=id=>{const i=NT.items.find(x=>x.id===id);ntFecha();if(!i||!i.go)return;const g=i.go;
-  if(g.k==='act')openAct(g.id);else if(g.k==='soc')socAbrir(g.dono,g.act);else if(g.k==='comp')go('comp');else if(g.k==='marc')openMarcas();else if(g.k==='badges')openBadges();else if(g.k==='home')go('ini')};
+  if(g.k==='act')openAct(g.id);else if(g.k==='soc')socAbrir(g.dono,g.act);else if(g.k==='comp')go('comp');else if(g.k==='marc')openMarcas();else if(g.k==='badges')openBadges();else if(g.k==='home')go('ini');else if(g.k==='medctl')medCtl();else if(g.k==='medlista'){window._medL={eu:medsGet()};medLista('eu')}};
 
 /* ================= tema claro (gelo) e escuro ================= */
 const SOL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>';
