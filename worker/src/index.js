@@ -74,45 +74,59 @@ async function visivelPara(env, txt, viewer) {
 }
 
 // ---------- amigos ----------
-const vazio = () => ({ friends: [], inc: [], out: [] });
-const lerF = async (env, id) => ({ ...vazio(), ...((await env.BR.get('f:' + id, 'json')) || {}) });
+// seguir (como no Instagram): 'fol' = quem eu sigo, 'seg' = quem me segue, 'friends' = quem se segue mutuamente (é o "amigo" para o que é "só amigos")
+// registros antigos (amizade com pedido) viram seguidores: amigos seguem os dois lados, pedido enviado = eu sigo, pedido recebido = me segue
+const vazio = () => ({ friends: [], inc: [], out: [], fol: undefined, seg: [] });
+const lerF = async (env, id) => {
+  const f = { ...vazio(), ...((await env.BR.get('f:' + id, 'json')) || {}) };
+  if (!Array.isArray(f.fol)) { f.fol = [...new Set([...f.friends, ...f.out])]; f.seg = [...new Set([...f.friends, ...f.inc])]; }
+  if (!Array.isArray(f.seg)) f.seg = [];
+  f.inc = []; f.out = [];
+  return f;
+};
 const gravaF = (env, id, f) => env.BR.put('f:' + id, JSON.stringify(f));
 const sem = (l, x) => l.filter((y) => y !== x);
 const com = (l, x) => (l.includes(x) ? l : [...l, x]);
 
+const MAXSEG = 2000;
 async function amigos(env, eu, acao, alvo) {
   const me = await lerF(env, eu);
   let aviso = '';
   if (acao !== 'lista') {
     if (!/^i\d{1,12}$/.test(alvo || '') || alvo === eu) return { erro: 'ID inválido' };
     const ou = await lerF(env, alvo);
-    if (acao === 'pedir') {
-      if (me.friends.includes(alvo)) aviso = 'ja';
-      else if (me.inc.includes(alvo)) { // o outro já tinha pedido: vira amizade
-        me.inc = sem(me.inc, alvo); ou.out = sem(ou.out, eu);
-        me.friends = com(me.friends, alvo); ou.friends = com(ou.friends, eu); aviso = 'aceito';
-      } else if (ou.inc.length >= MAXPED && !ou.inc.includes(eu)) aviso = 'cheio';
-      else { me.out = com(me.out, alvo); ou.inc = com(ou.inc, eu); aviso = 'enviado'; }
-    } else if (acao === 'aceitar') {
-      if (me.inc.includes(alvo)) {
-        me.inc = sem(me.inc, alvo); ou.out = sem(ou.out, eu);
-        me.friends = com(me.friends, alvo); ou.friends = com(ou.friends, eu); aviso = 'aceito';
+    if (acao === 'seguir' || acao === 'pedir' || acao === 'aceitar') {
+      if (me.fol.includes(alvo)) aviso = 'ja';
+      else {
+        if (me.fol.length >= MAXSEG) return { erro: 'limite de pessoas seguidas' };
+        me.fol = com(me.fol, alvo); ou.seg = com(ou.seg, eu); aviso = 'seguindo';
       }
-    } else if (acao === 'recusar') {
-      me.inc = sem(me.inc, alvo); ou.out = sem(ou.out, eu);
-    } else if (acao === 'remover') { // também cancela pedido enviado
+      if (ou.fol.includes(eu)) { me.friends = com(me.friends, alvo); ou.friends = com(ou.friends, eu); if (aviso === 'seguindo') aviso = 'amigos'; }
+    } else if (acao === 'deixar' || acao === 'remover') {
+      me.fol = sem(me.fol, alvo); ou.seg = sem(ou.seg, eu);
       me.friends = sem(me.friends, alvo); ou.friends = sem(ou.friends, eu);
-      me.out = sem(me.out, alvo); ou.inc = sem(ou.inc, eu);
-    } else return { erro: 'ação inválida' };
+    } else if (acao !== 'recusar') return { erro: 'ação inválida' };
     await Promise.all([gravaF(env, eu, me), gravaF(env, alvo, ou)]);
   }
-  // nome e foto de quem já publicou, para o app mostrar os pedidos
+  // nome e foto de quem já publicou, para o app mostrar as listas
   const pessoas = {};
-  for (const id of new Set([...me.friends, ...me.inc, ...me.out])) {
+  for (const id of [...new Set([...me.fol, ...me.seg, ...me.friends])].slice(0, 300)) {
     const r = await env.BR.get('a:' + id, 'json');
     if (r) pessoas[id] = { name: r.name, pic: r.pic };
   }
-  return { ...me, pessoas, aviso, conhecido: acao === 'pedir' ? !!(await env.BR.get('a:' + alvo)) : undefined };
+  return { friends: me.friends, fol: me.fol, seg: me.seg, inc: [], out: [], pessoas, aviso, conhecido: acao === 'seguir' || acao === 'pedir' ? !!(await env.BR.get('a:' + alvo)) : undefined };
+}
+
+// detalhes de uma corrida para os amigos abrirem a ficha (ritmo, FC, elevação, cadência, parciais): ficam à parte, fora do resumo que todos baixam
+const numsX = (a, n) => (Array.isArray(a) ? a.slice(0, n).map((v) => (v === null || v === '' || !Number.isFinite(+v) ? null : Math.round(+v * 10) / 10)) : []);
+const nX = (v, max) => (Number.isFinite(+v) && v !== null && +v >= 0 && +v <= max ? Math.round(+v * 10) / 10 : undefined);
+function limpaX(x) {
+  if (!x || typeof x !== 'object') return null;
+  const ch = x.ch && typeof x.ch === 'object' ? x.ch : null;
+  const o = { hr: nX(x.hr, 260), hm: nX(x.hm, 260), mx: nX(x.mx, 260), el: nX(x.el, 20000), cd: nX(x.cd, 300), dc: Number.isFinite(+x.dc) && x.dc !== null && Math.abs(+x.dc) <= 30 ? +x.dc : undefined };
+  if (Array.isArray(x.sp)) o.sp = x.sp.slice(0, 120).filter((s) => s && Number.isFinite(+s.t) && Number.isFinite(+s.km)).map((s) => ({ km: Math.round(+s.km * 100) / 100, t: Math.round(+s.t), hr: nX(s.hr, 260) ?? null, el: Number.isFinite(+s.el) && s.el !== null ? Math.round(+s.el) : null, part: nX(s.part, 2000) }));
+  if (ch && Array.isArray(ch.p) && ch.p.length >= 4) o.ch = { p: numsX(ch.p, 200), h: numsX(ch.h, 200), t: numsX(ch.t, 200), a: numsX(ch.a, 200), c: numsX(ch.c, 200) };
+  return o;
 }
 
 // ---------- curtidas e comentários ----------
@@ -332,6 +346,7 @@ export default {
         capaImg: /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(pr.capaImg || '')) && String(pr.capaImg).length <= 60000 ? String(pr.capaImg) : '',
         capa: /^[a-z0-9]{2,12}$/.test(String(pr.capa || '')) ? String(pr.capa) : '',
         seg: Number.isFinite(+pr.seg) && +pr.seg >= 0 && +pr.seg <= 99999 ? Math.round(+pr.seg) : undefined,
+        sgd: Number.isFinite(+pr.sgd) && +pr.sgd >= 0 && +pr.sgd <= 99999 ? Math.round(+pr.sgd) : undefined,
         // medalhas guardadas pela pessoa: até 12, texto curto e foto pequena (tudo validado)
         meds: (Array.isArray(pr.meds) ? pr.meds : []).slice(0, 12).map((m) => {
           if (!m || typeof m !== 'object') return null;
@@ -351,6 +366,10 @@ export default {
           };
         }).filter(Boolean),
       };
+      // os detalhes (x) saem do resumo e vão para 'xr:<atleta>', lidos só quando um amigo abre a corrida
+      const X = {};
+      for (const r of runs) { if (r.x) { const x = limpaX(r.x); if (x && r.id != null) X[String(r.id).slice(0, 40)] = { ...x, v: r.v }; } delete r.x; }
+      if (Object.keys(X).length) await env.BR.put('xr:' + b.athlete, JSON.stringify(X)); else await env.BR.delete('xr:' + b.athlete);
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, perfil, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));
       await trocaNoSnap(env, b.athlete, reg);
@@ -490,6 +509,29 @@ export default {
         return json(req, { ok: true, at });
       }
       return json(req, (await env.BR.get(k, 'json')) || { at: 0, dados: null }, 200, { 'Cache-Control': 'no-store' });
+    }
+
+    // contagem de seguidores e de quem a pessoa segue (até 20 de uma vez)
+    if (req.method === 'GET' && url.pathname === '/seg') {
+      const ids = String(url.searchParams.get('ids') || '').split(',').filter((x) => /^i\d{1,12}$/.test(x)).slice(0, 20);
+      const out = {};
+      await Promise.all(ids.map(async (id) => { const f = await lerF(env, id); out[id] = { s: f.seg.length, g: f.fol.length }; }));
+      return json(req, out, 200, { 'Cache-Control': 'no-store' });
+    }
+
+    // ficha completa de uma corrida de outra pessoa (sem sensação nem território); "só amigos" só para quem é amigo mútuo
+    if (req.method === 'POST' && url.pathname === '/x') {
+      let b;
+      try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      if (!/^i\d{1,12}$/.test(String(b.dono || '')) || !/^[A-Za-z0-9_-]{1,40}$/.test(String(b.act || ''))) return json(req, { erro: 'corrida inválida' }, 400);
+      const X = (await env.BR.get('xr:' + b.dono, 'json')) || {};
+      const e = X[b.act];
+      if (!e) return json(req, { erro: 'sem detalhes' }, 404);
+      if (e.v === 'a' && b.athlete !== b.dono && !(await lerF(env, b.dono)).friends.includes(b.athlete)) return json(req, { erro: 'só amigos' }, 403);
+      const { v, ...x } = e;
+      return json(req, { ok: true, x }, 200, { 'Cache-Control': 'no-store' });
     }
 
     if (req.method === 'POST' && url.pathname === '/amigos') {
