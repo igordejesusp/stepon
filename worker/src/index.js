@@ -246,6 +246,15 @@ async function medalha(env, a, b) {
   }
   if (!admin) return { erro: 'somente o administrador' };
   if (b.acao === 'fila') return { ok: true, fila: (await lista()).filter((p) => p.st === 'pend').sort((x, y) => x.at - y.at).slice(0, 100) };
+  if (b.acao === 'direto') { // o administrador já tem a imagem pronta: entra na hora, sem fila
+    if (!dataImg(b.img, MAX_IMG_MED, 'png|webp')) return { erro: 'imagem inválida ou grande demais' };
+    const n = limpa(b.n, 60);
+    if (!n) return { erro: 'dê um nome para a medalha' };
+    const id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    await env.BR.put('mi:' + id, b.img);
+    await env.BR.put('mp:' + id, JSON.stringify({ athlete: b.athlete, nome: limpa(a.name || b.athlete, 60), n, at: Date.now(), st: 'ok' }));
+    return { ok: true, id };
+  }
   if (!MP_ID.test(String(b.id || ''))) return { erro: 'pedido inválido' };
   const p = await env.BR.get('mp:' + b.id, 'json');
   if (!p) return { erro: 'pedido não encontrado' };

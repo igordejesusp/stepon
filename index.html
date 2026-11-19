@@ -3601,7 +3601,7 @@ function evQuando(e){const hoje=ymd(TODAY()),dias=Math.round((parseD(e.data)-par
 function evHoras(e){const f=d=>{const x=new Date(d);return x.getMinutes()?`${x.getHours()}h${String(x.getMinutes()).padStart(2,'0')}`:`${x.getHours()}h`};
   const br=new Date().getTimezoneOffset()===180;return {br:'6h às 18h',local:br?null:`${f(e.ini)} às ${f(e.fim)}`}}
 const dataEv=e=>{const d=parseD(e.data);return `${DOW[d.getDay()]} ${d.getDate()} ${MES3[d.getMonth()]}`};
-const EV_ARTE="url('data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M66 24 L27 35 L73 65 L14 79' fill='none' stroke='#fff' stroke-width='15' stroke-linejoin='round'/><circle cx='87' cy='18.5' r='8.5' fill='#4a9eff'/></svg>").replace(/'/g,'%27')+"') right 8px center/auto 50% no-repeat";
+const EV_ARTE="url('data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M66 24 L27 35 L73 65 L14 79' fill='none' stroke='#fff' stroke-width='15' stroke-linejoin='round'/><circle cx='87' cy='18.5' r='8.5' fill='#4a9eff'/></svg>").replace(/'/g,'%27')+"') right 6px center/auto 62% no-repeat";
 function eventoBloco(){
   const e=EVENTOS.find(x=>Date.now()<Date.parse(x.fim)+864e5)||null;if(!e)return '';
   const q=evQuando(e),S=EVS[e.id]||{},n=S.n!=null?S.n:null,dentro=evDentro(e.id),hr=evHoras(e);
@@ -3654,7 +3654,7 @@ function evInscritosHtml(id){const S=EVS[id]||{n:0,ins:[]},L=(S.ins||[]).slice(0
 window.openEvento=id=>{const e=evPorId(id);if(!e)return;const q=evQuando(e),S=EVS[id]||{n:0,ins:[]},dentro=evDentro(id),hr=evHoras(e),fim=q.k==='fim',pen=e.penal;
   const cta=fim?`<button class="b full" disabled>Evento encerrado</button>`:dentro?`<div class="evok"><b>✓ Você está inscrito</b><span>O seu treino de ${fmtD(e.data)} já é a prova.</span></div><button class="evsair" onclick="evSair('${id}')">Sair da prova</button>`:`<button class="b pri full evbtn" id="ev-b" onclick="evParticipar('${id}')">Participar · é grátis</button>`;
   openSheet(`<div class="hd"><b>Evento</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="evh" style="background:${EV_ARTE.replace('right 16px center/auto 66%','right 8px top 14px/auto 44px')},radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.45),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.14),transparent 60%),#05080d"><span class="evt">EVENTO</span>
+  <div class="evh" style="background:${EV_ARTE.replace('right 16px center/auto 66%','right 8px top 12px/auto 52px')},radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.45),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.14),transparent 60%),#05080d"><span class="evt">EVENTO</span>
     <div class="evhb"><div class="evk">Corrida online · gratuita</div><h2>${esc(e.nome)}</h2><p>A primeira prova do StepOn. Corra 5 km onde estiver, dentro de uma janela de 12 horas, e entre no ranking.</p>
     <div class="evf"><span class="evq ${q.k}">${q.t}</span><span class="evn" id="ev-cont">${S.n||0} ${(S.n||0)===1?'inscrito':'inscritos'}</span></div></div></div>
   <div class="evg">${evTile('cal','Data',dataEv(e)+' de 2026')}${evTile('rel','Horário',hr.br,hr.local?`No seu horário: ${hr.local}`:'Horário de Brasília')}${evTile('dist','Distância',e.km,'Um esforço contínuo')}${evTile('pin','Onde','Qualquer lugar','Rua, pista, parque, do outro lado do mundo')}${evTile('gra','Custo','Grátis','Sem taxa de inscrição')}${evTile('gente','Formato','Online','Cada um corre no seu lugar')}</div>
@@ -3784,15 +3784,15 @@ window.medMove=(id,d)=>{const L=medsGet(),f=medFixas(L),p=f.findIndex(x=>x.m.id=
   const a=f[p].i,b=f[q].i,t=L[a];L[a]=L[b];L[b]=t;medSalva(L);window._medL={eu:L};medAbre('eu',L.findIndex(x=>x.id===id));render()};
 window.medApaga=id=>{if(!confirm('Excluir esta medalha? Isso não pode ser desfeito.'))return;medSalva(medsGet().filter(m=>m.id!==id));toast('Medalha excluída',2200);window._medL={eu:medsGet()};medLista('eu');render()};
 const medTempoPara=s=>{s=String(s||'').trim();if(!s)return null;const p=s.split(':').map(x=>parseInt(x,10));if(p.some(x=>!isFinite(x)||x<0)||p.length>3)return NaN;let t=0;for(const x of p)t=t*60+x;return t};
-const medPrev=()=>{const p=$('#md-prev'),c=window._medCur||{};if(p)p.innerHTML=window._medFoto?`<span class="mdfp"><img alt="" src="${window._medFoto}"></span>`:medIcon({img:window._medImg,s:window._medS,c:window._medC,u:window._medImg?undefined:c.u,st:window._medImg?undefined:c.st},104);
-  const co=$('#md-cor');if(co)co.style.display=window._medImg&&!window._medFoto?'':'none';
+const medPrev=()=>{const p=$('#md-prev'),c=window._medCur||{};if(p)p.innerHTML=window._medPronta?`<span class="mdu" style="width:104px;height:125px"><img alt="" src="${window._medPronta}"></span>`:window._medFoto?`<span class="mdfp"><img alt="" src="${window._medFoto}"></span>`:medIcon({img:window._medImg,s:window._medS,c:window._medC,u:window._medImg?undefined:c.u,st:window._medImg?undefined:c.st},104);
+  const co=$('#md-cor');if(co)co.style.display=window._medImg&&!window._medFoto&&!window._medPronta?'':'none';
   const g=$('#md-go');if(g){g.disabled=false;g.textContent=window._medFoto?'Pedir minha medalha':'Salvar medalha'}}
 window.medForm=id=>{
-  const m=id?medsGet().find(x=>x.id===id):null;window._medCur=m||{};window._medFoto='';window._medImg=m&&!m.u?m.img||'':'';window._medS=m?m.s:undefined;window._medC=m&&m.c?m.c:MED_CORES[0];window._medEdit=id||'';
+  const m=id?medsGet().find(x=>x.id===id):null;window._medCur=m||{};window._medFoto='';window._medPronta='';window._medImg=m&&!m.u?m.img||'':'';window._medS=m?m.s:undefined;window._medC=m&&m.c?m.c:MED_CORES[0];window._medEdit=id||'';
   const runs=(D.acts||[]).filter(a=>isRun(a)&&a.dist>=500).sort((a,b)=>b.date<a.date?-1:1).slice(0,40);
   const v=m?m.v:'p';
   openSheet(`<div class="hd"><b>${m?'Editar medalha':'Nova medalha'}</b><button class="b sm" onclick="medLista('eu')">✕</button></div>
-  <div class="mfoto"><span id="md-prev"></span><div><button class="b" onclick="medPickPedido()">${m&&(m.u||m.img)?'Pedir de novo com outra foto':'Foto da medalha'}</button><p class="meta" style="margin-top:6px">Tire a foto da medalha. O StepOn refaz ela em estilo de jogo e avisa quando ficar pronta (alguns minutos).</p></div></div>
+  <div class="mfoto"><span id="md-prev"></span><div><button class="b" onclick="medPickPedido()">${souAdmin()?(m&&(m.u||m.img)?'Trocar a imagem pronta':'Imagem pronta da medalha'):m&&(m.u||m.img)?'Pedir de novo com outra foto':'Foto da medalha'}</button><p class="meta" style="margin-top:6px">${souAdmin()?'Como administrador, você envia a imagem já pronta e ela entra na hora, sem esperar.':'Tire a foto da medalha. O StepOn refaz ela em estilo de jogo e avisa quando ficar pronta (alguns minutos).'}</p></div></div>
   <button class="lk" onclick="medPickFoto()">Prefiro só o recorte da foto, sem esperar</button>
   <div id="md-cor" style="display:none"><div class="lbl" style="margin:12px 0 6px">COR DA CORDINHA</div><div class="mdsws">${MED_CORES.map(c=>`<button class="mdsw" style="background:${c}" onclick="medCor('${c}')" aria-label="Cor ${c}"></button>`).join('')}<button class="mdsw sem" onclick="medCor('n')" aria-label="Sem cordinha">Sem</button></div><p class="meta" style="margin-top:6px">Se a cordinha da foto já está no contorno, escolha "Sem".</p></div>
   <label class="f" style="margin-top:14px">Nome da prova</label><input id="md-n" maxlength="60" placeholder="Ex.: Ironman 70.3 São Paulo" value="${esc(m?m.n:'')}">
@@ -3881,7 +3881,12 @@ window.medSalvaForm=async()=>{
   if(vz==='p'&&L.filter(x=>x.v==='p'&&x.id!==m.id).length>=MEDS_FIX)return toast('Só cabem '+MEDS_FIX+' medalhas no perfil. Tire uma de lá primeiro ou escolha "Só na página Medalhas".',4200);
   if(old){m.e=old.e;m.u=old.u;m.st=old.st;m.img=old.img;m.s=old.s;m.c=old.c}
   let pedido=false;
-  if(window._medFoto){
+  if(window._medPronta&&souAdmin()){
+    const b=$('#md-go');if(b){b.disabled=true;b.textContent='Enviando…'}
+    let j=null;try{j=await medApi({acao:'direto',n,img:window._medPronta})}catch(e){}
+    if(!j||!j.ok){medPrev();return toast(j&&j.erro?'Não deu certo: '+j.erro:'Não consegui enviar a imagem. Confira a conexão e tente de novo.',4200)}
+    m.u=j.id;m.st='ok';m.img=undefined;m.s=undefined;m.c=undefined;
+  }else if(window._medFoto){
     if(!temConta())return toast('Entre com o Intervals para pedir a medalha.',3200);
     const b=$('#md-go');if(b){b.disabled=true;b.textContent='Enviando…'}
     let j=null;try{j=await medApi({acao:'pedir',n,d:m.d,k:m.k,t:m.t,l:m.l,o:m.o,foto:window._medFoto})}catch(e){}
@@ -3889,7 +3894,7 @@ window.medSalvaForm=async()=>{
     m.u=j.id;m.st='pend';m.img=undefined;m.s=undefined;m.c=undefined;pedido=true;
   }else if(window._medImg){m.img=window._medImg;m.s=window._medS||'c';m.c=window._medC;m.u=undefined;m.st=undefined}
   if(old){const i=L.findIndex(x=>x.id===id);if(i<0)return;L[i]=m}else{if(L.length>=MEDS_MAX)return toast('Limite de medalhas atingido.',3000);L.unshift(m)}
-  medSalva(L);window._medL={eu:L};window._medFoto='';toast(pedido?'Pedido enviado. Avisamos quando a medalha ficar pronta.':'Medalha guardada',3200);medAbre('eu',L.findIndex(x=>x.id===m.id));render();
+  medSalva(L);window._medL={eu:L};window._medFoto='';window._medPronta='';toast(pedido?'Pedido enviado. Avisamos quando a medalha ficar pronta.':'Medalha guardada',3200);medAbre('eu',L.findIndex(x=>x.id===m.id));render();
 };
 // ---- pedidos de medalha em estilo de jogo (feitos à mão pelo administrador por enquanto) ----
 const ADMIN_ID='i504491',souAdmin=()=>CFG.athlete===ADMIN_ID;
@@ -3899,7 +3904,9 @@ function medImgDe(file,max,q0,cap){return new Promise((ok,er)=>{const url=URL.cr
       let q=q0;u=c.toDataURL('image/jpeg',q);while(u.length>cap&&q>.45){q-=.07;u=c.toDataURL('image/jpeg',q)}if(u.length<=cap)break;S*=.8}
     URL.revokeObjectURL(url);u.length<=cap?ok(u):er(new Error('grande'))};im.src=url})}
 window.medPickPedido=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
-  inp.onchange=async()=>{const f=inp.files[0];if(!f)return;try{window._medFoto=await medImgDe(f,1100,.82,220000);window._medImg='';medPrev()}catch(e){toast('Não consegui abrir essa foto.',3000)}};inp.click()};
+  inp.onchange=async()=>{const f=inp.files[0];if(!f)return;
+    if(souAdmin()){try{window._medPronta=await medTiraFundo(f);window._medFoto='';window._medImg='';medPrev()}catch(e){toast('Não consegui usar essa imagem.',3000)}return}
+    try{window._medFoto=await medImgDe(f,1100,.82,220000);window._medImg='';medPrev()}catch(e){toast('Não consegui abrir essa foto.',3000)}};inp.click()};
 // confere os pedidos: o dono vê quando ficou pronto; o administrador vê pedidos novos
 async function medSync(B){
   B.mp=B.mp||[];let mud=false;
@@ -4295,7 +4302,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19i'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19k'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
