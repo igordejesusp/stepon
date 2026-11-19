@@ -277,6 +277,23 @@ export default {
         link: /^https?:\/\/[^\s<>"']{3,118}$/i.test(String(pr.link || '')) ? String(pr.link) : '',
         capaImg: /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(pr.capaImg || '')) && String(pr.capaImg).length <= 60000 ? String(pr.capaImg) : '',
         capa: /^[a-z0-9]{2,12}$/.test(String(pr.capa || '')) ? String(pr.capa) : '',
+        // medalhas guardadas pela pessoa: até 12, texto curto e foto pequena (tudo validado)
+        meds: (Array.isArray(pr.meds) ? pr.meds : []).slice(0, 12).map((m) => {
+          if (!m || typeof m !== 'object') return null;
+          const n = limpa(m.n, 60);
+          if (!n) return null;
+          const k = Number.isFinite(+m.k) && +m.k > 0 && +m.k < 1e6 ? Math.round(+m.k) : undefined;
+          const t = Number.isFinite(+m.t) && +m.t > 0 && +m.t <= 864000 ? Math.round(+m.t) : undefined;
+          const img = /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(m.img || '')) && String(m.img).length <= 23000 ? String(m.img) : undefined;
+          // formato da medalha: 'c' redonda, 'r' quadrada ou um contorno (até 90 pontos em milésimos da imagem)
+          const s = m.s === 'r' ? 'r' : Array.isArray(m.s) && m.s.length >= 6 && m.s.length <= 180 && m.s.length % 2 === 0 && m.s.every((v) => Number.isFinite(+v)) ? m.s.map((v) => Math.max(0, Math.min(1000, Math.round(+v)))) : 'c';
+          return {
+            id: /^[a-z0-9]{3,16}$/i.test(String(m.id || '')) ? String(m.id) : undefined, n,
+            d: /^\d{4}-\d{2}-\d{2}$/.test(String(m.d || '')) ? String(m.d) : '', k, t, l: limpa(m.l, 40), o: limpa(m.o, 140),
+            v: m.v === 'p' ? 'p' : 'l', e: /^(ouro|prata|bronze|final)$/.test(String(m.e || '')) ? String(m.e) : undefined, img, s: img ? s : undefined,
+            c: /^#[0-9a-f]{6}$/i.test(String(m.c || '')) || m.c === 'n' ? String(m.c) : undefined,
+          };
+        }).filter(Boolean),
       };
       const reg = { id: b.athlete, name: a.name || b.athlete, pic: foto || doIcu, sex: a.sex || '', cor, terr, runs, perfil, xp: Math.max(0, Math.min(1e6, Math.round(Number(b.xp) || 0))), at: Date.now() };
       await env.BR.put('a:' + b.athlete, JSON.stringify(reg));
@@ -382,7 +399,7 @@ export default {
 
     if (req.method === 'POST' && url.pathname === '/dados') {
       const txt = await req.text();
-      if (txt.length > 400000) return json(req, { erro: 'dados grandes demais' }, 413);
+      if (txt.length > 900000) return json(req, { erro: 'dados grandes demais' }, 413);
       let b;
       try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
       const a = await confere(b.athlete, b.key, b.token);
