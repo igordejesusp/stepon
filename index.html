@@ -1358,17 +1358,30 @@ const TEMA=()=>document.documentElement.dataset.theme==='light'?'light':'dark';
 const TM={dark:{cor:MCOR,txt:'#6b727c',halo:'#000',verde:'#0b1d11',parque:'#0e2416',sob:'#000'},light:{cor:MCORL,txt:'#5f6b77',halo:'#eef2f5',verde:'#cddfcd',parque:'#c3d8c3',sob:'#ffffff'}};
 let _mlj=null;
 // mapa reserva: se o OpenFreeMap não carregar (rede, bloqueio, provedor), usa os mapas da CARTO; se nem isso, desenha só o trajeto
-let MLFB=(Date.now()-LS.get('mlfb',0))<6*3600e3,_sonda=null;
+let MLFB=(Date.now()-LS.get('mlfb',0))<20*60e3,_sonda=null;
 function estiloRaster(){const t=TEMA(),k=t==='light'?'light_all':'dark_all';
   return {version:8,sources:{r:{type:'raster',tiles:['a','b','c','d'].map(x=>`https://${x}.basemaps.cartocdn.com/${k}/{z}/{x}/{y}@2x.png`),tileSize:256,maxzoom:19,attribution:'© CARTO · © OpenStreetMap'}},layers:[{id:'fundo',type:'background',paint:{'background-color':t==='light'?'#e3e9ee':'#000'}},{id:'r',type:'raster',source:'r'}]}}
+// diagnóstico do mapa: guarda os últimos problemas no aparelho (Mais > Diagnóstico do mapa) para entender o que acontece em cada celular
+function mapDiag(k){try{const a=LS.get('mapdiag',[]);a.push({t:new Date().toISOString().slice(0,19).replace('T',' '),k});LS.set('mapdiag',a.slice(-12))}catch(e){}}
+// a imagem do mapa saiu toda preta? (GPU que desenha preto, contexto perdido): procura qualquer pixel claro (o trajeto/área é azul)
+function mapaPreto(cv){try{const c=document.createElement('canvas');c.width=120;c.height=60;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(cv,0,0,120,60);const d=x.getImageData(0,0,120,60).data;
+  for(let i=0;i<d.length;i+=4)if(Math.max(d[i],d[i+1],d[i+2])>90)return false;return true}catch(e){return false}}
+window.mapDiagAbre=()=>{let g='sem WebGL',r='?',mx='?';try{const c=document.createElement('canvas'),x=c.getContext('webgl2')||c.getContext('webgl');if(x){g=c.getContext('webgl2')?'WebGL 2':'WebGL 1';mx=x.getParameter(x.MAX_TEXTURE_SIZE);const e=x.getExtension('WEBGL_debug_renderer_info');if(e)r=x.getParameter(e.UNMASKED_RENDERER_WEBGL)}}catch(e){}
+  const ev=LS.get('mapdiag',[]).slice().reverse().map(o=>`${o.t} · ${esc(o.k)}`).join('<br>')||'nenhum problema registrado';
+  openSheet(`<div class="hd"><b>Diagnóstico do mapa</b><button class="b sm" onclick="closeSheet()">✕</button></div><div class="card"><p class="empty" style="color:var(--txt)">${g} · textura máx. ${mx}<br>Placa: ${esc(String(r))}<br>Mapa reserva: ${MLFB?'ligado':'desligado'}<br>Versão: ${BUILD}<br>${esc(navigator.userAgent)}</p></div><div class="sec">ÚLTIMOS PROBLEMAS</div><div class="card"><p class="empty" style="color:var(--txt)">${ev}</p></div>`)};
+function ctxPerdido(m){try{return m.painter.context.gl.isContextLost()}catch(e){return false}}
+// fila: no máximo 2 mapas desenhando ao mesmo tempo (o Android só aguarda uns 8 contextos WebGL; passando disso ele derruba os mais antigos e o mapa fica preto)
+const _dq=[];let _dn=0;
+function dqAdd(fn){_dq.push(fn);dqPump()}
+function dqPump(){while(_dn<2&&_dq.length){const f=_dq.shift();_dn++;let fim=0;const ok=()=>{if(fim++)return;_dn--;dqPump()};try{f(ok)}catch(e){ok()}setTimeout(ok,12000)}}
 // testa de verdade se chega um pedaço do mapa (a lista de estilos pode chegar e os blocos do mapa não)
-function sondaMapa(){return _sonda=_sonda||(MLFB?Promise.resolve(false):new Promise(ok=>{const t=setTimeout(()=>ok(false),4000);
-  fetch('https://tiles.openfreemap.org/planet').then(r=>r.json()).then(j=>fetch(String(j.tiles[0]).replace('{z}',5).replace('{x}',11).replace('{y}',17))).then(r=>{clearTimeout(t);ok(r.ok)}).catch(()=>{clearTimeout(t);ok(false)})})
+function sondaMapa(){return _sonda=_sonda||(MLFB?Promise.resolve(false):new Promise(ok=>{const t=setTimeout(()=>{mapDiag('sonda: sem resposta em 8 s');ok(false)},8000);
+  fetch('https://tiles.openfreemap.org/planet').then(r=>r.json()).then(j=>fetch(String(j.tiles[0]).replace('{z}',5).replace('{x}',11).replace('{y}',17))).then(r=>{clearTimeout(t);ok(r.ok)}).catch(e=>{clearTimeout(t);mapDiag('sonda: '+(e&&e.message||'erro'));ok(false)})})
   .then(v=>{if(v)LS.set('mlfb',0);else{MLFB=true;LS.set('mlfb',Date.now())}return v}))}
 // conta os blocos do mapa que chegaram (loaded) e os que falharam (errored); o evento 'error' nem sempre avisa
 function mapaRuim(m,f){try{let ok=0,er=0;for(const sc of Object.values(m.style.sourceCaches))for(const t of Object.values(sc._tiles)){if(t.state==='loaded')ok++;else if(t.state==='errored')er++}return f>2||(er>0&&ok===0)}catch(e){return f>2}}
 function vigiaMapa(m,refaz){let f=0,ok=0;m.on('error',e=>{if(e&&(e.tile||e.sourceId))f++});
-  const tent=()=>{if(ok||MLFB||document.hidden)return;ok=1;MLFB=true;LS.set('mlfb',Date.now());_ml={};refaz()};
+  const tent=()=>{if(ok||MLFB||document.hidden)return;ok=1;mapDiag('mapa: blocos não chegaram, troquei para o mapa reserva');MLFB=true;LS.set('mlfb',Date.now());_ml={};refaz()};
   m.once('idle',()=>{if(mapaRuim(m,f))tent();else ok=1});
   setTimeout(()=>{try{if(!ok&&(mapaRuim(m,f)||!m.areTilesLoaded()))tent()}catch(e){}},9000)}
 function rotaSimples(el,tr){if(!tr||tr.length<2||!el.isConnected)return;el.querySelectorAll('.mimg,.rsvg').forEach(x=>x.remove());
@@ -1401,21 +1414,24 @@ const MAPTR={}; // trajetos de outras pessoas (amigos), para desenhar o mapa peq
 const MAPPOLY={},MAPCOR={}; // áreas (polígonos) para o mapa pequeno do território, e a cor de cada uma
 const mapBox=(id,H,pad,sp)=>{const im=(MAPIMG[id+'_'+H+(sp?'s':'')+TEMA()]||{}).src;return `<div class="map" data-map="${id}" data-h="${H}"${pad?` data-pad="${pad}"`:''}${sp?' data-sp="1"':''} style="height:${H}px">${im?`<img class="mimg" src="${im}" alt="">`:''}<span>© OpenFreeMap · OpenStreetMap</span></div>`};
 function drawMaps(){
-  document.querySelectorAll('.map[data-map]:not(.ok)').forEach(async el=>{
+  document.querySelectorAll('.map[data-map]:not(.ok)').forEach(el=>{
     // só tira a foto do mapa com o cartão visível e no tamanho certo; escondido (outra aba) tenta de novo depois
     const W=el.clientWidth;if(W<40)return;
     el.classList.add('ok');const id=el.dataset.map,key=id+'_'+el.dataset.h+(el.dataset.sp?'s':'')+TEMA(),tr=(AX[id]||{}).map||MAPTR[id],pl=MAPPOLY[id],pd=+el.dataset.pad||0;
     if(!tr||(MAPIMG[key]&&Math.abs(MAPIMG[key].w-W)<=4))return;
     el.querySelectorAll('.mimg').forEach(x=>x.remove());
+    dqAdd(async fim=>{
     try{
+      if(!el.isConnected)return fim();
       const st=await mlLoad(),box=document.createElement('div');box.style.cssText='position:absolute;inset:0';el.prepend(box);
       const ll=tr.map(p=>[p[1],p[0]]),b=ll.reduce((b,p)=>b.extend(p),new maplibregl.LngLatBounds(ll[0],ll[0]));
       const m=new maplibregl.Map({container:box,style:structuredClone(st),interactive:false,pitch:0,bearing:0,maxPitch:0,attributionControl:false,preserveDrawingBuffer:true,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:pd?{top:pd,bottom:pd,left:pd,right:pd}:{top:24,bottom:24,left:28,right:28},maxZoom:17}});
       let falhas=0,feito=0;m.on('error',e=>{if(e&&(e.tile||e.sourceId))falhas++});
-      const refazRota=()=>{if(feito++)return;try{m.remove()}catch(e){}box.remove();if(!el.isConnected)return;
+      const refazRota=(why)=>{if(feito++)return;mapDiag('cartão: '+(why||'falhou'));try{m.remove()}catch(e){}box.remove();fim();if(!el.isConnected)return;
         if(document.hidden){el.classList.remove('ok');return} // aba escondida não desenha o mapa: não é falha, tenta de novo depois
         if(!MLFB&&!el.dataset.fb){MLFB=true;LS.set('mlfb',Date.now());_ml={};el.dataset.fb=1;el.classList.remove('ok');drawMaps()}else rotaSimples(el,tr)};
-      const tmo=setTimeout(refazRota,9000);
+      const tmo=setTimeout(()=>refazRota('tempo esgotado'),9000);
+      m.getCanvas().addEventListener('webglcontextlost',()=>{clearTimeout(tmo);refazRota('contexto WebGL perdido')});
       m.on('load',()=>{
         if(pl){const cor=MAPCOR[id]||'#4a9eff';m.addSource('pg',{type:'geojson',data:{type:'Feature',geometry:{type:'MultiPolygon',coordinates:pl}}});
           m.addLayer({id:'pg0',type:'fill',source:'pg',paint:{'fill-color':cor,'fill-opacity':.45}});m.addLayer({id:'pg1',type:'line',source:'pg',layout:{'line-join':'round'},paint:{'line-color':cor,'line-width':2.2}})}
@@ -1427,10 +1443,13 @@ function drawMaps(){
         m.addLayer({id:'rt1',type:'line',source:'rt',layout:lay,paint:{'line-color':'#4a9eff','line-width':3.5}});
         if(!el.dataset.sp)m.addLayer({id:'pt',type:'circle',source:'pt',paint:{'circle-radius':5,'circle-color':['case',['==',['get','f'],0],'#fff','#4a9eff'],'circle-stroke-width':2.5,'circle-stroke-color':['case',['==',['get','f'],0],'#4a9eff','#fff']}});
         }
-        m.once('idle',()=>{clearTimeout(tmo);if(feito)return;if(mapaRuim(m,falhas))return refazRota();feito=1;MAPIMG[key]={src:m.getCanvas().toDataURL('image/png'),w:W};m.remove();box.remove();
+        m.once('idle',()=>{clearTimeout(tmo);if(feito)return;if(mapaRuim(m,falhas))return refazRota('blocos do mapa não chegaram');
+          if(mapaPreto(m.getCanvas()))return refazRota('imagem saiu preta');
+          feito=1;MAPIMG[key]={src:m.getCanvas().toDataURL('image/png'),w:W};m.remove();box.remove();fim();
           if(!el.isConnected)return;const im=new Image();im.className='mimg';im.alt='';im.src=MAPIMG[key].src;el.prepend(im)});
       });
-    }catch(e){el.classList.add('err');rotaSimples(el,tr)}
+    }catch(e){mapDiag('cartão: '+(e&&e.message||'erro'));el.classList.add('err');rotaSimples(el,tr);fim()}
+    });
   });
 }
 function ringSvg(v,cls){const c=2*Math.PI*36,col=cls==='ok'?'var(--blue)':cls==='warn'?'var(--amber)':'var(--red)';return `<svg viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" style="stroke:var(--track)" stroke-width="7" fill="none"/><circle cx="43" cy="43" r="36" stroke="${col}" stroke-width="7" fill="none" stroke-dasharray="${c*v/100} ${c}" transform="rotate(-90 43 43)"/><text x="43" y="49" text-anchor="middle" style="fill:var(--hi)" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="700">${v}</text></svg>`}
@@ -1879,7 +1898,7 @@ function rMais(soTres){
   <p class="empty" style="margin-top:6px">${CFG.token?(LS.get('authRuim',0)?'Este aparelho perdeu o acesso, provavelmente porque você entrou em outro. Toque em Reconectar.':'Conectado pelo login do Intervals. O app não guarda a sua senha.'):CFG.key?'Conectado pelo ID e pela chave de API.':'Entre com a sua conta do Intervals para o app ler as suas corridas e mandar os treinos.'}</p>
   ${CFG.token?(LS.get('authRuim',0)?btnEntrar('margin-top:10px','Reconectar'):''):btnEntrar('margin-top:10px')}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
   <details style="margin-top:10px"><summary class="meta" style="cursor:pointer">Usar o ID e a chave de API</summary>${connForm('saveConn()','Salvar e sincronizar')}</details></div>
-  <div class="sec">SOBRE</div><div class="card"><p class="empty">Coach: por enquanto a leitura e os ajustes são calculados no próprio app (carga pela FC, forma, fadiga, VDOT, deriva cardíaca). A conexão com o Claude pela API da Anthropic entra na próxima fase, por um servidor próprio, para a chave não ficar no celular.</p><p class="empty" style="margin-top:8px"><a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--blue)">Política de privacidade</a></p></div>`;
+  <div class="sec">SOBRE</div><div class="card"><p class="empty">Coach: por enquanto a leitura e os ajustes são calculados no próprio app (carga pela FC, forma, fadiga, VDOT, deriva cardíaca). A conexão com o Claude pela API da Anthropic entra na próxima fase, por um servidor próprio, para a chave não ficar no celular.</p><p class="empty" style="margin-top:8px"><a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--blue)">Política de privacidade</a></p><p class="empty" style="margin-top:8px"><a href="#" onclick="mapDiagAbre();return false" style="color:var(--blue)">Diagnóstico do mapa</a></p></div>`;
   $('#mais').innerHTML=h;
   if($('#c-go'))connStatus();
 }
@@ -3394,10 +3413,12 @@ function rComp(){
   document.querySelector('#c-seg button[data-m=a]').innerHTML='AMIGOS'+(FR.inc.length?` <span class="bd">${FR.inc.length}</span>`:'');
   $('#c-add').style.display=M==='a'?'':'none';
   pcLoad().then(()=>{terrData();infoTerr();return mlLoad()}).then(st=>{
+    if(CM&&ctxPerdido(CM)){mapDiag('mapa: contexto WebGL perdido, refeito');try{CM.remove()}catch(e){}CM=null}
     if(CM){CM.resize();if(CM.isStyleLoaded()&&CM.getSource('terr'))pintaTerr();return}
     const lp=LS.get('lastpos',null),c0=TD.length?[TD[0].geom[0][0][0][0],TD[0].geom[0][0][0][1]]:null;
     CM=new maplibregl.Map({container:'cmap',style:structuredClone(st),center:lp||c0||[-48.277,-18.918],zoom:lp?14:13,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
     CM.touchZoomRotate.disableRotation();vigiaMapa(CM,()=>{try{CM.remove()}catch(e){}CM=null;render()});
+    CM.getCanvas().addEventListener('webglcontextlost',()=>{mapDiag('mapa: contexto WebGL perdido');setTimeout(()=>{if(CM&&ctxPerdido(CM)){try{CM.remove()}catch(e){}CM=null;if(VIEW==='comp')rComp()}},2500)});
     CM.on('load',()=>{
       CM.addSource('terr',{type:'geojson',data:terrGeo()});CM.addSource('eu',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
       CM.addLayer({id:'terr',type:'fill',source:'terr',paint:{'fill-color':['get','cor'],'fill-opacity':.42}});
@@ -3409,7 +3430,7 @@ function rComp(){
       drawPins();if(!lp)fitPlaces();
       locateMe(0,1);
     });
-  }).catch(()=>{$('#c-info').textContent='Mapa indisponível sem internet'});
+  }).catch(e=>{mapDiag('mapa: '+(e&&e.message||'erro'));$('#c-info').textContent='Mapa indisponível sem internet'});
   $('#c-me').textContent=LS.get('comp',null)==='sim'?'NO RANKING':'SÓ OLHANDO';
   if(LS.get('comp',null)==null&&!$('#sheet').classList.contains('on')&&!window._compChk){window._compChk=1;pullAll().catch(()=>{}).then(()=>{if(VIEW!=='comp')return;if(LS.get('comp',null)==null)openCompCfg(1);else rComp()})}
   if(Date.now()-LS.get('pubAt',0)>120e3)rede();
@@ -4368,7 +4389,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19q'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-19r'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
