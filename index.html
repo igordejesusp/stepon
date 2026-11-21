@@ -653,6 +653,23 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .evpl{display:flex;flex-wrap:wrap;gap:8px}.evp{width:38px;height:38px;border-radius:50%;background:var(--cell);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--txt)}.evp.eu{background:var(--blue);color:#06203d;border-color:var(--blue)}.evp.mais{font-size:12px;color:var(--dim)}
 .evcta{position:sticky;bottom:calc(-34px - env(safe-area-inset-bottom));margin:26px -14px 0;padding:16px 14px calc(30px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 32%);display:flex;flex-direction:column;gap:8px}.evbtn{font-size:17px;padding:16px}
 .evok{background:rgba(95,209,138,.12);border:1px solid rgba(95,209,138,.4);border-radius:18px;padding:13px 16px;display:flex;flex-direction:column;gap:2px}.evok b{color:#5fd18a;font-size:16px}.evok span{font-size:13.5px;color:var(--txt)}.evsair{background:none;border:0;color:var(--dim);font-size:14px;padding:8px;text-decoration:underline}
+
+/* seguidores / QR / área: estilo Instagram, fundo preto com linhas */
+#sheet .hd.sgh{margin-bottom:6px}#sheet .hd.sgh b{text-align:center;flex:1;font-size:16px}
+.sgp{width:36px;height:36px;border:0;background:none;color:var(--hi);display:grid;place-items:center;padding:0;cursor:pointer;flex:none}.sgp svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sgt{display:flex;margin:8px -14px 0;border-bottom:1px solid var(--line)}.sgt button{flex:1;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:13px 4px;color:var(--dim);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}.sgt button.on{color:var(--hi);border-bottom-color:var(--hi)}
+.sgs{display:flex;align-items:center;gap:8px;background:var(--cell);border:1px solid var(--line2);border-radius:12px;padding:0 12px;margin:14px 0 6px}.sgs svg{width:18px;height:18px;fill:none;stroke:var(--dim);stroke-width:2;stroke-linecap:round;flex:none}.sgs input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);font-size:15px;padding:11px 0;font-family:inherit}
+.sgr{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line2)}.sgr .sgn{flex:1;min-width:0;cursor:pointer}.sgr .sgn b{display:block;font-size:15px;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sgr .sgn span{font-size:13px;color:var(--dim)}
+.sgb{min-height:32px;padding:0 18px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--hi);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0;text-transform:none}.sgb.pri{background:var(--blue);border-color:var(--blue);color:var(--onblue,#fff)}.sgb.big{min-height:40px;padding:0 22px;font-size:14px}
+.sgx{margin:10px 0 12px;display:flex;gap:8px}
+.qrw{display:flex;flex-direction:column;align-items:center;padding:18px 0 6px}.qrb{background:#fff;border-radius:22px;padding:18px;width:min(76vw,300px);aspect-ratio:1;display:grid;place-items:center}.qrb svg{width:100%;height:100%;display:block}
+.qrid{margin-top:16px;font-size:15px;color:var(--dim)}.qrid b{color:var(--hi);font-family:var(--m);font-size:19px;letter-spacing:.03em}
+.qrbt{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.scv{position:relative;margin:8px -14px 0;background:#000;aspect-ratio:3/4;max-height:70vh;overflow:hidden;display:grid;place-items:center}.scv video{width:100%;height:100%;object-fit:cover}.scv i{position:absolute;inset:18% 14%;border:3px solid rgba(255,255,255,.9);border-radius:22px;box-shadow:0 0 0 999px rgba(0,0,0,.45)}
+.tdh{display:flex;align-items:center;gap:14px;padding:6px 0 16px}.tdh .pnm h2{font-size:22px}.tdh .terrdot{width:22px;height:22px}
+.tds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0}.tds span{display:block;font-size:12px;color:var(--dim)}.tds b{display:block;font-size:24px;margin-top:4px;font-family:var(--m);color:var(--hi);white-space:nowrap}
+.tdd{margin:14px 0 0;padding:2px 0 2px 12px;border-left:3px solid var(--blue);font-size:14px;line-height:1.5;color:var(--txt)}
+.tdc{margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)}.tdc>b{display:block;margin-bottom:10px;color:var(--hi);font-size:15px}
 </style>
 </head>
 <body>
@@ -2665,7 +2682,7 @@ window.openAct=async id=>{
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
   openSheet(h,1);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
-function openSheet(h,cheio){$('#sheet').classList.remove('baixo','cheio');if(cheio)$('#sheet').classList.add('cheio');const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
+function openSheet(h,cheio){if(SCAN)scanPara();$('#sheet').classList.remove('baixo','cheio');if(cheio)$('#sheet').classList.add('cheio');const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
   // o X do topo vira a setinha de voltar, à esquerda do título
   const x=b.querySelector('.hd button[onclick="closeSheet()"]');if(x){x.className='shv';x.setAttribute('aria-label','Voltar');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
     // a seta fica fixa no canto enquanto a janela rola (só ela; o título rola junto)
@@ -2676,7 +2693,7 @@ function openSheet(h,cheio){$('#sheet').classList.remove('baixo','cheio');if(che
   bx.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>0)bx.style.transform=`translateY(${dy}px)`},{passive:true});
   bx.addEventListener('touchend',()=>{bx.style.transition='transform .2s';if(dy>90){bx.style.transform='translateY(100%)';setTimeout(()=>{closeSheet();bx.style.transition='none';bx.style.transform=''},200)}else bx.style.transform='';y0=null;dy=0});
 })();
-window.closeSheet=()=>$('#sheet').classList.remove('on');
+window.closeSheet=()=>{scanPara();$('#sheet').classList.remove('on')};
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 
 /* ================= cartão para compartilhar (PNG com fundo transparente, para stories) ================= */
@@ -3498,22 +3515,66 @@ async function segPede(id,volta){
 }
 // tela cheia com as duas abas, como no Instagram: Seguidores e Seguindo
 let SEGT='s';
+const IC_BUSCA='<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',IC_MAIS='<svg viewBox="0 0 24 24"><circle cx="9.5" cy="8" r="3.6"/><path d="M2.8 20c.4-3.6 3-5.6 6.7-5.6s6.3 2 6.7 5.6M19 8v6M16 11h6"/></svg>';
 window.openSeg=(tab,nofetch)=>{
   SEGT=tab==='g'?'g':'s';const fol=FR.fol||[],seg=FR.seg||[],L=SEGT==='s'?seg:fol;
-  const row=id=>{const sigo=fol.includes(id);return `<div class="row" style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)">${avatar({pic:frPic(id)},42)}<span style="flex:1;min-width:0" onclick="openPerfilAmigo('${esc(id)}')"><b style="display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(frNome(id))}</b><span class="meta">${frNome(id)===id?'ainda não abriu o Mapa':esc(id)}</span></span>${sigo?`<button class="b sm" onclick="frDeixar('${esc(id)}')">Seguindo</button>`:`<button class="b sm pri" onclick="frSeguir('${esc(id)}')">${SEGT==='s'?'Seguir de volta':'Seguir'}</button>`}</div>`};
-  openSheet(`<div class="hd"><b>${esc((D.athlete&&D.athlete.name)||'Você')}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="seg" id="sg-tabs" style="margin:4px 0 12px"><button class="${SEGT==='s'?'on':''}" onclick="openSeg('s',1)">${seg.length} ${seg.length===1?'seguidor':'seguidores'}</button><button class="${SEGT==='g'?'on':''}" onclick="openSeg('g',1)">${fol.length} seguindo</button></div>
-  ${SEGT==='g'?`<div class="row" style="gap:8px;flex-wrap:nowrap;margin-bottom:12px"><input id="am-id" placeholder="Seguir pelo ID (ex.: i123456)" autocomplete="off" autocapitalize="off" autocorrect="off" style="flex:1;min-width:0"><button class="b pri" onclick="frAdd()">Seguir</button></div>`:''}
-  ${L.length?`<div class="card" style="padding:4px 12px">${L.map(row).join('')}</div>`:`<p class="empty">${SEGT==='s'?'Ninguém segue você ainda. Passe o seu ID para os amigos.':'Você ainda não segue ninguém. Coloque o ID de quem você quer seguir.'}</p>`}
-  <div class="card" style="margin-top:12px"><div class="lbl">SEU ID</div><div class="row" style="justify-content:space-between;margin-top:4px"><span class="num" style="font-size:18px">${esc(CFG.athlete||'')}</span><button class="b sm" onclick="copiaId()">COPIAR</button></div><div class="meta">Passe este ID para quem quiser seguir você.</div></div>`,1);
-  if(!nofetch)frCall('lista').then(()=>{const i=$('#am-id');if($('#sg-tabs')&&!(i&&i.value))openSeg(SEGT,1);if(VIEW==='comp')rComp()}).catch(()=>{});
+  const row=id=>{const sigo=fol.includes(id);return `<div class="sgr" data-n="${esc((frNome(id)+' '+id).toLowerCase())}">${avatar({pic:frPic(id)},48)}<span class="sgn" onclick="openPerfilAmigo('${esc(id)}')"><b>${esc(frNome(id))}</b><span>${frNome(id)===id?'ainda não abriu o Mapa':esc(id)}</span></span>${sigo?`<button class="sgb" onclick="frDeixar('${esc(id)}')">Seguindo</button>`:`<button class="sgb pri" onclick="frSeguir('${esc(id)}')">${SEGT==='s'?'Seguir de volta':'Seguir'}</button>`}</div>`};
+  const q0=($('#sg-q')||{}).value||'';
+  openSheet(`<div class="hd sgh"><b>${esc((D.athlete&&D.athlete.name)||'Você')}</b><button class="sgp" onclick="openQR()" aria-label="Seguir alguém: QR Code e ID">${IC_MAIS}</button><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="sgt" id="sg-tabs"><button class="${SEGT==='s'?'on':''}" onclick="openSeg('s',1)">${seg.length} ${seg.length===1?'seguidor':'seguidores'}</button><button class="${SEGT==='g'?'on':''}" onclick="openSeg('g',1)">${fol.length} seguindo</button></div>
+  <label class="sgs">${IC_BUSCA}<input id="sg-q" type="search" placeholder="Pesquisar" autocomplete="off" autocapitalize="off" autocorrect="off" oninput="sgFiltra(this.value)" value="${esc(q0)}"></label>
+  ${L.length?`<div id="sg-l">${L.map(row).join('')}</div><p class="empty" id="sg-vz" style="display:none">Ninguém com esse nome.</p>`:`<p class="empty" style="margin-top:24px">${SEGT==='s'?'Ninguém segue você ainda. Toque no ícone de cima para mostrar o seu QR Code.':'Você ainda não segue ninguém. Toque no ícone de cima para escanear um QR Code ou digitar um ID.'}</p>`}`,1);
+  // o X do openSheet virou a seta de voltar; o botão "+" fica à direita do título
+  if(q0)sgFiltra(q0);
+  if(!nofetch)frCall('lista').then(()=>{if($('#sg-tabs'))openSeg(SEGT,1);if(VIEW==='comp')rComp()}).catch(()=>{});
+};
+window.sgFiltra=v=>{v=(v||'').trim().toLowerCase();let n=0;document.querySelectorAll('#sg-l .sgr').forEach(e=>{const ok=!v||e.dataset.n.includes(v);e.style.display=ok?'':'none';if(ok)n++});const z=$('#sg-vz');if(z)z.style.display=n?'none':''};
+// página do QR Code: o seu código, escanear o de outra pessoa e seguir pelo ID
+const QRBASE='https://igordejesusp.github.io/stepon/?seg=';
+const idDoQR=t=>{t=String(t||'').trim();let m=t.match(/[?&]seg=(i\d{3,12})/i)||t.match(/^(i\d{3,12})$/i);return m?m[1].toLowerCase():null};
+const carregaJs=src=>new Promise((ok,no)=>{if(document.querySelector('script[data-src="'+src+'"]'))return ok();const e=document.createElement('script');e.src=src;e.dataset.src=src;e.onload=ok;e.onerror=()=>{e.remove();no(new Error('sem rede'))};document.head.appendChild(e)});
+window.openQR=async()=>{
+  scanPara();const id=CFG.athlete||'';
+  openSheet(`<div class="hd"><b>Seguir pessoas</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="qrw"><div class="qrb" id="qr-box"><span class="meta" style="color:#555">Gerando…</span></div>
+  <div class="qrid">Seu ID é <b>${esc(id)}</b></div>
+  <div class="qrbt"><button class="sgb pri big" onclick="openScan()">Escanear QR Code</button><button class="sgb big" onclick="copiaId()">Copiar ID</button></div></div>
+  <div class="tdc"><b>Seguir pelo ID</b><div class="row" style="gap:8px;flex-wrap:nowrap"><input id="am-id" placeholder="Ex.: i123456" autocomplete="off" autocapitalize="off" autocorrect="off" style="flex:1;min-width:0"><button class="sgb pri big" onclick="frAdd()">Seguir</button></div><p class="meta" style="margin-top:8px">Mostre o seu QR Code para quem quiser seguir você, ou passe o seu ID.</p></div>`,1);
+  try{await carregaJs('https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js');const q=qrcode(0,'M');q.addData(QRBASE+id);q.make();const bx=$('#qr-box');if(bx)bx.innerHTML=q.createSvgTag({cellSize:8,margin:0,scalable:true})}
+  catch(e){const bx=$('#qr-box');if(bx)bx.innerHTML='<span class="meta" style="color:#555;text-align:center">Sem internet para gerar o QR Code.<br>Use o ID abaixo.</span>'}
+};
+var SCAN=null;
+function scanPara(){if(SCAN){SCAN.on=false;try{SCAN.st.getTracks().forEach(t=>t.stop())}catch(e){}SCAN=null}}
+window.openScan=async()=>{
+  scanPara();
+  openSheet(`<div class="hd"><b>Escanear QR Code</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="scv"><video id="sc-v" playsinline muted autoplay></video><i></i></div><p class="meta" id="sc-m" style="text-align:center;margin-top:14px">Aponte a câmera para o QR Code da outra pessoa.</p>
+  <div class="sgx" style="justify-content:center"><button class="sgb big" onclick="openQR()">Voltar ao meu QR Code</button></div>`,1);
+  const msg=t=>{const m=$('#sc-m');if(m)m.textContent=t};
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}),v=$('#sc-v');
+    if(!v||!$('#sheet').classList.contains('on')){st.getTracks().forEach(t=>t.stop());return}
+    v.srcObject=st;await v.play().catch(()=>{});const S={st,on:true};SCAN=S;
+    let det=null;if('BarcodeDetector' in window){try{det=new BarcodeDetector({formats:['qr_code']})}catch(e){}}
+    if(!det)await carregaJs('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js');
+    const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+    const volta=id=>{scanPara();if(id===CFG.athlete){toast('Esse é o seu próprio QR Code',2600);return openQR()}toast('Perfil encontrado',1800);openPerfilAmigo(id)};
+    const passo=async()=>{
+      if(!S.on||SCAN!==S)return;
+      if(v.videoWidth){let txt=null;
+        try{if(det){const r=await det.detect(v);if(r&&r[0])txt=r[0].rawValue}
+          else{const w=Math.min(640,v.videoWidth),h=Math.round(w*v.videoHeight/v.videoWidth);cv.width=w;cv.height=h;cx.drawImage(v,0,0,w,h);const r=jsQR(cx.getImageData(0,0,w,h).data,w,h);if(r)txt=r.data}}catch(e){}
+        if(txt){const id=idDoQR(txt);if(id)return volta(id);msg('Esse QR Code não é de uma pessoa do StepOn.')}}
+      setTimeout(passo,det?120:200)};
+    passo();
+  }catch(e){msg(e&&e.name==='NotAllowedError'?'A câmera está bloqueada. Libere a câmera para o StepOn nos ajustes do aparelho, ou digite o ID.':'Não consegui abrir a câmera. Digite o ID da pessoa.')}
 };
 window.openAmigos=()=>openSeg('g');
 // botão de seguir no cartão do mapa e no perfil: seguir, seguir de volta ou seguindo (toca para deixar de seguir)
 function btnAmizade(id,volta,cls){
-  if(!id||id===CFG.athlete)return '';const c=cls||'b',v=volta?`,&quot;${volta}&quot;`:'';
+  if(!id||id===CFG.athlete)return '';const c=cls||'sgb',v=volta?`,&quot;${volta}&quot;`:'';
   if((FR.fol||[]).includes(id))return `<button class="${c}" onclick="frDeixar('${esc(id)}'${v})">Seguindo</button>`;
-  return `<button class="${c} pri" onclick="frSeguir('${esc(id)}'${v})">${(FR.seg||[]).includes(id)?'Seguir de volta':'+ Seguir'}</button>`;
+  return `<button class="${c} pri" onclick="frSeguir('${esc(id)}'${v})">${(FR.seg||[]).includes(id)?'Seguir de volta':'Seguir'}</button>`;
 }
 function frVolta(volta){
   if(volta)try{(new Function(volta))()}catch(e){}
@@ -3551,7 +3612,7 @@ window.openPerfilAmigo=(id,tab)=>{
   const med=[],cmd=(k,t,nome)=>med.push({f:'cmd',k,t,nome,on:true,date:null});[1,10,25,50,100,150,200,300,400,500].filter(c=>runs.length>=c).forEach(c=>cmd(c===1?'1ª':String(c),c===1?'corrida':'corridas',c+'ª corrida'));const her=(k,nome)=>med.push({f:'fe2',k,t:'km',nome,on:true,date:null});if(maxd>=5000)her('5','5 km');if(maxd>=10000)her('10','10 km');if(maxd>=21097)her('21','Meia maratona');if(maxd>=42195)her('42','Maratona');
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
-  let h=`${perfCab({hd:'<b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button>',nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sub:eAmigo?'Amigo':sigo?'Seguindo':'',seg:sn.s,sgd:sn.g})}<div style="margin:-2px 0 10px">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'b full')}</div>`;
+  let h=`${perfCab({hd:'<b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button>',nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sub:eAmigo?'Amigo':sigo?'Seguindo':'',seg:sn.s,sgd:sn.g})}<div class="sgx">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'sgb big')}</div>`;
   if(!u||!runs.length)h+=`<p class="empty" style="color:var(--txt)">${esc(frNome(id))} ainda não entrou no ranking, então o app não tem as corridas dessa pessoa. Quando ela entrar, o perfil aparece aqui sozinho.</p>`;
   else{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
@@ -3578,11 +3639,11 @@ window.setCor=async c=>{LS.set('cor',c);try{await publishMine(1)}catch(e){}pinta
 window.openTerr=id=>{
   const o=TD.find(x=>x.u.id===id);if(!o)return;const eu=!!o.u.me;
   openSheet(`<div class="hd"><b>Área dominada</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="card cur pcab">${avatar({pic:o.u.pic,me:eu},62)}<div class="pnm"><h2>${esc(o.u.name)}</h2><div class="meta">${eu?'Você':FR.friends.includes(id)?'Amigo':'Atleta'}</div></div><span class="terrdot" style="background:${o.cor}"></span></div>
-  <div class="card stc"><div class="stg c3"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Áreas dominadas</span><b>${terrRegioes(o.geom).length}</b></div><div><span>Última</span><b>${o.last?fmtD(o.last):'--'}</b></div></div></div>
-  ${o.rit?`<div class="card dica"><p>${eu?`No Geral, as suas áreas estão defendidas pelo seu ritmo: <b>${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>. Só toma quem fechar o circuito mais rápido.`:`No Geral, para tomar estas áreas você precisa fechar o circuito mais rápido que ${esc(o.u.name.split(' ')[0])}: <b>abaixo de ${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>, conforme o pedaço.`}</p></div>`:''}
-  ${eu?`<div class="card gcard"><div class="blh"><b>Sua cor no mapa</b></div>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="grid g2" style="margin-top:8px"><button class="b" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button>${btnAmizade(id,`openTerr('${esc(id)}')`)}</div>`}
-  <p class="meta" style="margin-top:8px">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`,1);
+  <div class="tdh">${avatar({pic:o.u.pic,me:eu},64)}<div class="pnm"><h2>${esc(o.u.name)}</h2><div class="meta">${eu?'Você':FR.friends.includes(id)?'Amigo':(FR.fol||[]).includes(id)?'Seguindo':'Atleta'}</div></div><span class="terrdot" style="background:${o.cor}"></span></div>
+  <div class="tds"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Áreas dominadas</span><b>${terrRegioes(o.geom).length}</b></div><div><span>Última</span><b>${o.last?fmtD(o.last):'--'}</b></div></div>
+  ${o.rit?`<p class="tdd">${eu?`No Geral, as suas áreas estão defendidas pelo seu ritmo: <b>${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>. Só toma quem fechar o circuito mais rápido.`:`No Geral, para tomar estas áreas você precisa fechar o circuito mais rápido que ${esc(o.u.name.split(' ')[0])}: <b>abaixo de ${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>, conforme o pedaço.`}</p>`:''}
+  ${eu?`<div class="tdc"><b>Sua cor no mapa</b>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="sgx" style="margin-top:16px"><button class="sgb big" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button>${btnAmizade(id,`openTerr('${esc(id)}')`,'sgb big')}</div>`}
+  <p class="meta" style="margin-top:14px;line-height:1.5">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`,1);
   $('#sbox').dataset.terr=eu?'me':'';
 };
 // "Seu território": separa as áreas em locais (cada pedaço da cidade) e mostra um mapinha de cada
@@ -4435,7 +4496,8 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
 /* ================= notificações (sino do topo) =================
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
-const BUILD='2026-11-19t'; // troque a cada publicação: o app confere sozinho se há versão nova
+(()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
+const BUILD='2026-11-20a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
