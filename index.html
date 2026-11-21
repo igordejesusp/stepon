@@ -604,7 +604,7 @@ body.desk .fcard{padding:18px}body.desk .card.blc{cursor:pointer}body.desk .card
 .pmdl{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--blue);font-weight:700;font-size:13px;padding:8px 13px;cursor:pointer}
 .mdi{display:inline-flex;flex:none;align-items:center;justify-content:center}.mdi.disc{border-radius:50%;padding:3px;background:linear-gradient(135deg,#e6f3ff,#4a9eff 55%,#1c4f9e);box-shadow:0 4px 10px rgba(0,0,0,.45)}.mdi.disc img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .mdi .evmed{width:100%;height:auto}.mdi svg{display:block}
-.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px}.mcard .mdm{margin-top:2px}.mcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;cursor:pointer;color:var(--hi);font:inherit}.mcard b{font-size:13px;line-height:1.2;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.mcard span{font-size:11.5px;color:var(--dim)}
+.mdgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px}.mcard .mdm{margin-top:2px}.mcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;cursor:pointer;color:var(--hi);font:inherit}.mcard b{font-size:13px;line-height:1.2;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.mcard span{font-size:11.5px;color:var(--dim)}
 .mdet{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:6px 0 4px}.mdet h2{margin:8px 0 0;font-size:22px;line-height:1.2}.mdet .mo{color:var(--txt);font-size:15px;line-height:1.45;margin:6px 4px 0}
 .mfd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 4px;width:100%}.mfd div{background:none;border:0;border-radius:0;padding:0}.mfd b{display:block;font-size:20px;font-weight:700;color:var(--hi);white-space:nowrap}.mfd span{display:block;font-size:13px;color:var(--dim);margin-top:2px}
 .mfoto{display:flex;align-items:center;gap:14px;margin:4px 0 12px}.mfoto .mdi{cursor:pointer}.mvz{display:grid;gap:8px;margin-top:6px}.mvz label{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:14px;color:var(--hi)}.mvz label small{display:block;color:var(--dim);font-size:12px}.mvz input{width:auto;min-width:0;flex:none;margin:3px 0 0;padding:0;accent-color:#4a9eff}.mvz label span{flex:1}
@@ -670,6 +670,10 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .tds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0}.tds span{display:block;font-size:12px;color:var(--dim)}.tds b{display:block;font-size:24px;margin-top:4px;font-family:var(--m);color:var(--hi);white-space:nowrap}
 .tdd{margin:14px 0 0;padding:2px 0 2px 12px;border-left:3px solid var(--blue);font-size:14px;line-height:1.5;color:var(--txt)}
 .tdc{margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)}.tdc>b{display:block;margin-bottom:10px;color:var(--hi);font-size:15px}
+
+/* calendário do mês: o mês inteiro cabe na tela, também no computador e no tablet */
+@media (min-width:760px){.mc{aspect-ratio:auto;height:clamp(58px,calc((100vh - 360px)/6),100px);padding:7px 9px}.mc .k{font-size:14px}}
+.mc,.day,.fcard{position:relative;z-index:1}
 </style>
 </head>
 <body>
@@ -3281,6 +3285,7 @@ function trimTrack(tr,full){
 }
 async function publishMine(force,entrar){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
+  if(!LS.get('restOk',0)){try{await pullAll()}catch(e){return}} // antes de enviar, confere o que já existe no servidor
   const mxHr=maxHr(),runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').slice(0,150).map((a,i)=>{const x=AX[a.id]||{};return {id:a.id,...(i<20?{x:xDe(a,x,mxHr)}:{}),date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null,dev:devNome(a).slice(0,40),...(PRIV[a.id]==='a'?{v:'a'}:{})}});
   const foto=await fotoMini();
   const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv4|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+medsSig()+'|s'+(FR.seg||[]).length+'.'+(FR.fol||[]).length+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
@@ -3307,6 +3312,12 @@ async function pullAll(){
   const L=await r.json();
   // regra: quem está publicado no servidor está no ranking, em qualquer aparelho (só sai tocando em "Sair do ranking")
   if(CFG.athlete&&L.some(u=>u.id===CFG.athlete)&&LS.get('comp',null)!=='sim')LS.set('comp','sim');
+  // aparelho novo (ex.: o site no computador): traz do servidor o perfil e as medalhas que já estavam publicadas, para não aparecerem vazios nem serem apagados no próximo envio
+  try{const eu=L.find(u=>u.id===CFG.athlete),sp=(eu&&eu.perfil)||null;
+    if(sp){const pf=LS.get('perfil',null)||{};
+      if(!pf.bio&&!pf.link&&!pf.capa&&!pf.capaImg&&(sp.bio||sp.link||sp.capa||sp.capaImg))LS.set('perfil',{bio:sp.bio||'',link:sp.link||'',capa:sp.capa||'azul',...(sp.capa==='foto'&&sp.capaImg?{capaImg:sp.capaImg}:{})});
+      if(!medsGet().length&&Array.isArray(sp.meds)&&sp.meds.length){LS.set('meds',sp.meds.map((m,i)=>({...m,id:m.id||('r'+i+Date.now().toString(36))})));window._medL=undefined}}
+    LS.set('restOk',1)}catch(e){}
   PUBL=L.filter(u=>u.id!==CFG.athlete);LS.set('pub',PUBL);LS.set('pubAt',Date.now());
 }
 /* ---------- áreas dominadas ---------- */
@@ -3950,9 +3961,9 @@ function medBtn(o){
 }
 window.medLista=k=>{
   const L=(window._medL||{})[k]||[],eu=k==='eu';
-  if(eu&&L.some(m=>m.st==='pend')&&temConta())medSync({mp:[]}).then(ch=>{if(ch){window._medL={eu:medsGet()};if(document.querySelector('.mgrid'))medLista('eu');render()}}).catch(()=>{});
+  if(eu&&L.some(m=>m.st==='pend')&&temConta())medSync({mp:[]}).then(ch=>{if(ch){window._medL={eu:medsGet()};if(document.querySelector('.mdgrid'))medLista('eu');render()}}).catch(()=>{});
   openSheet(`<div class="hd"><b>Medalhas</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  ${L.length?`<div class="mgrid">${L.map((m,i)=>`<button class="mcard" onclick="medAbre('${k}',${i})">${medIcon(m,78)}<b>${esc(m.n)}</b><span>${m.st==='pend'?'Em preparo…':m.st==='rej'?'Não deu certo':medData(m.d)||'&nbsp;'}</span></button>`).join('')}</div>`:`<p class="empty" style="color:var(--txt)">${eu?'Você ainda não guardou nenhuma medalha. Tire uma foto da medalha de uma prova e ela vira um desenho dela aqui, no seu perfil.':'Nenhuma medalha para mostrar.'}</p>`}
+  ${L.length?`<div class="mdgrid">${L.map((m,i)=>`<button class="mcard" onclick="medAbre('${k}',${i})">${medIcon(m,78)}<b>${esc(m.n)}</b><span>${m.st==='pend'?'Em preparo…':m.st==='rej'?'Não deu certo':medData(m.d)||'&nbsp;'}</span></button>`).join('')}</div>`:`<p class="empty" style="color:var(--txt)">${eu?'Você ainda não guardou nenhuma medalha. Tire uma foto da medalha de uma prova e ela vira um desenho dela aqui, no seu perfil.':'Nenhuma medalha para mostrar.'}</p>`}
   ${eu?`<button class="b pri full" onclick="medForm()"${L.length>=MEDS_MAX?' disabled':''}>+ Adicionar medalha</button>${L.length>=MEDS_MAX?`<p class="meta" style="margin-top:8px">Limite de ${MEDS_MAX} medalhas.</p>`:''}`:''}`,1);
 };
 window.medAbre=(k,i)=>{
@@ -4497,7 +4508,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-20a'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-20b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
