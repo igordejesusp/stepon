@@ -796,6 +796,17 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 /* botões do mapa: troféu em emoji e "onde estou" com bolinha azul com luz */
 .fab .fem{font-size:25px;line-height:1;display:block}
 .fab .bola{display:block;width:14px;height:14px;border-radius:50%;background:#4a9eff;margin:auto;box-shadow:0 0 0 5px rgba(74,158,255,.22),0 0 14px 4px rgba(74,158,255,.55)}
+
+/* vidro líquido: quase transparente, deixa as cores de trás passarem (sem borrar), com brilho de borda */
+:root{--lg-fill:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.03) 50%,rgba(255,255,255,.05)),rgba(24,30,40,.40);--lg-bd:rgba(255,255,255,.2);--lg-f:blur(7px) saturate(1.6) brightness(1.04)}
+:root[data-theme="light"]{--lg-fill:linear-gradient(135deg,rgba(255,255,255,.6),rgba(255,255,255,.3) 50%,rgba(255,255,255,.4));--lg-bd:rgba(255,255,255,.75);--lg-f:blur(7px) saturate(1.6)}
+#top,:root[data-theme="light"] #top{background:linear-gradient(to bottom,color-mix(in srgb,var(--bg) 62%,transparent) 0%,transparent 100%)}
+.gb,#top .gb,:root[data-theme="light"] #top .gb,#tabbar,:root[data-theme="light"] #tabbar,.fab{background:var(--lg-fill);border:1px solid var(--lg-bd);-webkit-backdrop-filter:var(--lg-f);backdrop-filter:var(--lg-f);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.12),inset 1px 0 0 rgba(255,255,255,.14),inset 0 0 14px rgba(255,255,255,.07),0 8px 22px rgba(0,0,0,.28)}
+:root[data-theme="light"] .gb,:root[data-theme="light"] #tabbar,:root[data-theme="light"] .fab{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.4),inset 0 0 14px rgba(255,255,255,.35),0 8px 22px rgba(20,40,70,.16)}
+#tabbar button.on{background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 10px rgba(255,255,255,.1),0 2px 8px rgba(0,0,0,.18);-webkit-backdrop-filter:blur(2px) saturate(1.6);backdrop-filter:blur(2px) saturate(1.6)}
+:root[data-theme="light"] #tabbar button.on{background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,.4))}
+.gb svg,#tabbar svg{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35))}
 </style>
 </head>
 <body>
@@ -5037,7 +5048,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-28d'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-28f'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
