@@ -862,7 +862,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const LS={get(k,d){try{const v=localStorage.getItem('br.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('br.'+k,JSON.stringify(v))}catch(e){}if(typeof BK_CHAVES!=='undefined'&&BK_CHAVES.includes(k))bkMarca()}};
 // o que vai para a cópia de segurança no servidor: o plano, os treinos editados ou movidos, testes, esforço, metas e preferências.
 // Lei do app: o que a pessoa mudou à mão nunca volta ao original, nem depois de reinstalar ou atualizar.
-const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont','nt','nomesLoc','perfil','meds','bonusTemp'];
+const BK_CHAVES=['pf','ov','extra','fb','vhist','vt','vtests','metas','cor','relogio','ck','comp','man','foto','fix0711','fix1013','guia','mmode','pbk','priv','cont','nt','nomesLoc','perfil','meds','bonusTemp','evaj'];
 // privacidade de cada treino: 'a' = só amigos, 'e' = só eu (sem marca = todos)
 let PRIV=LS.get('priv',{});
 let CONT=LS.get('cont',{}); // circuitos contestados e aprovados pelo app: o que foi aprovado nunca volta ao cálculo original
@@ -949,23 +949,40 @@ function devNome(x){if(!x)return '';const d=String(x.dev||'');if(x.src==='MARCAD
 const slim=a=>({id:a.id,date:a.start_date_local,type:a.type,name:a.name,dist:a.distance,mov:a.moving_time,el:a.elapsed_time,hr:a.average_heartrate,hrmax:a.max_heartrate,load:a.icu_training_load,trimp:a.trimp,elev:a.total_elevation_gain,cad:a.average_cadence,rpe:a.icu_rpe,feel:a.feel,speed:a.average_speed,src:a.source,dev:a.device_name||null,oc:a.oauth_client_id||null});
 
 /* ---------- cópia de segurança no servidor ---------- */
-let BKT=null,RESTAURANDO=false;
+let BKT=null,RESTAURANDO=false,BKPRONTO=false; // BKPRONTO: aparelho novo só envia cópia depois de ler a do servidor
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem('br.bkSujo')&&typeof temConta==='function'&&temConta()&&+(localStorage.getItem('br.bkAt')||0)>0)bkEnvia().catch(()=>{})}); // não perde a última mudança se o app for fechado logo
 function bkMarca(){try{localStorage.setItem('br.bkSujo','1')}catch(e){}clearTimeout(BKT);BKT=setTimeout(()=>bkEnvia().catch(()=>{}),4000)}
 async function bkEnvia(){
-  if(!temConta()||RESTAURANDO)return;const dados={};for(const k of BK_CHAVES){const v=LS.get(k,undefined);if(v!==undefined&&v!==null)dados[k]=v}
+  if(!temConta()||RESTAURANDO)return;if(!BKPRONTO&&!+(localStorage.getItem('br.bkAt')||0))return;const dados={};for(const k of BK_CHAVES){const v=LS.get(k,undefined);if(v!==undefined&&v!==null)dados[k]=v}
   const at=Date.now(),r=await fetch(PUBURL+'/dados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'gravar',at,dados})});
   if(!r.ok)throw new Error('HTTP '+r.status);try{localStorage.setItem('br.bkAt',String(at));localStorage.removeItem('br.bkSujo')}catch(e){}
 }
 // ao entrar ou sincronizar: se o servidor tem uma cópia mais nova (outro aparelho ou app reinstalado), ela volta para cá
+const BK_DICT=['extra','ov','pbk','fb','priv','cont','nomesLoc','ck','evaj']; // dicionários que se juntam quando os dois aparelhos mudaram
+function bkAplica(dados,junta){
+  RESTAURANDO=true;
+  try{for(const k of BK_CHAVES){if(!(k in dados))continue;let v=dados[k];
+      if(junta){const loc=LS.get(k,undefined);
+        if(BK_DICT.includes(k)&&loc&&typeof loc==='object'&&!Array.isArray(loc)&&v&&typeof v==='object')v={...v,...loc}; // o que mudou aqui vale sobre o que veio de lá
+        else if(Array.isArray(loc)&&Array.isArray(v))v=loc.length>=v.length?loc:v;
+        else if(loc!==undefined&&loc!==null)v=loc}
+      localStorage.setItem('br.'+k,JSON.stringify(v))}}catch(e){}
+  PF=LS.get('pf',null);FB=LS.get('fb',{});MAN=LS.get('man',[]);PRIV=LS.get('priv',{});CONT=LS.get('cont',{});D.acts=withMan(D.acts||[]);LS.set('data',D);_pk='';_mk=null;LS.set('terrc',null);
+  RESTAURANDO=false;
+}
+// ao entrar ou sincronizar:
+//  - aparelho novo (app reinstalado, site, outro celular, saiu e entrou): a cópia do servidor vale, mesmo que o app já tenha escrito algo ao abrir;
+//  - os dois lados mudaram: junta (o que mudou aqui vale sobre o que veio de lá) e envia a soma;
+//  - só este aparelho mudou: envia.
 async function bkRestaura(){
   if(!temConta())return false;let j;
   try{const r=await fetch(PUBURL+'/dados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'ler'})});if(!r.ok)return false;j=await r.json()}catch(e){return false}
-  const local=+(localStorage.getItem('br.bkAt')||0),sujo=!!localStorage.getItem('br.bkSujo');
-  if(!j||!j.dados||!(j.at>local)||sujo){if(!j||!j.dados||sujo||!local)bkEnvia().catch(()=>{});return false}
-  RESTAURANDO=true;
-  try{for(const k of BK_CHAVES){if(k in j.dados)localStorage.setItem('br.'+k,JSON.stringify(j.dados[k]))}localStorage.setItem('br.bkAt',String(j.at))}catch(e){}
-  PF=LS.get('pf',null);FB=LS.get('fb',{});MAN=LS.get('man',[]);D.acts=withMan(D.acts||[]);LS.set('data',D);_pk='';_mk=null;LS.set('terrc',null);
-  RESTAURANDO=false;if(!needOB())OB={i:0,a:null};return true;
+  BKPRONTO=true;const local=+(localStorage.getItem('br.bkAt')||0),sujo=!!localStorage.getItem('br.bkSujo');
+  if(!j||!j.dados){bkEnvia().catch(()=>{});return false}          // o servidor ainda não tem cópia: envia a daqui
+  if(!(j.at>local)){if(sujo)bkEnvia().catch(()=>{});return false}  // o daqui é igual ou mais novo
+  if(!local){bkAplica(j.dados,false);try{localStorage.setItem('br.bkAt',String(j.at));localStorage.removeItem('br.bkSujo')}catch(e){}if(!needOB())OB={i:0,a:null};return true}
+  if(!sujo){bkAplica(j.dados,false);try{localStorage.setItem('br.bkAt',String(j.at))}catch(e){}if(!needOB())OB={i:0,a:null};return true}
+  bkAplica(j.dados,true);try{localStorage.setItem('br.bkAt',String(j.at))}catch(e){}bkEnvia().catch(()=>{});return true
 }
 async function sync(full){
   const btn=$('#sync');btn.disabled=true;btn.classList.add('gira');
@@ -3261,6 +3278,7 @@ window.sairIntervals=()=>sairConta();
 window.sairConta=async()=>{
   const pend=(D.acts||[]).filter(a=>a.gpx&&isMan(a)).length;
   if(!confirm('Sair da conta neste aparelho? Os dados desta conta saem do celular; as suas corridas continuam no Intervals e você pode entrar de novo quando quiser.'+(pend?`\n\nAtenção: ${pend} ${pend===1?'corrida gravada ainda não foi enviada':'corridas gravadas ainda não foram enviadas'} ao Intervals e ${pend===1?'será apagada':'serão apagadas'}.`:'')))return;
+  try{if(localStorage.getItem('br.bkSujo')&&temConta())await bkEnvia()}catch(e){} // garante que a cópia do plano está no servidor antes de limpar o aparelho
   if(CFG.token){try{await fetch(API+'/disconnect-app',{method:'DELETE',headers:{Authorization:authH()}})}catch(e){}}
   const tema=localStorage.getItem('br.tema');
   Object.keys(localStorage).filter(k=>k.startsWith('br.')).forEach(k=>localStorage.removeItem(k));
@@ -4823,7 +4841,8 @@ window.fazerTreino=ds=>{
   if(ds!==hoje){
     const o=planOn(hoje);
     if(!confirm(`Esse treino é de ${DOW[parseD(ds).getDay()]} ${fmtD(ds)}. Fazer hoje e mover o treino para hoje?${o?'\n\nO treino de hoje ('+o.titulo+') será trocado.':''}`))return;
-    moveToToday(ds);
+    const noRelogio=!!evOn(ds);moveToToday(ds);
+    if(noRelogio)setTimeout(()=>toast('Treino movido para hoje. Para ele aparecer no relógio, envie de novo.',5500),700);
   }
   openRec(hoje);
 };
@@ -5012,7 +5031,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-27b'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-27c'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
