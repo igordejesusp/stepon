@@ -792,6 +792,10 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .tzgp{margin:6px 0;padding:6px 0 6px 12px;border-left:2px solid var(--line);border-radius:0}.tzgh{display:flex;gap:10px;align-items:baseline;padding:4px 0 2px}.tzgh b{font-size:16px;color:var(--blue);font-weight:700}.tzgp .tzp{padding-left:2px}
 .tzb{display:flex;gap:10px;margin-top:26px}.tzp1{flex:7;min-width:0;height:52px;border-radius:26px;border:0;background:var(--blue);color:#001a33;font-size:16px;font-weight:800;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}.tzp1 svg{width:18px;height:18px}
 .tzi{flex:1.5;min-width:52px;height:52px;border-radius:26px;border:1.5px solid var(--line);background:var(--panel);color:var(--hi);display:grid;place-items:center;padding:0}.tzi svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* botões do mapa: troféu em emoji e "onde estou" com bolinha azul com luz */
+.fab .fem{font-size:25px;line-height:1;display:block}
+.fab .bola{display:block;width:14px;height:14px;border-radius:50%;background:#4a9eff;margin:auto;box-shadow:0 0 0 5px rgba(74,158,255,.22),0 0 14px 4px rgba(74,158,255,.55)}
 </style>
 </head>
 <body>
@@ -3914,7 +3918,7 @@ function infoTerr(){const M=MODO(),tot=TD.reduce((s,o)=>s+o.km2,0),np=people().l
   $('#c-info').textContent=TD.length?`${M==='a'?(np>1?`${np-1} ${np===2?'seguindo':'seguindo'}`:'só você'):`${np} ${np===1?'atleta':'atletas'}`} · ${fmtKm2(tot)} dominados`:(M==='a'&&np<2?'Siga pessoas e corra para dominar áreas':'Feche um circuito correndo para dominar uma área')}
 function rComp(){
   const el=$('#comp'),M=MODO();
-  if(!$('#cmap'))el.innerHTML=`<div id="cmap"></div><div class="cbar"><div class="cr"><div class="seg" id="c-seg"><button data-m="a" onclick="setModo('a')">SEGUINDO</button><button data-m="g" onclick="setModo('g')">GERAL</button></div></div><div class="cr"><span class="chip" id="c-info">CARREGANDO…</span><button class="chip b" id="c-add" onclick="openSeg('g')">+ SEGUIR</button></div></div><button class="fab fabl" onclick="openRank()" aria-label="Ranking"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4v1.5A3.5 3.5 0 007.5 11M17 6h3v1.5a3.5 3.5 0 01-3.5 3.5"/></svg><i id="c-rkd" class="rkd"></i></button><button class="fab" onclick="locateMe(1)" aria-label="Onde estou">◎</button>`;
+  if(!$('#cmap'))el.innerHTML=`<div id="cmap"></div><div class="cbar"><div class="cr"><div class="seg" id="c-seg"><button data-m="a" onclick="setModo('a')">SEGUINDO</button><button data-m="g" onclick="setModo('g')">GERAL</button></div><button class="chip b" id="c-add" onclick="openSeg('g')">+ SEGUIR</button></div><div class="cr"><span class="chip" id="c-info">CARREGANDO…</span></div></div><button class="fab fabl" onclick="openRank()" aria-label="Ranking"><span class="fem">🏆</span><i id="c-rkd" class="rkd"></i></button><button class="fab" onclick="locateMe(1)" aria-label="Onde estou"><i class="bola"></i></button>`;
   document.querySelectorAll('#c-seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===M));
   document.querySelector('#c-seg button[data-m=a]').innerHTML='SEGUINDO';
   $('#c-add').style.display=M==='a'?'':'none';
@@ -5031,7 +5035,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-28a'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-28b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
