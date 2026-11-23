@@ -770,6 +770,17 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .dpt4{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
 .dpsvg{width:100%;height:auto;display:block}.dpv2{fill:var(--hi);font:700 11px var(--m)}.dpl{fill:var(--dim);font-size:9.5px}
 .hmg{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);grid-template-columns:repeat(12,1fr);gap:4px}.hm{display:block;aspect-ratio:1;border-radius:4px;background:var(--line2)}.hm[data-n="1"]{background:rgba(74,158,255,.28)}.hm[data-n="2"]{background:rgba(74,158,255,.5)}.hm[data-n="3"]{background:rgba(74,158,255,.75)}.hm[data-n="4"]{background:#4a9eff}.hm.fu{opacity:.25}
+
+/* tela do treino: sem blocos, com o perfil do treino */
+.tvh{padding:6px 0 4px}.tvk{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.tvh h1{font-size:30px;line-height:1.12;color:var(--hi);margin:12px 0 6px;letter-spacing:-.02em}.tvm{font-size:15px;color:var(--dim)}.tvm .okk{color:#5fd18a}.tvm .bd2{color:var(--red)}
+.tvg{width:100%;height:112px;display:block;margin-top:22px}.tvgl{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:4px}
+.tvs{margin-top:20px;border-top:1px solid var(--line2)}.tvl{display:flex;align-items:center;gap:14px;padding:13px 2px;border-bottom:1px solid var(--line2)}.tvl i{width:10px;height:10px;border-radius:50%;flex:none}.tvl b{display:block;font-size:16px;color:var(--hi);font-weight:600}.tvl b em{font-style:normal;color:var(--dim);font-weight:500;margin-left:4px}.tvl span{display:block;font-size:13.5px;color:var(--dim);margin-top:2px}
+.tvd{margin:16px 2px 0;padding-left:12px;border-left:3px solid var(--blue);font-size:14.5px;line-height:1.5;color:var(--txt)}
+.tvc{margin:18px 0 0;padding:2px 0 2px 12px;border-left:3px solid #f0a040;display:flex;flex-direction:column;gap:6px}.tvc b{color:#f0a040;font-size:13px}.tvc span{font-size:14px;line-height:1.5;color:var(--txt)}.tvc .sgb{align-self:flex-start}
+.tva{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+.tvp{height:56px;border-radius:28px;border:0;background:var(--blue);color:#001a33;font-size:18px;font-weight:800;font-family:inherit}.tvq{height:50px;border-radius:25px;border:1.5px solid var(--blue);background:none;color:var(--blue);font-size:16px;font-weight:700;font-family:inherit}
+.tvr{display:flex;justify-content:center;gap:28px;margin-top:2px}.tvr button{background:none;border:0;color:var(--hi);font-size:15px;font-weight:600;font-family:inherit;padding:8px 4px}
+.tvn{background:none;border:0;color:var(--dim);font-size:14px;font-family:inherit;padding:8px;margin-top:4px}.tvn.on{color:#8f7bff}
 </style>
 </head>
 <body>
@@ -1665,14 +1676,30 @@ function treinoMini(nx,ds){
   return `<div class="card tmini" onclick="abreTreino('${nx.date}')"><div class="tmb"><span class="tmic"><svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg></span><div class="tmn"><span class="tmd">${dia}</span><b>${esc(nx.titulo)}</b><small>${esc(sub)}</small></div><span class="tmg">›</span></div></div>`;
 }
 function treinoDet(nx){
-  const ds=ymd(TODAY()),r=readiness(TODAY()),adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
-  return `<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagStx(st)}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
-    ${adj?`<div class="coach"><b class="bad" style="color:var(--bad)">COACH // AJUSTE PROPOSTO</b>${esc(adj.why)}<div class="row" style="margin-top:8px"><button class="b sm pri" onclick="closeSheet();acceptAdj('${nx.date}')">Aceitar ajuste</button></div></div>`:''}
-    ${hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="closeSheet();sendWatch('${nx.date}')">${st==='enviado'?'Reenviar ao relógio':'▲ Enviar ao relógio'}</button>`:''}
-    <button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="closeSheet();fazerTreino('${nx.date}')">▶ Fazer treino agora</button>
-    <div class="grid g2" style="margin-top:8px">${nx.date<=ds?`<button class="b" onclick="closeSheet();markDone('${nx.date}')">✓ Marcar feito</button>`:`<button class="b" onclick="openDay('${nx.date}')">Ver o dia</button>`}<button class="b" onclick="openBuilder('${nx.date}')">Editar treino</button></div>
-    ${st==='cumprido'?'':nx.planoB?`<button class="pbb on" onclick="closeSheet();pbVolta('${nx.date}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${nx.date}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`}</div>`;
+  const ds=ymd(TODAY()),r=readiness(TODAY()),adj=adjust(nx,r),st=status(nx),d=parseD(nx.date),kd=tipoKind(nx),K=TK[kd],m=treinoDurMin(nx);
+  const V=curV(),Z=V?paceZones(V):null,easy=Z?(Z.E[0]+Z.E[1])/2:390,F=flatSteps(nx);
+  // perfil do treino: cada etapa é uma barra (largura = duração, altura e cor = intensidade)
+  const cor=e=>{if(!e.pace)return /Rec|Caminh|Parado|Pausa/i.test(e.nome)?'#7fa8c9':'#34c759';const mid=(Math.min(...e.pace)+Math.max(...e.pace))/2,df=easy-mid;return df<22?'#34c759':df<55?'#f0c24b':df<100?'#ff7a2f':'#ff4d5e'};
+  const alt=e=>{if(!e.pace)return 26;const mid=(Math.min(...e.pace)+Math.max(...e.pace))/2;return clamp(30+(easy-mid)*0.55,26,92)};
+  const dur=e=>e.s?e.s:(e.m/1000)*(e.pace?(Math.min(...e.pace)+Math.max(...e.pace))/2:easy);
+  const tot=F.reduce((t,e)=>t+dur(e),0)||1;let x0=0;
+  const barras=F.map(e=>{const w=Math.max(3,dur(e)/tot*336),h=alt(e),x=x0;x0+=w+(w>3?1.5:.5);return `<rect x="${x.toFixed(1)}" y="${(100-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4,w/2).toFixed(1)}" fill="${cor(e)}"/>`}).join('');
+  const esc2=x0>340?340/x0:1;
+  const perfil=F.length?`<svg viewBox="0 0 ${Math.max(340,x0)} 108" class="tvg" preserveAspectRatio="none">${barras}</svg><div class="tvgl"><span>0</span><span>${durCurta(m)||''}</span></div>`:'';
+  const linhas=nx.steps.map(s=>{const e=mkLinha(s);return `<div class="tvl"><i style="background:${cor(e)}"></i><div><b>${esc(s[0])}${s[3]?` <em>${s[3]}×</em>`:''}</b><span>${esc(s[1])}${s[2]?' · '+fmtP(Math.min(...s[2]))+'–'+fmtP(Math.max(...s[2]))+'/km':''}</span></div></div>`}).join('');
+  return `<div class="tvh"><span class="tvk" style="--c:${K.c}">${kChip(kd)}<b style="color:${K.c}">${K.n}</b></span><h1>${esc(nx.titulo)}</h1><div class="tvm">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${nx.km} km${m?' · '+durCurta(m):''}${st==='cumprido'?' · <span class="okk">feito</span>':st==='perdido'?' · <span class="bd2">perdido</span>':''}</div></div>
+  ${perfil}
+  <div class="tvs">${linhas}</div>
+  ${nx.dica?`<p class="tvd">${esc(nx.dica)}</p>`:''}
+  ${adj?`<div class="tvc"><b>Ajuste sugerido pelo coach</b><span>${esc(adj.why)}</span><button class="sgb pri" onclick="closeSheet();acceptAdj('${nx.date}')">Aceitar ajuste</button></div>`:''}
+  <div class="tva">
+    <button class="tvp" onclick="closeSheet();fazerTreino('${nx.date}')">▶ Fazer treino agora</button>
+    ${hasWatch()?`<button class="tvq" onclick="closeSheet();sendWatch('${nx.date}')">${st==='enviado'?'Reenviar ao relógio':'Enviar ao relógio'}</button>`:''}
+    <div class="tvr">${nx.date<=ds?`<button onclick="closeSheet();markDone('${nx.date}')">Marcar feito</button>`:`<button onclick="openDay('${nx.date}')">Ver o dia</button>`}<button onclick="openBuilder('${nx.date}')">Editar treino</button></div>
+    ${st==='cumprido'?'':nx.planoB?`<button class="tvn on" onclick="closeSheet();pbVolta('${nx.date}')">Plano B ativo · voltar ao treino original</button>`:`<button class="tvn" onclick="planoB('${nx.date}')">Não estou bem para este treino</button>`}
+  </div>`;
 }
+const mkLinha=s=>{const m=/^([\d.]+)(km|m|min|s)$/.exec(s[1])||[],v=parseFloat(m[1])||0,u=m[2];return {nome:s[0],m:u==='km'?v*1000:u==='m'?v:0,s:u==='min'?v*60:u==='s'?v:0,pace:s[2]||null}};
 window.abreTreino=date=>{const nx=plan().find(p=>p.date===date);if(!nx)return;
   openSheet(`<div class="hd"><b>${date===ymd(TODAY())?'Treino de hoje':'Próximo treino'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+treinoDet(nx),1)};
 function rIni(){
@@ -4169,13 +4196,51 @@ async function evCarrega(id,force){
     if(VIEW==='ini'&&!$('#sheet').classList.contains('on'))render();evPaginaAtualiza(id)}catch(x){}
 }
 // quem participa: o treino do dia da prova vira a prova (não acumula); o original fica guardado para voltar se a pessoa sair
+
+/* ---------- semana de prova (corridas do StepOn e feriados) ----------
+   Regra do Igor: o dia anterior à prova fica livre; os treinos anteriores sobem para a frente da semana; depois da prova,
+   se ela cai na sexta ou no sábado, o fim de semana vira uma rodagem leve no domingo para soltar o corpo. */
+function evAjustaSemana(e){
+  const aj=LS.get('evaj',{});if(aj[e.id])return;
+  const D0=e.data,hoje=ymd(TODAY());if(D0<hoje){aj[e.id]=[];LS.set('evaj',aj);return}
+  const dD=parseD(D0),m=monday(dD),mS=ymd(m),dom=ymd(addD(m,6)),dow=(dD.getDay()+6)%7,piso=mS>hoje?mS:hoje;
+  const P=plan().filter(x=>x.date>=piso&&x.date<=dom&&x.date!==D0&&!x.off&&x.tipo!=='prova').sort((a,b)=>a.date<b.date?-1:1);
+  const ant=P.filter(x=>x.date<D0),dep=P.filter(x=>x.date>D0),dm1=ymd(addD(dD,-1));
+  const rem=[],mover=[];
+  for(const x of ant){if(x.date===dm1&&x.tipo!=='rodagem'&&x.tipo!=='caminhada')rem.push(x);else mover.push(x)} // longão e qualidade colados na prova saem
+  const novos=[];let prev=null;
+  for(const x of [...mover].reverse()){
+    const orig=parseD(x.date),lim=prev?addD(prev.nd,-Math.min(2,Math.max(1,Math.round((prev.orig-orig)/864e5)))):addD(dD,-2);
+    const nd=orig<lim?orig:lim;
+    if(nd<parseD(piso)){rem.push(x);continue}
+    novos.push({x,nd:ymd(nd)});prev={orig,nd};
+  }
+  const apaga=[...rem.map(x=>x.date),...novos.filter(n=>n.nd!==n.x.date).map(n=>n.x.date)],poe=novos.filter(n=>n.nd!==n.x.date);
+  let luz=null;
+  if(dow===4||dow===5){dep.forEach(x=>apaga.push(x.date));if(dom>D0&&!plan().some(x=>x.date===dom&&x.tipo==='prova'))luz=dom}
+  else if(dow<=3){const dp1=ymd(addD(dD,1));dep.filter(x=>x.date===dp1).forEach(x=>apaga.push(x.date))}
+  const tocados=[...new Set([...apaga,...poe.map(n=>n.nd),...(luz?[luz]:[])])];
+  if(!tocados.length){aj[e.id]=[];LS.set('evaj',aj);return}
+  tocados.forEach(pbGuarda);
+  const ex=LS.get('extra',{}),ov=LS.get('ov',{});
+  [...new Set(apaga)].forEach(ds=>{bClear(ex,ds);delete ov[ds]});
+  poe.forEach(n=>{ex[n.nd]={...n.x,date:n.nd,custom:1,criado:hoje,evaj:e.id};delete ov[n.nd]});
+  if(luz){const V=curV(),Z=V?paceZones(V):null,ez=Z&&Z.E?[Math.round(Z.E[0]),Math.round(Z.E[1])]:null;
+    ex[luz]={date:luz,tipo:'rodagem',titulo:'Rodagem leve de soltura',km:3,steps:[['Contínuo','3km',ez]],custom:1,criado:hoje,evaj:e.id};delete ov[luz]}
+  LS.set('extra',ex);LS.set('ov',ov);aj[e.id]=tocados;LS.set('evaj',aj);
+  toast('A sua semana foi ajustada para a '+e.nome+': o dia anterior à prova ficou livre.',5000);
+}
+function evRestauraSemana(e){
+  const aj=LS.get('evaj',{});(aj[e.id]||[]).forEach(ds=>{const B=LS.get('pbk',{}),b=B[ds];if(!b)return;const ex=LS.get('extra',{}),ov=LS.get('ov',{});
+    if(b.ex)ex[ds]=b.ex;else delete ex[ds];if(b.ov)ov[ds]=b.ov;else delete ov[ds];delete B[ds];LS.set('pbk',B);LS.set('extra',ex);LS.set('ov',ov)});
+  delete aj[e.id];LS.set('evaj',aj)}
 function evAplicaPlano(e,quieto){
   const ds=e.data;if(ds<ymd(TODAY())&&Date.now()>Date.parse(e.fim))return;
   const atual=(LS.get('extra',{})[ds]||{}).evento;if(atual===e.id)return;
   pbGuarda(ds);const ex=LS.get('extra',{}),ov=LS.get('ov',{});let pace=null;const V=curV();if(V){const s=predict(V,e.dist)/(e.dist/1000);pace=[Math.round(s-4),Math.round(s+4)]}
   ex[ds]={date:ds,tipo:'prova',titulo:e.nome+' · '+e.km,km:e.dist/1000,steps:[['Prova',(e.dist/1000)+'km',pace]],custom:1,evento:e.id,criado:ymd(TODAY())};delete ov[ds];
-  LS.set('extra',ex);LS.set('ov',ov);if(!quieto)render()}
-function evRestaura(e){const ds=e.data,ex=LS.get('extra',{});if(!ex[ds]||ex[ds].evento!==e.id)return;
+  LS.set('extra',ex);LS.set('ov',ov);try{evAjustaSemana(e)}catch(x){}if(!quieto)render()}
+function evRestaura(e){evRestauraSemana(e);const ds=e.data,ex=LS.get('extra',{});if(!ex[ds]||ex[ds].evento!==e.id)return;
   const B=LS.get('pbk',{}),b=B[ds],ov=LS.get('ov',{});
   if(b){if(b.ex)ex[ds]=b.ex;else delete ex[ds];if(b.ov)ov[ds]=b.ov;else delete ov[ds];delete B[ds];LS.set('pbk',B)}else delete ex[ds];
   LS.set('extra',ex);LS.set('ov',ov)}
@@ -4900,7 +4965,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-25c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-26a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -5037,7 +5102,7 @@ $('#sync').onclick=()=>sync(0);
 // junta cada título de seção (.sec) com o conteúdo dele num bloco, para as colunas não cortarem uma seção ao meio
 function groupBlocks(el){const K=[...el.children];if(!K.length||K[0].classList.contains('blk'))return;let b=null;
   for(const k of K){if(!b||k.classList.contains('sec')){b=document.createElement('div');b.className='blk';el.insertBefore(b,k)}b.appendChild(k)}}
-function render(){normNomes();render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
+function render(){normNomes();try{EVENTOS.forEach(e=>{if(evDentro(e.id)&&!(LS.get('evaj',{})[e.id]))evAjustaSemana(e)})}catch(x){}render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
 function render2(){if(_desk===null)marcaDesk();
   const ob=needOB();document.body.classList.toggle('ob',ob);
   const fab=$('#recfab');fab.classList.toggle('on',!ob&&temConta()&&(VIEW==='ini'||recLive())&&!$('#rec').classList.contains('on'));fab.classList.toggle('live',recLive());
