@@ -685,6 +685,11 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .dpt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.dpt>div{display:flex;flex-direction:column;gap:2px}.dpt span{font-size:12px;color:var(--dim)}.dpt b{font-size:22px;color:var(--hi);font-variant-numeric:tabular-nums;white-space:nowrap}.dpt b em{font-style:normal;font-size:12px;color:var(--dim);margin-left:2px}
 .dpt small{font-size:12px;color:var(--dim)}.dpt small.ok{color:#5fd18a}.dpt small.mn{color:var(--dim)}
 .dpb{display:flex;align-items:flex-end;gap:7px;height:78px;margin-top:14px}.dpv{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}.dpv i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:var(--blue);opacity:.35}.dpv i.on{opacity:1}.dpv span{font-size:10px;color:var(--dim);white-space:nowrap}
+
+/* bloquinho do treino na página inicial (estilo Garmin Connect) */
+.tmini{cursor:pointer;padding:14px 16px}.tmt{display:flex;align-items:center;justify-content:space-between}.tchip{background:var(--cell);border:1px solid var(--line2);border-radius:8px;padding:4px 10px;font-size:11px;letter-spacing:.1em;color:var(--txt);font-weight:600}.tdia{font-size:12px;color:var(--dim)}
+.tmb{display:flex;align-items:center;gap:14px;margin-top:12px}.tmic{width:48px;height:48px;border-radius:50%;background:var(--cell);border:1px solid var(--line2);display:grid;place-items:center;flex:none}.tmic svg{width:24px;height:24px;fill:#f0a040}
+.tmn{flex:1;min-width:0}.tmn b{display:block;font-size:17px;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tmn small{display:block;font-size:13px;color:var(--dim);margin-top:3px}.tmg{color:var(--dim);font-size:22px;line-height:1;flex:none}
 </style>
 </head>
 <body>
@@ -1529,6 +1534,29 @@ function desempBox(cur){
     <div class="dpt">${tile('Ritmo médio',pa?fmtP(pa)+'<em>/km</em>':'--',dPace)}${tile('Km por semana',a.d>0?ka.toFixed(1).replace('.',','):'--',dKm)}${tile('Forma',cur?cur.ctl.toFixed(0):'--',dF)}</div>
     <div class="dpb">${bars}</div><p class="meta" style="margin-top:6px">Últimas 4 semanas comparadas com as 4 anteriores. Barras: km por semana.</p></div>`;
 }
+// bloquinho pequeno da página inicial (como no Garmin Connect); os detalhes abrem em tela cheia
+function treinoDurMin(p){let t=0,ok=false;for(const s of p.steps||[]){const v=String(s[1]),n=parseFloat(v.replace(',','.'))||0,rep=s[3]||1,pc=s[2]&&s[2].length?(Math.min(...s[2])+Math.max(...s[2]))/2:390;let m=null;
+    const u=(v.match(/[a-zA-Z]+\s*$/)||[''])[0].trim().toLowerCase();
+    if(u==='min')m=n;else if(u==='km')m=n*pc/60;else if(u==='m')m=n/1000*pc/60;else if(u==='s'||u==='seg')m=n/60;
+    if(m==null)continue;t+=m*rep;ok=true}
+  if(!ok&&p.km)return Math.round(p.km*6.5);return ok?Math.round(t):null}
+const tempoEst=m=>m==null?'':'Est. de '+(m>=60?Math.floor(m/60)+' h '+(m%60?m%60+' min':''):m+' min');
+function treinoMini(nx,ds){
+  const st=status(nx),d=parseD(nx.date),m=treinoDurMin(nx),dia=nx.date===ds?'Hoje':DOW[d.getDay()]+' '+nx.date.slice(8)+'/'+nx.date.slice(5,7);
+  const sub=[tempoEst(m)||(nx.km?kmTxt(nx.km)+' km':''),st==='cumprido'?'Treino concluído':nx.planoB?'Plano B':'Treino programado'].filter(Boolean).join(' · ');
+  return `<div class="card tmini" onclick="abreTreino('${nx.date}')"><div class="tmt"><span class="tchip">TREINO</span><span class="tdia">${dia}</span></div><div class="tmb"><span class="tmic"><svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg></span><div class="tmn"><b>${esc(nx.titulo)}</b><small>${esc(sub)}</small></div><span class="tmg">›</span></div></div>`;
+}
+function treinoDet(nx){
+  const ds=ymd(TODAY()),r=readiness(TODAY()),adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
+  return `<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagStx(st)}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
+    ${adj?`<div class="coach"><b class="bad" style="color:var(--bad)">COACH // AJUSTE PROPOSTO</b>${esc(adj.why)}<div class="row" style="margin-top:8px"><button class="b sm pri" onclick="closeSheet();acceptAdj('${nx.date}')">Aceitar ajuste</button></div></div>`:''}
+    ${hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="closeSheet();sendWatch('${nx.date}')">${st==='enviado'?'Reenviar ao relógio':'▲ Enviar ao relógio'}</button>`:''}
+    <button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="closeSheet();fazerTreino('${nx.date}')">▶ Fazer treino agora</button>
+    <div class="grid g2" style="margin-top:8px">${nx.date<=ds?`<button class="b" onclick="closeSheet();markDone('${nx.date}')">✓ Marcar feito</button>`:`<button class="b" onclick="openDay('${nx.date}')">Ver o dia</button>`}<button class="b" onclick="openBuilder('${nx.date}')">Editar treino</button></div>
+    ${st==='cumprido'?'':nx.planoB?`<button class="pbb on" onclick="closeSheet();pbVolta('${nx.date}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${nx.date}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`}</div>`;
+}
+window.abreTreino=date=>{const nx=plan().find(p=>p.date===date);if(!nx)return;
+  openSheet(`<div class="hd"><b>${date===ymd(TODAY())?'Treino de hoje':'Próximo treino'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+treinoDet(nx),1)};
 function rIni(){
   const el=$('#ini');
   if(!temConta()){el.innerHTML=`<div class="sec">CONFIGURAÇÃO</div><div class="card alert"><h2>Sem conexão com o Intervals.icu</h2><p class="empty">Toque no botão abaixo para entrar com a sua conta.</p>${btnEntrar('margin-top:10px')}</div>`;return}
@@ -1575,15 +1603,10 @@ function rIni(){
   const mP=h.length;
   // próxima atividade
   const nx=plan().filter(p=>p.date>=ds&&!casaPlano()[p.date])[0];
-  h+=`<div class="sec">PRÓXIMA ATIVIDADE</div>`;
+  h+=`<div class="sec">${nx&&nx.date===ds?'ATIVIDADE DE HOJE':'PRÓXIMA ATIVIDADE'}</div>`;
   if(pbLivreHoje())h+=`<div class="card"><p class="empty" style="color:var(--txt)">Hoje é dia livre: você escolheu descansar. O plano segue normal amanhã.</p><button class="b full" style="margin-top:8px" onclick="pbVolta('${ds}')">Voltar ao treino de hoje</button></div>`;
   if(nx){const adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
-    h+=`<div class="card cur"><div class="row" style="justify-content:space-between"><span class="lbl">${DOW[d.getDay()]} ${nx.date.slice(8)}/${nx.date.slice(5,7)} · ${tipoIc[nx.tipo]}</span>${tagStx(st)}</div><h2 style="margin-top:4px">${esc(nx.titulo)}</h2><div class="meta">${nx.km} km</div>${stepsHtml(nx)}${nx.dica?`<p class="empty" style="margin-top:8px">${esc(nx.dica)}</p>`:''}
-    ${adj?`<div class="coach"><b class="bad" style="color:var(--bad)">COACH // AJUSTE PROPOSTO</b>${esc(adj.why)}<div class="row" style="margin-top:8px"><button class="b sm pri" onclick="acceptAdj('${nx.date}')">Aceitar ajuste</button></div></div>`:''}
-    ${hasWatch()?`<button class="b pri full" style="margin-top:10px" onclick="sendWatch('${nx.date}')">${st==='enviado'?'Reenviar ao relógio':'▲ Enviar ao relógio'}</button>`:''}
-    <button class="b ${hasWatch()?'':'pri'} full" style="margin-top:8px" onclick="fazerTreino('${nx.date}')">▶ Fazer treino agora</button>
-    <div class="grid g2" style="margin-top:8px">${nx.date<=ds?`<button class="b" onclick="markDone('${nx.date}')">✓ Marcar feito</button>`:`<button class="b" onclick="openDay('${nx.date}')">Ver o dia</button>`}<button class="b" onclick="openBuilder('${nx.date}')">Editar treino</button></div>
-    ${st==='cumprido'?'':nx.planoB?`<button class="pbb on" onclick="pbVolta('${nx.date}')">${PB_ICO}<span><b>Plano B ativo</b><small>Voltar ao treino original</small></span></button>`:`<button class="pbb" onclick="planoB('${nx.date}')">${PB_ICO}<span><b>Não estou bem para este treino</b><small>Ver o plano B do coach</small></span></button>`}</div>`}
+    h+=treinoMini(nx,ds)}
   else if(PF)h+=`<div class="card cur"><h2>Plano concluído</h2><p class="empty" style="margin-top:4px">Os treinos deste ciclo acabaram. Responda o questionário de novo para montar o próximo com base no que você fez.</p><button class="b pri full" style="margin-top:10px" onclick="redoPlan()">Montar o próximo plano</button></div>`;
   else h+=`<div class="card"><p class="empty">Nenhuma atividade planejada.</p><button class="b full" style="margin-top:8px" onclick="openBib()">+ Escolher um treino</button></div>`;
   const mE=h.length;
@@ -4538,7 +4561,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-23b'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-23c'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
