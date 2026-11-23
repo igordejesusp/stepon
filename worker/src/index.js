@@ -277,6 +277,34 @@ async function denuncias(env, b) {
   for (const id of L.slice(-100).reverse()) { const r = await env.BR.get('rep:' + id, 'json'); if (r) out.push(r); }
   return { ok: true, denuncias: out };
 }
+// ---------- conta própria do StepOn: ID interno, e-mail e vínculo com o Intervals ----------
+// O ID interno (uXXXX) não depende do Intervals: se um dia houver outro provedor ou login por e-mail, ele entra como outro vínculo da mesma conta.
+const EMAIL_OK = /^[^@\s]{1,64}@[^@\s]{1,190}\.[^@\s]{2,}$/;
+async function contaStepOn(env, athlete, a, acao, b) {
+  const kp = 'prov:intervals:' + athlete;
+  let uid = await env.BR.get(kp);
+  let c = uid ? await env.BR.get('acc:' + uid, 'json') : null;
+  if (!c) {
+    uid = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    let em = typeof a.email === 'string' && EMAIL_OK.test(a.email.trim()) ? a.email.trim().toLowerCase() : '';
+    if (em) { const dono = await env.BR.get('em:' + em); if (dono && dono !== uid) em = ''; }
+    c = { uid, email: em, emailOk: false, origem: em ? 'intervals' : '', provedores: { intervals: athlete }, criado: Date.now() };
+    if (em) await env.BR.put('em:' + em, uid);
+    await env.BR.put('acc:' + uid, JSON.stringify(c));
+    await env.BR.put(kp, uid);
+  }
+  if (acao === 'email') {
+    const em = String(b.email || '').trim().toLowerCase();
+    if (!EMAIL_OK.test(em)) return { erro: 'e-mail inválido' };
+    const dono = await env.BR.get('em:' + em);
+    if (dono && dono !== c.uid) return { erro: 'este e-mail já está em uso em outra conta' };
+    if (c.email && c.email !== em) await env.BR.delete('em:' + c.email);
+    c.email = em; c.emailOk = false; c.origem = 'digitado';
+    await env.BR.put('em:' + em, c.uid);
+    await env.BR.put('acc:' + c.uid, JSON.stringify(c));
+  } else if (acao !== 'ver') return { erro: 'ação inválida' };
+  return { ok: true, conta: { uid: c.uid, email: c.email, emailOk: !!c.emailOk, origem: c.origem, provedores: Object.keys(c.provedores || {}), criado: c.criado } };
+}
 async function excluirConta(env, id) {
   // fotos
   const g = (await env.BR.get('g:' + id, 'json')) || [];
@@ -331,6 +359,9 @@ async function excluirConta(env, id) {
   } while (cur);
   if (meds.length) { const L = ((await env.BR.get('mpl', 'json')) || []).filter((x) => !meds.includes(x)); await env.BR.put('mpl', JSON.stringify(L)); }
   // o resto: resumo publicado, detalhes, backup, bloqueios e marcas
+  const uidc = await env.BR.get('prov:intervals:' + id);
+  if (uidc) { const cc = await env.BR.get('acc:' + uidc, 'json'); if (cc && cc.email) await env.BR.delete('em:' + cc.email); await env.BR.delete('acc:' + uidc); }
+  await env.BR.delete('prov:intervals:' + id);
   for (const k of ['a:' + id, 'xr:' + id, 'fora:' + id, 'u:' + id, 'g:' + id, 'm:' + id, 'bl:' + id, 'f:' + id]) await env.BR.delete(k);
   await trocaNoSnap(env, id, null);
   return { ok: true };
@@ -648,11 +679,12 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    if (req.method === 'POST' && ['/excluir', '/bloquear', '/denunciar', '/denuncias'].includes(url.pathname)) {
+    if (req.method === 'POST' && ['/excluir', '/bloquear', '/denunciar', '/denuncias', '/conta'].includes(url.pathname)) {
       let b;
       try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
       const a = await confere(b.athlete, b.key, b.token);
       if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      if (url.pathname === '/conta') { const r = await contaStepOn(env, b.athlete, a, b.acao || 'ver', b); return json(req, r, r.erro ? 400 : 200); }
       if (url.pathname === '/excluir') { if (b.confirmar !== 'EXCLUIR') return json(req, { erro: 'confirmação ausente' }, 400); return json(req, await excluirConta(env, b.athlete)); }
       if (url.pathname === '/bloquear') { const r = await bloquear(env, b.athlete, b.acao || 'lista', b.alvo); return json(req, r, r.erro ? 400 : 200); }
       if (url.pathname === '/denunciar') { const r = await denunciar(env, b.athlete, b); return json(req, r, r.erro ? 400 : 200); }
