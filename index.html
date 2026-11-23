@@ -751,6 +751,19 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .dsr{display:flex;align-items:center;gap:16px;padding:16px}.dsr svg{flex:none}.dsl{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}.dsl>div{display:flex;flex-direction:column;gap:1px}.dsl b{font-size:13px;color:var(--hi);display:flex;align-items:center;gap:7px}.dsl b i{width:9px;height:9px;border-radius:50%;flex:none}.dsl span{font-size:12px;color:var(--dim)}.dsl em{font-style:normal;margin-left:auto;color:var(--hi);font-family:var(--m)}
 /* perfil: faixa com 3 números */
 .pfg svg{width:15px;height:15px;vertical-align:-2px}.pstat{display:grid;grid-template-columns:repeat(3,1fr);margin:14px 0 6px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:12px 0;text-align:center}.pstat>div+div{border-left:1px solid var(--line2)}.pstat b{display:block;font-size:22px;color:var(--hi);font-family:var(--m)}.pstat span{font-size:12px;color:var(--dim)}
+
+/* mapa: troféu do ranking no canto de baixo à esquerda */
+.fab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block;margin:auto}.fab.fabl{left:12px;right:auto}
+.rkd{display:none;position:absolute;top:2px;right:2px;width:11px;height:11px;border-radius:50%;background:#ff4d5e;border:2px solid var(--bg)}
+.rkst{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin:2px 0 12px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.rkst b{display:block;font-size:15px;color:var(--hi)}.rkst small{font-size:12px;color:var(--dim)}
+/* menu Mais: lista de configurações */
+.mhd{display:flex;align-items:center;gap:14px;padding:14px;margin-bottom:6px;border:1px solid var(--line);border-radius:18px;background:var(--panel);cursor:pointer}.mhd b{display:block;font-size:18px;color:var(--hi)}.mhd small{font-size:13px;color:var(--dim)}.mhd .mrg{margin-left:auto}
+.mgt{font-size:12px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin:20px 4px 8px;font-weight:600}
+.mgl{border:1px solid var(--line);border-radius:18px;background:var(--panel);overflow:hidden}
+.mrw{display:flex;align-items:center;gap:14px;width:100%;padding:13px 14px;background:none;border:0;border-bottom:1px solid var(--line2);color:var(--hi);text-align:left;cursor:pointer;font:inherit}.mrw:last-child{border-bottom:0}
+.mri{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}.mri svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mrt{flex:1;min-width:0}.mrt b{display:block;font-size:15px;font-weight:600}.mrt small{display:block;font-size:12.5px;color:var(--dim);margin-top:1px}.mrg{color:var(--dim);font-size:22px;line-height:1}
+.mrw .tag{flex:none}
 </style>
 </head>
 <body>
@@ -2038,6 +2051,8 @@ function rMais(soTres){
     ${M.alvo&&M.d?`<p class="empty" style="margin-top:8px;color:var(--txt)">Ritmo-alvo da prova: <b style="color:var(--hi)">${fmtP(M.alvo/M.d)}/km</b> (${kmTxt(M.d)} km em ${fmtT(M.alvo)})${M.data?' · dia '+fmtD(M.data):''}.${PF.Vsrc==='chute'&&!Object.keys(PF.tests||{}).length?' O teste de 1 km do plano vai medir o seu ritmo atual.':` Hoje a sua previsão é ${fmtP(predict(PF.V,M.dist)/M.d)}/km.`}</p>`:''}
     <p class="empty" style="margin-top:8px">Ritmo leve: ${fmtP(Z.E[0])}–${fmtP(Z.E[1])}/km. O volume sobe no máximo 8% por semana e, a cada 4 semanas, uma semana mais leve para o corpo assimilar.</p><p class="empty" style="margin-top:6px">Nível do plano: <b style="color:var(--hi)">${['iniciante','intermediário','avançado'][nivelDe(PF)]}</b>. Cada treino de qualidade se repete por 2 semanas antes de subir de degrau, e a cada 8 semanas o app marca um teste de 1 km para recalibrar os seus ritmos.</p>
     <button class="b full" style="margin-top:10px" onclick="redoPlan()">Refazer o questionário</button></div>`}
+  const devH=mc&&mc!=='nenhum'||true?h.slice(0,h.indexOf('<div class="sec">MEU PLANO</div>')>=0?h.indexOf('<div class="sec">MEU PLANO</div>'):h.length):h;
+  const planoH=h.indexOf('<div class="sec">MEU PLANO</div>')>=0?h.slice(h.indexOf('<div class="sec">MEU PLANO</div>')):'';
   if(souAdmin())h+=`<div class="sec">ADMINISTRAÇÃO</div><button class="card mpq" onclick="medCtl()"><b>Controle de medalhas</b><span class="meta">Pedidos de medalha em estilo de jogo: baixar a foto e enviar a imagem pronta.</span></button>`;
   const k1=h.length;
   h+=`<div class="sec">MODO DO APP</div><div class="card"><div class="seg"><button class="${TEMA()==='light'?'on':''}" onclick="setTema(1)">DIURNO</button><button class="${TEMA()==='light'?'':'on'}" onclick="setTema(0)">NOTURNO</button></div><p class="empty" style="margin-top:8px">Diurno deixa o app claro; noturno deixa o fundo preto.</p></div>`;
@@ -2066,14 +2081,43 @@ function rMais(soTres){
     if(soTres)return tres;;
   }
   if(SIMPLES())h=h.slice(0,mA2);
-  h+=`<div class="sec">CONEXÃO</div><div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?(LS.get('authRuim',0)?'<span class="tag bad">SEM ACESSO</span>':'<span class="tag ok">CONECTADO</span>'):'<span class="tag bad">NÃO CONECTADO</span>'}</div>
+  const conH=`<div class="card ${temConta()?'':'alert'}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">Intervals.icu</b>${temConta()?(LS.get('authRuim',0)?'<span class="tag bad">SEM ACESSO</span>':'<span class="tag ok">CONECTADO</span>'):'<span class="tag bad">NÃO CONECTADO</span>'}</div>
   <p class="empty" style="margin-top:6px">${CFG.token?(LS.get('authRuim',0)?'Este aparelho perdeu o acesso, provavelmente porque você entrou em outro. Toque em Reconectar.':'Conectado pelo login do Intervals. O app não guarda a sua senha.'):CFG.key?'Conectado pelo ID e pela chave de API.':'Entre com a sua conta do Intervals para o app ler as suas corridas e mandar os treinos.'}</p>
   ${CFG.token?(LS.get('authRuim',0)?btnEntrar('margin-top:10px','Reconectar'):''):btnEntrar('margin-top:10px')}${temConta()?'<button class="b red full" style="margin-top:10px" onclick="sairConta()">Sair da conta</button>':''}
-  <details style="margin-top:10px"><summary class="meta" style="cursor:pointer">Usar o ID e a chave de API</summary>${connForm('saveConn()','Salvar e sincronizar')}</details></div>
-  <div class="sec">SOBRE</div><div class="card"><p class="empty">Coach: por enquanto a leitura e os ajustes são calculados no próprio app (carga pela FC, forma, fadiga, VDOT, deriva cardíaca). A conexão com o Claude pela API da Anthropic entra na próxima fase, por um servidor próprio, para a chave não ficar no celular.</p><p class="empty" style="margin-top:8px"><a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--blue)">Política de privacidade</a></p><p class="empty" style="margin-top:8px"><a href="#" onclick="mapDiagAbre();return false" style="color:var(--blue)">Diagnóstico do mapa</a></p></div>`;
+  <details style="margin-top:10px"><summary class="meta" style="cursor:pointer">Usar o ID e a chave de API</summary>${connForm('saveConn()','Salvar e sincronizar')}</details></div>`;
+  const sobreH=`<div class="card"><p class="empty" style="color:var(--txt)">StepOn: treino de corrida, conquistas e áreas no mapa entre amigos. As suas corridas vêm do Intervals.icu e o app calcula forma, fadiga e ritmos para você.</p><p class="empty" style="margin-top:8px">Versão ${BUILD}</p></div>`;
+  const modoH=`<div class="card"><div class="seg"><button class="${TEMA()==='light'?'on':''}" onclick="setTema(1)">DIURNO</button><button class="${TEMA()==='light'?'':'on'}" onclick="setTema(0)">NOTURNO</button></div><p class="empty" style="margin-top:8px">Diurno deixa o app claro; noturno deixa o fundo preto.</p></div>`;
+  MAISP={dev:['Dispositivos',devH],plano:['Meu plano',planoH],con:['Conexão',conH],sobre:['Sobre',sobreH],modo:['Aparência',modoH]};
+  const ic=(d,c)=>`<span class="mri" style="background:${c}"><svg viewBox="0 0 24 24">${d}</svg></span>`;
+  const row=(onc,i,t,sub,extra)=>`<button class="mrw" onclick="${onc}">${i}<span class="mrt"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</span>${extra||'<span class="mrg">›</span>'}</button>`;
+  const devSub=(!mc||mc==='nenhum')?'Ligar o relógio':(esc(apar||'Garmin')+(a.gAct===false?' · atenção':' · conectado'));
+  const con=temConta()?(LS.get('authRuim',0)?'<span class="tag bad">SEM ACESSO</span>':'<span class="tag ok">CONECTADO</span>'):'<span class="tag bad">DESCONECTADO</span>';
+  const nome=a.name||'Atleta';
+  h=`<div class="mhd" onclick="go('perf')">${avatar({pic:myPic(),me:1},56)}<div><b>${esc(nome)}</b><small>Ver o meu perfil</small></div><span class="mrg">›</span></div>
+  <div class="mgt">Conta</div><div class="mgl">
+    ${row("maisAbre('con')",ic('<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>','#4a9eff'),'Conexão com o Intervals','',con)}
+    ${row("openNotif()",ic('<path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15L6 16zM10 20a2 2 0 004 0"/>','#ff7a2f'),'Notificações','')}
+  </div>
+  <div class="mgt">Treino</div><div class="mgl">
+    ${row("maisAbre('dev')",ic('<rect x="7" y="5" width="10" height="14" rx="3"/><path d="M9 2.5h6M9 21.5h6"/>','#34c759'),'Dispositivos',devSub)}
+    ${PF?row("maisAbre('plano')",ic('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>','#b06cff'),'Meu plano',esc(metaDe(PF).n)):''}
+    ${row("openBib()",ic('<path d="M4 5.5A2.5 2.5 0 016.5 3H20v16H6.5A2.5 2.5 0 004 21.5v-16zM4 19h16"/>','#f0a040'),'Biblioteca de treinos',BIBL.length+' treinos prontos')}
+  </div>
+  <div class="mgt">Aplicativo</div><div class="mgl">
+    ${row("maisAbre('modo')",ic(TEMA()==='light'?'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>':'<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>','#5e6ad2'),'Aparência',TEMA()==='light'?'Diurno':'Noturno')}
+    ${row("mapDiagAbre()",ic('<path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4zM9 4v13M15 7v13"/>','#19c9c0'),'Diagnóstico do mapa','')}
+  </div>
+  <div class="mgt">Informações</div><div class="mgl">
+    ${row("window.open('privacidade.html','_blank','noopener')",ic('<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6l7-3z"/>','#8a929e'),'Política de privacidade','')}
+    ${row("maisAbre('sobre')",ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/>','#8a929e'),'Sobre o StepOn','Versão '+BUILD)}
+  </div>
+  ${souAdmin()?`<div class="mgt">Administração</div><div class="mgl">${row("medCtl()",ic('<circle cx="12" cy="14" r="6"/><path d="M8.5 3h7l-2 5h-3z"/>','#ff4d5e'),'Controle de medalhas','Pedidos de medalha em estilo de jogo')}</div>`:''}
+  <div style="height:24px"></div>`;
   $('#mais').innerHTML=h;
   if($('#c-go'))connStatus();
 }
+let MAISP={};
+window.maisAbre=k=>{const m=MAISP[k];if(!m)return;openSheet(`<div class="hd"><b>${m[0]}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+m[1],1);if(k==='con'&&$('#c-go'))connStatus()};
 window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();toast('CONECTADO // '+(a.name||''),2500);sync(1)};
 
 /* ================= PERFIL ================= */
@@ -3631,7 +3675,7 @@ function infoTerr(){const M=MODO(),tot=TD.reduce((s,o)=>s+o.km2,0),np=people().l
   $('#c-info').textContent=TD.length?`${M==='a'?(np>1?`${np-1} ${np===2?'seguindo':'seguindo'}`:'só você'):`${np} ${np===1?'atleta':'atletas'}`} · ${fmtKm2(tot)} dominados`:(M==='a'&&np<2?'Siga pessoas e corra para dominar áreas':'Feche um circuito correndo para dominar uma área')}
 function rComp(){
   const el=$('#comp'),M=MODO();
-  if(!$('#cmap'))el.innerHTML=`<div id="cmap"></div><div class="cbar"><div class="cr"><div class="seg" id="c-seg"><button data-m="a" onclick="setModo('a')">SEGUINDO</button><button data-m="g" onclick="setModo('g')">GERAL</button></div><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="chip b" onclick="openRank()">RANKING</button><button class="chip b" id="c-me" onclick="openCompCfg()">EU</button></span></div><div class="cr"><span class="chip" id="c-info">CARREGANDO…</span><button class="chip b" id="c-add" onclick="openSeg('g')">+ SEGUIR</button></div></div><button class="fab" onclick="locateMe(1)" aria-label="Onde estou">◎</button>`;
+  if(!$('#cmap'))el.innerHTML=`<div id="cmap"></div><div class="cbar"><div class="cr"><div class="seg" id="c-seg"><button data-m="a" onclick="setModo('a')">SEGUINDO</button><button data-m="g" onclick="setModo('g')">GERAL</button></div></div><div class="cr"><span class="chip" id="c-info">CARREGANDO…</span><button class="chip b" id="c-add" onclick="openSeg('g')">+ SEGUIR</button></div></div><button class="fab fabl" onclick="openRank()" aria-label="Ranking"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4v1.5A3.5 3.5 0 007.5 11M17 6h3v1.5a3.5 3.5 0 01-3.5 3.5"/></svg><i id="c-rkd" class="rkd"></i></button><button class="fab" onclick="locateMe(1)" aria-label="Onde estou">◎</button>`;
   document.querySelectorAll('#c-seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===M));
   document.querySelector('#c-seg button[data-m=a]').innerHTML='SEGUINDO';
   $('#c-add').style.display=M==='a'?'':'none';
@@ -3654,7 +3698,7 @@ function rComp(){
       locateMe(0,1);
     });
   }).catch(e=>{mapDiag('mapa: '+(e&&e.message||'erro'));$('#c-info').textContent='Mapa indisponível sem internet'});
-  $('#c-me').textContent=LS.get('comp',null)==='sim'?'NO RANKING':'SÓ OLHANDO';
+  rkAtualiza();
   if(LS.get('comp',null)==null&&!$('#sheet').classList.contains('on')&&!window._compChk){window._compChk=1;pullAll().catch(()=>{}).then(()=>{if(VIEW!=='comp')return;if(LS.get('comp',null)==null)openCompCfg(1);else rComp()})}
   if(Date.now()-LS.get('pubAt',0)>120e3)rede();
 }
@@ -3867,10 +3911,12 @@ window.openMeusTerr=()=>{
 };
 window.terrNoMapa=i=>{const g=(window.__REG||[])[i];if(!g)return;closeSheet();go('comp');let t=0;
   const f=()=>{if(CM&&CM.isStyleLoaded&&CM.isStyleLoaded()){CM.fitBounds([[g.b[2],g.b[0]],[g.b[3],g.b[1]]],{padding:70,maxZoom:16,duration:600});return}if(++t<40)setTimeout(f,200)};setTimeout(f,300)};
+function rkAtualiza(){const d=$('#c-rkd');if(!d)return;try{const {L}=ranking(),j=L.findIndex(x=>x.u.me),v=LS.get('rkv',null);if(j<0){d.style.display='none';return}if(!v){LS.set('rkv',{j});d.style.display='none';return}d.style.display=v.j!==j?'block':'none'}catch(e){}}
 window.openRank=()=>{
   const {L,mes,dias}=ranking(),M=MODO(),meI=L.findIndex(x=>x.u.me),row=(x,j)=>`<div class="row" ${!x.u.me?`onclick="openPerfilAmigo('${esc(x.u.id)}')" `:''}style="flex-wrap:nowrap;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)"><span class="num" style="width:28px;text-align:center;font-size:${j<3?17:12}px">${medal(j)}</span>${avatar(x.u,34)}<span style="flex:1;min-width:0"><b style="display:block;font-size:14px;${x.u.me?'color:var(--blue)':''}">${esc(x.u.name)}</b><span class="meta">Nível ${nivelXp(x.u.me?meuXp():xpDe(x.u)).L} · ${km(x.km*1000)} km · ${x.tr} ${x.tr===1?'treino':'treinos'}${!x.u.me&&x.u.at?` · ${atrasoTxt(x.u.at)}`:''}</span></span><span class="num" style="font-size:18px">${x.pts}<small class="dim"> pts</small></span></div>`;
-  const vis=L.map((x,j)=>[x,j]).filter(([x,j])=>j<10||x.u.me);
-  openSheet(`<div class="hd"><b>${M==='a'?'RANKING DOS AMIGOS':'RANKING GERAL'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  const vis=L.map((x,j)=>[x,j]).filter(([x,j])=>j<10||x.u.me),noRk=LS.get('comp',null)==='sim';LS.set('rkv',{j:meI});setTimeout(rkAtualiza,0);
+  openSheet(`<div class="hd"><b>${M==='a'?'Ranking dos amigos':'Ranking geral'}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="rkst"><div><b>${noRk?'Você está no ranking':'Você está só olhando'}</b><small>${noRk?'As suas corridas somam pontos.':'Entre para aparecer na lista e disputar.'}</small></div><button class="sgb ${noRk?'':'pri'}" onclick="openCompCfg()">${noRk?'Opções':'Entrar'}</button></div>
   ${LS.get('pubErr',null)?`<p class="empty" style="color:var(--txt);margin-bottom:8px">Suas corridas mais recentes ainda não chegaram ao servidor (${esc(LS.get('pubErr',''))}). Toque em sincronizar no Início para tentar de novo.</p>`:''}<div class="row" style="gap:6px"><span class="tag ok">TEMPORADA DE ${mes.toUpperCase()}</span><span class="tag">ZERA EM ${dias} ${dias===1?'DIA':'DIAS'}</span></div>
   <p class="empty" style="margin-top:8px">Todo mês o placar volta a zero. Vale 1 ponto por km corrido no mês e 3 por treino (a partir de 1 km). O ranking não depende do mapa. Os pontos não se perdem: no fim do mês eles ficam na conta e sobem o seu nível. Os 3 primeiros do mês ganham bônus de nível: 1º +30, 2º +20 e 3º +10 pontos (vale quando pelo menos 3 pessoas pontuaram).</p>
   <div style="margin-top:10px">${vis.map(([x,j])=>row(x,j)).join('')}</div>
@@ -4708,7 +4754,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-24e'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-24f'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
