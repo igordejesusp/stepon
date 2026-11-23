@@ -2394,6 +2394,21 @@ window.tiraMarcada=async id=>{
 };
 /* ---------- atividades no estilo de feed: curtir, comentar e compartilhar ---------- */
 const diaTxt=ds=>{const d=ds.slice(0,10),h=ds.slice(11,16),hoje=ymd(TODAY()),ont=ymd(addD(TODAY(),-1));return (d===hoje?'Hoje':d===ont?'Ontem':DOW[parseD(d).getDay()].replace(/^(.)(.*)$/,(m,a,b)=>a+b.toLowerCase())+', '+fmtD(d)+(d.slice(0,4)!==String(TODAY().getFullYear())?'/'+d.slice(2,4):''))+(h?' às '+h:'')};
+/* ---------- nome das atividades: o do treino programado; senão, no idioma do aparelho ---------- */
+const NOME_GEN=/^\s*((morning|afternoon|evening|night|lunch)\s+)?(run|running|walk|walking|hike|hiking|ride|cycling|treadmill run|trail run|virtual run|workout)\s*$|^\s*(corrida|caminhada)(\s+(matinal|vespertina|noturna|da manh[ãa]|da tarde|da noite))?\s*$/i;
+const idiomaPt=()=>/^pt/i.test(navigator.language||'pt');
+function nomeTraduz(n,date){
+  if(!idiomaPt()||!n)return n;const l=String(n).trim().toLowerCase(),h=+String(date||'').slice(11,13),per=isNaN(h)?'':h<5?'da madrugada':h<12?'da manhã':h<18?'da tarde':'da noite';
+  const m=l.match(/^(morning|afternoon|evening|night|lunch)?\s*(run|running|walk|walking|hike|hiking|ride|cycling|treadmill run|trail run|virtual run|workout)$/);if(!m)return n;
+  const q={morning:'da manhã',afternoon:'da tarde',evening:'da noite',night:'da noite',lunch:'do almoço'}[m[1]]||per,t=m[2];
+  if(/treadmill/.test(t))return 'Corrida na esteira';if(/trail/.test(t))return 'Corrida na trilha';if(/virtual/.test(t))return 'Corrida virtual';
+  const base=/run/.test(t)?'Corrida':/walk/.test(t)?'Caminhada':/hike/.test(t)?'Trilha':/ride|cycl/.test(t)?'Pedal':'Treino';return base+(q?' '+q:'')}
+// corridas com nome genérico do relógio ("Evening Run"): se havia treino programado no dia, o nome é o do treino (ex.: "Uberlândia - Teste de 1 km"); senão, o nome genérico traduzido
+function normNomes(){
+  try{const por={};D.acts.filter(isRun).forEach(a=>{const d=a.date.slice(0,10);if(!por[d]||(a.dist||0)>(por[d].dist||0))por[d]=a});
+    for(const a of D.acts){if(a.nomeOrig==null)a.nomeOrig=a.name||'';if(!isRun(a)||!NOME_GEN.test(a.nomeOrig))continue;
+      const d=a.date.slice(0,10),pl=planOn(d);
+      a.name=pl&&!pl.off&&por[d]===a?((D.athlete&&D.athlete.city?D.athlete.city+' - ':'')+pl.titulo):nomeTraduz(a.nomeOrig,a.date)}}catch(e){}}
 const nomeHora=ds=>{const h=+String(ds).slice(11,13);return isNaN(h)?'Corrida':h<12?'Corrida da manhã':h<18?'Corrida da tarde':'Corrida da noite'};
 const ICO={add:'<svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.6-3.6 3.3-5.6 6.5-5.6s5.9 2 6.5 5.6M19 8v6M16 11h6"/></svg>',cur:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',com:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',sha:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></svg>',fot:'<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'};
 /* ---------- menu do treino (três pontinhos): quem pode ver e apagar ---------- */
@@ -2628,7 +2643,7 @@ function terrNota(a,x){const t=x&&x.tg;if(!t||!isRun(a)||isMk(a)||isMan(a))retur
   return `<div class="tnote ${cls}">${txt}</div>`}
 function fbCard(id){
   const f=FB[id]||{},n=f.rpe,ps=f.partes||[];
-  return `<div class="card fbc" style="margin-top:12px"><div class="blh"><b>Como foi?</b><span>${n?`<b style="color:${PSE_COR(n)}">${n} · ${PSE_TXT[n]}</b>`:'Esforço percebido'}</span></div>
+  return `<div class="sec"><span>COMO FOI?</span><small>${n?`<b style="color:${PSE_COR(n)}">${n} · ${PSE_TXT[n]}</b>`:'ESFORÇO PERCEBIDO'}</small></div><div class="fbc">
   <div class="pse">${[1,2,3,4,5,6,7,8,9,10].map(k=>`<button class="${n===k?'on':''}" style="${n===k?`background:${PSE_COR(k)};border-color:${PSE_COR(k)};color:#000`:`border-color:${PSE_COR(k)}55`}" onclick="fbSet('${id}','rpe',${k})">${k}</button>`).join('')}</div>
   <div class="pse-l"><span>Muito leve</span><span>Máximo</span></div>
   <div class="lbl" style="margin-top:14px">Sentiu algo no corpo?</div>
@@ -3338,9 +3353,9 @@ function trimTrack(tr,full){
 async function publishMine(force,entrar){
   if(LS.get('comp',null)!=='sim'||!temConta())return;
   if(!LS.get('restOk',0)){try{await pullAll()}catch(e){return}} // antes de enviar, confere o que já existe no servidor
-  const mxHr=maxHr(),runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').slice(0,150).map((a,i)=>{const x=AX[a.id]||{};return {id:a.id,...(i<20?{x:xDe(a,x,mxHr)}:{}),date:a.date.slice(0,16),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null,dev:devNome(a).slice(0,40),...(PRIV[a.id]==='a'?{v:'a'}:{})}});
+  const mxHr=maxHr(),runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&PRIV[a.id]!=='e').slice(0,150).map((a,i)=>{const x=AX[a.id]||{};return {id:a.id,...(i<20?{x:xDe(a,x,mxHr)}:{}),date:a.date.slice(0,16),name:String(a.name||'').slice(0,60),dist:Math.round(a.dist||0),mov:a.mov,best:bestsOf(a,x.best),map:x.map?trimTrack(x.map):null,dev:devNome(a).slice(0,40),...(PRIV[a.id]==='a'?{v:'a'}:{})}});
   const foto=await fotoMini();
-  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv4|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+medsSig()+'|s'+(FR.seg||[]).length+'.'+(FR.fol||[]).length+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
+  const terr=meusLacos(true).slice(0,160).map(({id,...z})=>z),cor=minhaCor(),xp=meuXp(),sig='dv5|'+JSON.stringify(PRIV)+JSON.stringify(LS.get('perfil',null))+medsSig()+'|s'+(FR.seg||[]).length+'.'+(FR.fol||[]).length+'|'+runs.length+'|'+(runs[0]&&runs[0].id)+'|'+runs.reduce((s,r)=>s+r.dist,0)+'|'+foto.length+'|'+xp+'|'+cor+'|'+terr.length+'|'+(terr[0]?terr[0].d:'');
   if(!force&&sig===LS.get('pubh',''))return;
   while(terr.length&&JSON.stringify({runs,terr,foto,m:medsPub()}).length>640000)terr.pop();
   const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:(p=>({bio:p.bio,link:p.link,capa:p.capa,capaImg:p.capa==='foto'?p.capaImg:undefined,meds:medsPub(),seg:(FR.seg||[]).length,sgd:(FR.fol||[]).length}))(LS.get('perfil',null)||{}),...(entrar?{entrar:true}:{})})});
@@ -3370,6 +3385,7 @@ async function pullAll(){
       if(!pf.bio&&!pf.link&&!pf.capa&&!pf.capaImg&&(sp.bio||sp.link||sp.capa||sp.capaImg))LS.set('perfil',{bio:sp.bio||'',link:sp.link||'',capa:sp.capa||'azul',...(sp.capa==='foto'&&sp.capaImg?{capaImg:sp.capaImg}:{})});
       if(!medsGet().length&&Array.isArray(sp.meds)&&sp.meds.length){LS.set('meds',sp.meds.map((m,i)=>({...m,id:m.id||('r'+i+Date.now().toString(36))})));window._medL=undefined}}
     LS.set('restOk',1)}catch(e){}
+  L.forEach(u=>(u.runs||[]).forEach(r=>{if(r.name&&NOME_GEN.test(r.name))r.name=nomeTraduz(r.name,r.date)}));
   PUBL=L.filter(u=>u.id!==CFG.athlete);LS.set('pub',PUBL);LS.set('pubAt',Date.now());
 }
 /* ---------- áreas dominadas ---------- */
@@ -4561,7 +4577,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-23d'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-24a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -4698,7 +4714,7 @@ $('#sync').onclick=()=>sync(0);
 // junta cada título de seção (.sec) com o conteúdo dele num bloco, para as colunas não cortarem uma seção ao meio
 function groupBlocks(el){const K=[...el.children];if(!K.length||K[0].classList.contains('blk'))return;let b=null;
   for(const k of K){if(!b||k.classList.contains('sec')){b=document.createElement('div');b.className='blk';el.insertBefore(b,k)}b.appendChild(k)}}
-function render(){render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
+function render(){normNomes();render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
 function render2(){if(_desk===null)marcaDesk();
   const ob=needOB();document.body.classList.toggle('ob',ob);
   const fab=$('#recfab');fab.classList.toggle('on',!ob&&temConta()&&(VIEW==='ini'||recLive())&&!$('#rec').classList.contains('on'));fab.classList.toggle('live',recLive());

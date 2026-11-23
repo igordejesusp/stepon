@@ -324,7 +324,7 @@ export default {
       else if (await env.BR.get('fora:' + b.athlete)) return json(req, { ok: false, fora: true });
       // cada corrida guarda o relógio usado (dev) e a visibilidade: v:'a' = só amigos. (Corrida "só eu" nem chega aqui: o app não envia.)
       const runs = (Array.isArray(b.runs) ? b.runs : []).filter((r) => r && typeof r === 'object').slice(0, 200)
-        .map((r) => ({ ...r, dev: typeof r.dev === 'string' && r.dev ? r.dev.slice(0, 40) : undefined, v: r.v === 'a' ? 'a' : undefined }));
+        .map((r) => ({ ...r, name: typeof r.name === 'string' && r.name ? r.name.slice(0, 60) : undefined, dev: typeof r.dev === 'string' && r.dev ? r.dev.slice(0, 40) : undefined, v: r.v === 'a' ? 'a' : undefined }));
       // foto: a escolhida no app (JPEG pequeno) ou a do Intervals; "/no-profile-pic.png" (sem foto) vira vazio
       const foto = typeof b.foto === 'string' && b.foto.length < 40000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(b.foto) ? b.foto : '';
       const doIcu = /^https:\/\//.test(a.profile_medium || '') ? a.profile_medium : '';
