@@ -3796,6 +3796,8 @@ function xDe(a,x,mx){if(!x||!x.chart||!x.chart.p||x.chart.p.length<4)return unde
   return {hr:a.hr||undefined,hm:a.hrmax||undefined,mx,el:a.elev!=null?Math.round(a.elev):undefined,cd:a.cad||undefined,dc:x.dec!=null?x.dec:undefined,sp:(x.splits||[]).map(s=>({km:s.km,t:s.t,hr:s.hr,el:s.el,part:s.part})),ch:{p:r(c.p).map(v=>v==null?null:Math.round(v)),h:r(c.h),t:r(c.t),a:r(c.a),c:r(c.c)}}}
 function laços(tr,ext,opt){
   if(!tr||tr.length<8)return [];
+  // afina o trajeto: um ponto a cada 10 m. O GPS parado ou "tremendo" (esteira, pista, sinal ruim) gerava milhares de pontos e o cálculo levava dezenas de segundos, travando o app
+  {let sp=10,tn;do{tn=[tr[0]];for(let i=1;i<tr.length;i++)if(dM(tn[tn.length-1],tr[i])>=sp)tn.push(tr[i]);if(tn[tn.length-1]!==tr[tr.length-1])tn.push(tr[tr.length-1]);sp*=1.6}while(tn.length>900&&sp<2000);tr=tn;if(tr.length<8)return []}
   const la0=tr[0][0],lo0=tr[0][1],ky=111320,kx=111320*Math.cos(la0*Math.PI/180),P=tr.map(q=>[(q[1]-lo0)*kx,(q[0]-la0)*ky]);
   const PROX=(opt&&opt.prox)||30,FECHA=(opt&&opt.fecha)||50,MINP=300,MINA=8000,out=[],H=Math.hypot;
   const ap=(a,b,c)=>{const dx=c[0]-b[0],dy=c[1]-b[1],L=dx*dx+dy*dy,t=L?clamp(((a[0]-b[0])*dx+(a[1]-b[1])*dy)/L,0,1):0,x=b[0]+t*dx,y=b[1]+t*dy;return {d:H(a[0]-x,a[1]-y),x,y}};
@@ -3827,11 +3829,14 @@ function simp(pts,n){
     return m>tol?[...dp(a.slice(0,ix+1),tol).slice(0,-1),...dp(a.slice(ix),tol)]:[A,B]};
   let r=dp(pts,tol);while(r.length>n&&tol<10){tol*=1.4;r=dp(pts,tol)}if(r.length>n){const st=r.length/n;r=[...Array(n)].map((_,i)=>r[Math.floor(i*st)])}return r;
 }
+// áreas de uma corrida calculadas no aparelho, guardadas na memória para não refazer o cálculo a cada abertura do mapa
+const _lacM={};
+function lacMemo(id,x){const k=id+'|'+x.map.length;if(_lacM[k])return _lacM[k];let v=[];try{const tr=trimTrack(x.map,1);v=tr?laços(tr,extremos(x.map)):[]}catch(e){}return(_lacM[k]=v)}
 // as áreas de todas as corridas do Igor (calculadas no aparelho, com o trajeto sem os 200 m do começo e do fim)
 function meusLacos(pub){
   const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===TVN).length+'|v7';
   if(!pub){const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v}
-  let v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===TVN&&Array.isArray(x.terr)?x.terr:(()=>{const tr=trimTrack(x.map,1);return tr?laços(tr,extremos(x.map)):[]})();const r=a.dist>=500&&a.mov?Math.round(a.mov/a.dist*1000):null;for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),r,id:a.id,p})}
+  let v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===TVN&&Array.isArray(x.terr)?x.terr:lacMemo(a.id,x);const r=a.dist>=500&&a.mov?Math.round(a.mov/a.dist*1000):null;for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),r,id:a.id,p})}
   // para publicar: o que é "só eu" fica de fora e o que é "só amigos" vai marcado
   if(pub)v=v.filter(z=>PRIV[z.id]!=='e').map(z=>PRIV[z.id]==='a'?{...z,v:'a'}:z);
   v.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
@@ -5048,7 +5053,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-28f'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-29a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
