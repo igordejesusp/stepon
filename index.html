@@ -498,8 +498,8 @@ body.vmarc #top{display:none}body.vmarc .view{top:0;padding-top:0}
 .pbi{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,#8f7bff 22%,transparent);flex:none}.pbi svg{width:20px;height:20px}.pbi .pbm{fill:#8f7bff}
 .pbt{display:flex;gap:14px;align-items:center;margin-bottom:12px}.pbt p{font-size:14px;line-height:1.45;color:var(--txt)}
 .pbo{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;background:var(--cell);border:1px solid var(--line);margin-bottom:10px}.pbo small{font-size:11px;color:var(--dim)}.pbo b{font-size:15px;margin-top:2px;text-decoration:line-through;opacity:.75}.pbo span{font-size:12px;color:var(--dim)}
-.pbc{display:flex;align-items:center;gap:12px;width:100%;padding:14px;margin-bottom:8px;border-radius:14px;border:1px solid var(--line);background:var(--cell);color:var(--hi);text-align:left;cursor:pointer}
-.pbc div{flex:1;display:flex;flex-direction:column}.pbc b{font-size:15px}.pbc span{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.4}.pbc i{font-style:normal;font-weight:700;font-size:13px;color:var(--blue)}.pbc.pbd b{color:var(--txt)}
+.pbc,.pbo,.pbt{flex:none}.pbc{display:flex;align-items:center;gap:12px;width:100%;padding:14px;margin-bottom:8px;border-radius:14px;border:1px solid var(--line);background:var(--cell);color:var(--hi);text-align:left;cursor:pointer}
+.pbc div{flex:1;display:flex;flex-direction:column}.pbc b{font-size:15px}.pbc span{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.4}.pbc i{font-style:normal;font-weight:700;font-size:13px;color:var(--blue)}.pbc.pbx b{color:var(--txt)}
 .tnote{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--cell);border:1px solid var(--line);font-size:13px;line-height:1.45;color:var(--txt)}.tnote b{color:var(--hi)}.tnote.ok{border-color:color-mix(in srgb,var(--blue) 45%,transparent);background:color-mix(in srgb,var(--blue) 10%,transparent)}
 .shfx{position:sticky;top:16px;height:0;z-index:30}.shfx .shv{position:absolute;left:0;top:0;box-shadow:0 4px 14px rgba(0,0,0,.45)}#sheet .hd.cv{padding-left:46px;min-height:36px}
 /* menu do treino */
@@ -1629,8 +1629,8 @@ window.planoB=ds=>{
   <div class="pbt">${bateria(Math.round(r.sc))}<p>Sem problema. Em dia ruim, um treino leve rende mais do que forçar e travar a semana. Escolha uma opção para <b>${ds===ymd(TODAY())?'hoje':fmtD(ds)}</b>: só este dia muda, o resto da planilha continua igual.</p></div>
   <div class="pbo"><small>Treino de hoje</small><b>${esc(p.titulo)}</b><span>${kmTxt(p.km)} km</span></div>
   ${O.map((o,i)=>`<button class="pbc" onclick="pbUsa(${i})"><div><b>${esc(o.t)}</b><span>${esc(o.d)}</span></div><i>Usar</i></button>`).join('')}
-  <button class="pbc pbd" onclick="pbDescanso('${ds}')"><div><b>Descansar hoje</b><span>Às vezes o melhor treino é não treinar. O dia fica livre e o plano segue normal.</span></div><i>Usar</i></button>
-  <button class="pbc pbd" onclick="closeSheet();openBuilder('${ds}')"><div><b>Mudar o treino de dia</b><span>Fazer o treino original em outro dia da semana.</span></div><i>Abrir</i></button>`);
+  <button class="pbc pbx" onclick="pbDescanso('${ds}')"><div><b>Descansar hoje</b><span>Às vezes o melhor treino é não treinar. O dia fica livre e o plano segue normal.</span></div><i>Usar</i></button>
+  <button class="pbc pbx" onclick="closeSheet();openBuilder('${ds}')"><div><b>Mudar o treino de dia</b><span>Fazer o treino original em outro dia da semana.</span></div><i>Abrir</i></button>`,1);
 };
 window.pbUsa=i=>{const {ds,O}=window._pbO||{},o=O&&O[i];if(!o)return;pbGuarda(ds);
   const ex=LS.get('extra',{}),ov=LS.get('ov',{});ex[ds]={...o.p,date:ds,custom:1,planoB:1,criado:ymd(TODAY())};delete ov[ds];LS.set('extra',ex);LS.set('ov',ov);
@@ -2470,8 +2470,9 @@ function cmLista(rola){
   const quem=s.l.map(id=>id===eu?'você':frNome(id).split(' ')[0]);
   el.innerHTML=(quem.length?`<div class="cmq">❤ Curtido por ${esc(quem.slice(0,5).join(', '))}${quem.length>5?' e mais '+(quem.length-5):''}</div>`:'')+
    (s.m.length?s.m.map(c=>{const l=c.l||[],mine=c.id===eu,nome=mine?'Você':String(c.name||'').split(' ')[0];
-     return `<div class="cmi"><img src="${esc(mine?myPic():frPic(c.id))}" alt=""><div class="cmb"><div><b>${esc(nome)}</b><small>${quando(c.t)}</small></div><p>${esc(c.txt)}</p><div class="cmr"><button onclick="cmResp('${esc(String(c.name||'').split(' ')[0])}')">Responder</button>${mine||dono===eu?`<button onclick="socApagar('${dono}','${act}','${c.i}')">Apagar</button>`:''}</div></div><button class="cmc${l.includes(eu)?' on':''}" aria-label="Curtir comentário" onclick="socCurtirC('${c.i}')">${CM_HEART}<span>${l.length||''}</span></button></div>`}).join(''):'<p class="cme">Nenhum comentário ainda.<br>Comece a conversa.</p>');
+     return `<div class="cmi"><img src="${esc(mine?myPic():frPic(c.id))}" alt="" onclick="cmPerfil('${esc(c.id)}')" style="cursor:pointer"><div class="cmb"><div><b onclick="cmPerfil('${esc(c.id)}')" style="cursor:pointer">${esc(nome)}</b><small>${quando(c.t)}</small></div><p>${esc(c.txt)}</p><div class="cmr"><button onclick="cmResp('${esc(String(c.name||'').split(' ')[0])}')">Responder</button>${mine||dono===eu?`<button onclick="socApagar('${dono}','${act}','${c.i}')">Apagar</button>`:''}</div></div><button class="cmc${l.includes(eu)?' on':''}" aria-label="Curtir comentário" onclick="socCurtirC('${c.i}')">${CM_HEART}<span>${l.length||''}</span></button></div>`}).join(''):'<p class="cme">Nenhum comentário ainda.<br>Comece a conversa.</p>');
   if(rola)el.scrollTop=el.scrollHeight}
+window.cmPerfil=id=>{if(!id)return;if(id===CFG.athlete){closeSheet();go('perf');return}openPerfilAmigo(id)};
 window.cmTecla=()=>{const t=$('#cm-t'),b=$('#cm-b');if(t&&b){b.disabled=!t.value.trim();b.classList.toggle('on',!!t.value.trim())}};
 window.cmResp=n=>{const t=$('#cm-t');if(!t)return;t.value='@'+n+' ';t.focus();cmTecla()};
 window.socEnviar=async(dono,act)=>{const t=$('#cm-t'),v=(t.value||'').trim();if(!v)return;t.disabled=true;const r=await socPost(dono,act,{acao:'comentar',txt:v});t.disabled=false;if(r){t.value='';cmTecla();cmLista(1)}else t.focus()};
@@ -4515,7 +4516,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-20c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-23a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
