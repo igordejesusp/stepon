@@ -2184,6 +2184,7 @@ function rMais(soTres){
     ${row("maisAbre('aj')",ic('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17v.5"/>','#4a9eff'),'Ajuda e contato','')}
     ${row("window.open('termos.html','_blank','noopener')",ic('<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>','#8a929e'),'Termos de uso','')}
     ${row("window.open('privacidade.html','_blank','noopener')",ic('<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6l7-3z"/>','#8a929e'),'Política de privacidade','')}
+    ${row("diagApp()",ic('<path d="M3 12h4l2-6 4 12 2-6h6"/>','#19c9c0'),'Diagnóstico do app','Erros e telas lentas')}
     ${row("maisAbre('sobre')",ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/>','#8a929e'),'Sobre o StepOn','Versão '+BUILD)}
   </div>
   <div class="mgt">Conta</div><div class="mgl">${row("excluirAbre()",ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>','#e0442f'),'<span style="color:#ff6b5f">Excluir conta</span>','Apaga os seus dados do StepOn')}</div>
@@ -2277,6 +2278,21 @@ window.contaAbre=async()=>{
   try{const j=await srvPost('/conta',{acao:'ver'});LS.set('conta',j.conta);contaTela(j.conta)}catch(e){contaTela(LS.get('conta',null),e.message)}};
 window.contaEmail=async()=>{const em=($('#ct-em').value||'').trim();
   try{const j=await srvPost('/conta',{acao:'email',email:em});LS.set('conta',j.conta);toast('E-mail salvo',2500);contaTela(j.conta)}catch(e){toast('Não foi possível salvar: '+e.message,4000)}};
+
+/* ---------- diagnóstico do app: últimos erros e telas lentas (aparece em Mais › Diagnóstico do app) ---------- */
+(()=>{const grava=(m,l)=>{try{const L=LS.get('erros',[]);L.unshift({t:Date.now(),m:String(m).slice(0,160),l:String(l||'').slice(0,60)});LS.set('erros',L.slice(0,8))}catch(x){}};
+  window.addEventListener('error',e=>grava(e.message,(e.filename||'').split('/').pop()+':'+e.lineno));
+  window.addEventListener('unhandledrejection',e=>grava('promessa: '+((e.reason&&e.reason.message)||e.reason),''))})();
+window.diagApp=()=>{
+  let kb=0;try{for(const k in localStorage)kb+=((localStorage[k]||'').length+k.length)*2/1024}catch(e){}
+  const E=LS.get('erros',[]),Sl=LS.get('lentas',[]),hora=t=>new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  openSheet(`<div class="hd"><b>Diagnóstico do app</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <div class="mgl"><div class="mrw" style="cursor:default"><span class="mrt"><b>Versão</b><small>${BUILD}</small></span></div><div class="mrw" style="cursor:default"><span class="mrt"><b>Aparelho</b><small style="word-break:break-all">${esc(navigator.userAgent.slice(0,110))}</small></span></div>
+  <div class="mrw" style="cursor:default"><span class="mrt"><b>Dados guardados no aparelho</b><small>${Math.round(kb)} KB de uns 5000 KB</small></span></div><div class="mrw" style="cursor:default"><span class="mrt"><b>Corridas lidas</b><small>${(D.acts||[]).length}</small></span></div></div>
+  <div class="mgt">Últimos erros</div>${E.length?`<div class="mgl">${E.map(x=>`<div class="mrw" style="cursor:default"><span class="mrt"><b style="font-size:13px">${esc(x.m)}</b><small>${hora(x.t)} · ${esc(x.l)}</small></span></div>`).join('')}</div>`:'<p class="empty">Nenhum erro registrado.</p>'}
+  <div class="mgt">Telas lentas</div>${Sl.length?`<div class="mgl">${Sl.map(x=>`<div class="mrw" style="cursor:default"><span class="mrt"><b>${esc(x.v)}: ${x.ms} ms</b><small>${hora(x.t)}</small></span></div>`).join('')}</div>`:'<p class="empty">Nenhuma tela lenta registrada.</p>'}
+  <button class="b full" style="margin-top:14px" onclick="LS.set('erros',[]);LS.set('lentas',[]);diagApp()">Limpar registros</button>
+  <p class="meta" style="margin-top:10px">Se o app travar, abra aqui e mande um print para o suporte.</p>`,1)};
 let MAISP={};
 window.maisAbre=k=>{const m=MAISP[k];if(!m)return;openSheet(`<div class="hd"><b>${m[0]}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+m[1],1);if(k==='con'&&$('#c-go'))connStatus()};
 window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();toast('CONECTADO // '+(a.name||''),2500);sync(1)};
@@ -2713,8 +2729,9 @@ function nomeTraduz(n,date){
   if(/treadmill/.test(t))return 'Corrida na esteira';if(/trail/.test(t))return 'Corrida na trilha';if(/virtual/.test(t))return 'Corrida virtual';
   const base=/run/.test(t)?'Corrida':/walk/.test(t)?'Caminhada':/hike/.test(t)?'Trilha':/ride|cycl/.test(t)?'Pedal':'Treino';return base+(q?' '+q:'')}
 // corridas com nome genérico do relógio ("Evening Run"): se havia treino programado no dia, o nome é o do treino (ex.: "Uberlândia - Teste de 1 km"); senão, o nome genérico traduzido
+let _nnP=null,_nnN=-1,_nnA=null;
 function normNomes(){
-  try{const por={};D.acts.filter(isRun).forEach(a=>{const d=a.date.slice(0,10);if(!por[d]||(a.dist||0)>(por[d].dist||0))por[d]=a});
+  try{const pl0=plan();if(pl0===_nnP&&D.acts.length===_nnN&&D.acts[0]===_nnA)return;_nnP=pl0;_nnN=D.acts.length;_nnA=D.acts[0];const por={};D.acts.filter(isRun).forEach(a=>{const d=a.date.slice(0,10);if(!por[d]||(a.dist||0)>(por[d].dist||0))por[d]=a});
     for(const a of D.acts){if(a.nomeOrig==null)a.nomeOrig=a.name||'';if(!isRun(a)||!NOME_GEN.test(a.nomeOrig))continue;
       const d=a.date.slice(0,10),pl=planOn(d);
       a.name=pl&&!pl.off&&por[d]===a?((D.athlete&&D.athlete.city?D.athlete.city+' - ':'')+pl.titulo):nomeTraduz(a.nomeOrig,a.date)}}catch(e){}}
@@ -4756,16 +4773,14 @@ function rvAlerta(){
 function rvDots(){const pg=$('#r-pg'),d=$('#r-dots');if(!pg||!d)return;const pp=[...pg.children].filter(x=>x.style.display!=='none'),h=pg.clientHeight||1,i=Math.round(pg.scrollTop/h);
   if(d.children.length!==pp.length)d.innerHTML=pp.map(()=>'<i class="rdt"></i>').join('');[...d.children].forEach((x,k)=>x.classList.toggle('on',k===i))}
 window.rvMapa=on=>{const r=$('#rec');r.classList.toggle('mapa',!!on);if(on&&RM){setTimeout(()=>{RM.resize();recDraw()},60)}};
-(()=>{let y0=null,dy=0,pull=false,y1=null;
+window.rvGestos=()=>{
+  const pg=$('#r-pg'),mini=$('#r-mini');if(!pg||pg._g)return;pg._g=1;let y0=null,dy=0,pull=false,y1=null;
   const mobile=()=>!matchMedia('(min-width:760px)').matches;
-  document.addEventListener('touchstart',e=>{if(!mobile()||!$('#rec').classList.contains('on'))return;const pg=e.target.closest&&e.target.closest('#r-pg'),mini=e.target.closest&&e.target.closest('#r-mini');
-    y0=pg&&!$('#rec').classList.contains('mapa')&&pg.scrollTop<=0?e.touches[0].clientY:null;y1=mini?e.touches[0].clientY:null;dy=0;pull=false},{passive:true});
-  document.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>10){pull=true;if(e.cancelable)e.preventDefault();const pg=$('#r-pg');pg.style.transition='none';pg.style.transform=`translateY(${Math.min(dy*.5,120)}px)`}},{passive:false});
-  document.addEventListener('touchend',e=>{const pg=$('#r-pg');
-    if(y0!=null){if(pg){pg.style.transition='';pg.style.transform=''}if(pull&&dy>90)rvMapa(1)}
-    if(y1!=null){const t=e.changedTouches[0].clientY;if(y1-t>40)rvMapa(0)}
-    y0=null;y1=null;pull=false;dy=0});
-})();
+  pg.addEventListener('touchstart',e=>{if(!mobile()||$('#rec').classList.contains('mapa')){y0=null;return}y0=pg.scrollTop<=0?e.touches[0].clientY:null;dy=0;pull=false},{passive:true});
+  pg.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>10){pull=true;if(e.cancelable)e.preventDefault();pg.style.transition='none';pg.style.transform=`translateY(${Math.min(dy*.5,120)}px)`}},{passive:false});
+  pg.addEventListener('touchend',()=>{if(y0!=null){pg.style.transition='';pg.style.transform='';if(pull&&dy>90)rvMapa(1)}y0=null;pull=false;dy=0},{passive:true});
+  if(mini){mini.addEventListener('touchstart',e=>{y1=e.touches[0].clientY},{passive:true});mini.addEventListener('touchend',e=>{if(y1!=null&&y1-e.changedTouches[0].clientY>40)rvMapa(0);y1=null},{passive:true})}
+};
 // treino de outro dia feito hoje: o treino muda para hoje
 function moveToToday(ds){
   const hoje=ymd(TODAY()),p=planOn(ds),ex=LS.get('extra',{}),ov=LS.get('ov',{}),c={...p,date:hoje};delete c.adjusted;
@@ -4880,7 +4895,7 @@ window.openRec=d=>{
       <div id="r-mini"><div class="mh"><span id="r-st3"></span><button onclick="rvMapa(0)" aria-label="Voltar às telas">⌃</button></div><div class="mg"><div><b id="r-mt">0:00</b><span>Tempo</span></div><div><b id="r-mp">--</b><span>Ritmo médio</span></div><div><b id="r-md">0,00</b><span>Distância (km)</span></div></div></div>
     </div>
     <div class="rctl" id="r-ctl"></div>`}
-  prePaint();
+  prePaint();rvGestos();
   $('#r-voz').textContent=LS.get('voz',1)?'🔊':'🔇';
   el.classList.add('on');$('#recfab').classList.remove('on');recWatch(1);
   clearInterval(RTK);RTK=setInterval(recUI,1000);recUI();
@@ -4965,7 +4980,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-26a'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-26b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -5102,7 +5117,7 @@ $('#sync').onclick=()=>sync(0);
 // junta cada título de seção (.sec) com o conteúdo dele num bloco, para as colunas não cortarem uma seção ao meio
 function groupBlocks(el){const K=[...el.children];if(!K.length||K[0].classList.contains('blk'))return;let b=null;
   for(const k of K){if(!b||k.classList.contains('sec')){b=document.createElement('div');b.className='blk';el.insertBefore(b,k)}b.appendChild(k)}}
-function render(){normNomes();try{EVENTOS.forEach(e=>{if(evDentro(e.id)&&!(LS.get('evaj',{})[e.id]))evAjustaSemana(e)})}catch(x){}render2();const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
+function render(){const _t0=performance.now();normNomes();try{EVENTOS.forEach(e=>{if(evDentro(e.id)&&!(LS.get('evaj',{})[e.id]))evAjustaSemana(e)})}catch(x){}render2();try{const ms=Math.round(performance.now()-_t0);if(ms>350){const L=LS.get('lentas',[]);L.unshift({t:Date.now(),ms,v:VIEW});LS.set('lentas',L.slice(0,6))}}catch(x){}const sb=$('#sbox'),k=sb&&sb.dataset.blk;if(k&&$('#sheet').classList.contains('on')&&BLK[k])openBlk(k,1)}
 function render2(){if(_desk===null)marcaDesk();
   const ob=needOB();document.body.classList.toggle('ob',ob);
   const fab=$('#recfab');fab.classList.toggle('on',!ob&&temConta()&&(VIEW==='ini'||recLive())&&!$('#rec').classList.contains('on'));fab.classList.toggle('live',recLive());
