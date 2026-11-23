@@ -2087,7 +2087,7 @@ function rMais(soTres){
   <details style="margin-top:10px"><summary class="meta" style="cursor:pointer">Usar o ID e a chave de API</summary>${connForm('saveConn()','Salvar e sincronizar')}</details></div>`;
   const sobreH=`<div class="card"><p class="empty" style="color:var(--txt)">StepOn: treino de corrida, conquistas e áreas no mapa entre amigos. As suas corridas vêm do Intervals.icu e o app calcula forma, fadiga e ritmos para você.</p><p class="empty" style="margin-top:8px">Versão ${BUILD}</p></div>`;
   const modoH=`<div class="card"><div class="seg"><button class="${TEMA()==='light'?'on':''}" onclick="setTema(1)">DIURNO</button><button class="${TEMA()==='light'?'':'on'}" onclick="setTema(0)">NOTURNO</button></div><p class="empty" style="margin-top:8px">Diurno deixa o app claro; noturno deixa o fundo preto.</p></div>`;
-  MAISP={dev:['Dispositivos',devH],plano:['Meu plano',planoH],con:['Conexão',conH],sobre:['Sobre',sobreH],modo:['Aparência',modoH]};
+  MAISP={dev:['Dispositivos',devH],plano:['Meu plano',planoH],con:['Conexão',conH],sobre:['Sobre',sobreH],modo:['Aparência',modoH],aj:['Ajuda e contato',ajudaHtml()]};
   const ic=(d,c)=>`<span class="mri" style="background:${c}"><svg viewBox="0 0 24 24">${d}</svg></span>`;
   const row=(onc,i,t,sub,extra)=>`<button class="mrw" onclick="${onc}">${i}<span class="mrt"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</span>${extra||'<span class="mrg">›</span>'}</button>`;
   const devSub=(!mc||mc==='nenhum')?'Ligar o relógio':(esc(apar||'Garmin')+(a.gAct===false?' · atenção':' · conectado'));
@@ -2097,6 +2097,7 @@ function rMais(soTres){
   <div class="mgt">Conta</div><div class="mgl">
     ${row("maisAbre('con')",ic('<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>','#4a9eff'),'Conexão com o Intervals','',con)}
     ${row("openNotif()",ic('<path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15L6 16zM10 20a2 2 0 004 0"/>','#ff7a2f'),'Notificações','')}
+    ${row("maisBloq()",ic('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>','#6b7480'),'Pessoas bloqueadas',BLOQ.length?BLOQ.length+(BLOQ.length===1?' pessoa':' pessoas'):'')}
   </div>
   <div class="mgt">Treino</div><div class="mgl">
     ${row("maisAbre('dev')",ic('<rect x="7" y="5" width="10" height="14" rx="3"/><path d="M9 2.5h6M9 21.5h6"/>','#34c759'),'Dispositivos',devSub)}
@@ -2108,14 +2109,83 @@ function rMais(soTres){
     ${row("mapDiagAbre()",ic('<path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4zM9 4v13M15 7v13"/>','#19c9c0'),'Diagnóstico do mapa','')}
   </div>
   <div class="mgt">Informações</div><div class="mgl">
+    ${row("maisAbre('aj')",ic('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17v.5"/>','#4a9eff'),'Ajuda e contato','')}
+    ${row("window.open('termos.html','_blank','noopener')",ic('<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>','#8a929e'),'Termos de uso','')}
     ${row("window.open('privacidade.html','_blank','noopener')",ic('<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6l7-3z"/>','#8a929e'),'Política de privacidade','')}
     ${row("maisAbre('sobre')",ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/>','#8a929e'),'Sobre o StepOn','Versão '+BUILD)}
   </div>
-  ${souAdmin()?`<div class="mgt">Administração</div><div class="mgl">${row("medCtl()",ic('<circle cx="12" cy="14" r="6"/><path d="M8.5 3h7l-2 5h-3z"/>','#ff4d5e'),'Controle de medalhas','Pedidos de medalha em estilo de jogo')}</div>`:''}
+  <div class="mgt">Conta</div><div class="mgl">${row("excluirAbre()",ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>','#e0442f'),'<span style="color:#ff6b5f">Excluir conta</span>','Apaga os seus dados do StepOn')}</div>
+  ${souAdmin()?`<div class="mgt">Administração</div><div class="mgl">${row("denunciasAdmin()",ic('<path d="M5.5 21V3.5M5.5 4h12l-2.5 4 2.5 4h-12"/>','#e0442f'),'Denúncias','Ver e resolver')}${row("medCtl()",ic('<circle cx="12" cy="14" r="6"/><path d="M8.5 3h7l-2 5h-3z"/>','#ff4d5e'),'Controle de medalhas','Pedidos de medalha em estilo de jogo')}</div>`:''}
   <div style="height:24px"></div>`;
   $('#mais').innerHTML=h;
   if($('#c-go'))connStatus();
 }
+
+/* ---------- exigências das lojas: denunciar, bloquear, excluir a conta, ajuda e termos ---------- */
+const SUPORTE_EMAIL=''; // o Igor passa o e-mail de contato do StepOn depois; com ele preenchido, aparece o botão de e-mail na Ajuda
+let BLOQ=LS.get('bloq',[]);const ehBloq=id=>BLOQ.includes(id);
+async function srvPost(rota,body){const r=await fetch(PUBURL+rota,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),...body})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));return j}
+async function bloqSync(){if(!temConta())return;try{const j=await srvPost('/bloquear',{acao:'lista'});BLOQ=j.bloqueados||[];LS.set('bloq',BLOQ)}catch(e){}}
+const IC_DOTS='<svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+window.pessoaMenu=(id,tipo,ref)=>{
+  if(!id||id===CFG.athlete)return;const bl=ehBloq(id);
+  openSheet(`<div class="hd"><b>${esc(frNome(id))}</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <button class="b full" onclick="denunciaAbre('${esc(id)}','${tipo||'pessoa'}','${esc(ref||'')}')">Denunciar${tipo==='corrida'?' esta atividade':tipo==='comentario'?' este comentário':''}</button>
+  ${bl?`<button class="b full" style="margin-top:8px" onclick="desbloquearPessoa('${esc(id)}')">Desbloquear</button>`:`<button class="b full red" style="margin-top:8px" onclick="bloquearPessoa('${esc(id)}')">Bloquear</button>`}
+  <p class="meta" style="margin-top:12px;line-height:1.5">Ao bloquear, vocês dois deixam de se seguir e você não vê mais o que essa pessoa publica. Dá para desbloquear em Mais › Pessoas bloqueadas.</p>`)};
+const MOT_DEN=[['ofensivo','Ofensivo, assédio ou ameaça'],['falso','Perfil falso ou golpe'],['impropria','Foto ou texto impróprio'],['trapaca','Corrida falsa ou trapaça'],['outro','Outro motivo']];
+window.denunciaAbre=(id,tipo,ref,trecho)=>{
+  window._den={id,tipo:tipo||'pessoa',ref:ref||'',trecho:trecho||'',m:''};
+  openSheet(`<div class="hd"><b>Denunciar</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <p class="empty" style="margin:0 0 10px;color:var(--txt)">Conte o motivo. A denúncia é analisada e quem denuncia não aparece para a outra pessoa.</p>
+  <div id="den-m">${MOT_DEN.map(([k,n])=>`<button class="mrw" style="border:1px solid var(--line);border-radius:14px;margin-bottom:8px;background:var(--panel)" onclick="denunciaMot('${k}')"><span class="mrt"><b>${n}</b></span><span class="mrg" id="dm-${k}"></span></button>`).join('')}</div>
+  <textarea id="den-t" rows="3" maxlength="500" placeholder="Quer explicar melhor? (opcional)" style="width:100%;margin-top:4px"></textarea>
+  <button class="b pri full" id="den-b" style="margin-top:12px" onclick="denunciaEnvia()">Enviar denúncia</button>`,1)};
+window.denunciaMot=k=>{window._den.m=k;MOT_DEN.forEach(([x])=>{const e=$('#dm-'+x);if(e)e.textContent=x===k?'✓':''})};
+window.denunciaEnvia=async()=>{
+  const d=window._den;if(!d||!d.m)return toast('Escolha um motivo',2500);const b=$('#den-b');b.disabled=true;b.textContent='Enviando…';
+  try{await srvPost('/denunciar',{alvo:d.id,tipo:d.tipo,ref:d.ref,motivo:d.m,txt:($('#den-t').value||'').trim(),trecho:d.trecho})}
+  catch(e){b.disabled=false;b.textContent='Enviar denúncia';return toast('Não foi possível enviar: '+e.message,4000)}
+  openSheet(`<div class="hd"><b>Denúncia enviada</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <p class="empty" style="color:var(--txt)">Obrigado. Vamos analisar. Se quiser, bloqueie ${esc(frNome(d.id))} para não ver mais o que ela publica.</p>
+  ${ehBloq(d.id)?'':`<button class="b full red" style="margin-top:12px" onclick="bloquearPessoa('${esc(d.id)}')">Bloquear ${esc(frNome(d.id).split(' ')[0])}</button>`}
+  <button class="b full" style="margin-top:8px" onclick="closeSheet()">Fechar</button>`,1)};
+window.bloquearPessoa=async id=>{
+  if(!confirm('Bloquear '+frNome(id)+'? Vocês dois deixam de se seguir e você não vê mais o que essa pessoa publica.'))return;
+  try{const nome=frNome(id),j=await srvPost('/bloquear',{acao:'bloquear',alvo:id});BLOQ=j.bloqueados||[];LS.set('bloq',BLOQ);const N=LS.get('bloqN',{});N[id]=nome;LS.set('bloqN',N);
+    PUBL=PUBL.filter(u=>u.id!==id);LS.set('pub',PUBL);await frCall('lista').catch(()=>{});closeSheet();toast('Pessoa bloqueada',2500);render();if(VIEW==='comp')rComp()}
+  catch(e){toast('Não foi possível bloquear: '+e.message,4000)}};
+window.desbloquearPessoa=async id=>{
+  try{const j=await srvPost('/bloquear',{acao:'desbloquear',alvo:id});BLOQ=j.bloqueados||[];LS.set('bloq',BLOQ);toast('Pessoa desbloqueada',2500);await pullAll().catch(()=>{});maisBloq();render()}
+  catch(e){toast('Não foi possível desbloquear: '+e.message,4000)}};
+window.maisBloq=()=>openSheet(`<div class="hd"><b>Pessoas bloqueadas</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  ${BLOQ.length?`<div class="mgl">${BLOQ.map(id=>`<div class="mrw" style="cursor:default"><span class="mrt"><b>${esc((LS.get('bloqN',{})[id])||frNome(id))}</b><small>${esc(id)}</small></span><button class="sgb" onclick="desbloquearPessoa('${esc(id)}')">Desbloquear</button></div>`).join('')}</div>`:'<p class="empty" style="margin-top:20px">Você não bloqueou ninguém.</p>'}`,1);
+// excluir a conta: apaga os dados do StepOn no servidor e neste aparelho (a conta do Intervals continua com você)
+window.excluirAbre=()=>openSheet(`<div class="hd"><b>Excluir conta</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <p class="empty" style="color:var(--txt);line-height:1.5">Isto apaga <b style="color:var(--hi)">para sempre</b> os seus dados do StepOn:</p>
+  <ul style="margin:8px 0 8px 18px;color:var(--txt);font-size:14px;line-height:1.7"><li>o seu perfil, ranking, áreas dominadas e medalhas;</li><li>quem você segue e quem segue você;</li><li>os seus comentários, curtidas, fotos e inscrições em eventos;</li><li>tudo o que está guardado neste aparelho.</li></ul>
+  <p class="empty">A sua conta e as suas corridas no <b style="color:var(--hi)">Intervals.icu não são apagadas</b>: elas continuam lá, e você pode apagá-las pelo site do Intervals. Não dá para desfazer.</p>
+  <label class="f" style="margin-top:14px">Digite EXCLUIR para confirmar</label><input id="ex-t" autocomplete="off" autocapitalize="characters" oninput="excluirTecla()">
+  <button class="b red full" id="ex-b" style="margin-top:12px" disabled onclick="excluirConta2()">Excluir minha conta</button>`,1);
+window.excluirTecla=()=>{const b=$('#ex-b');if(b)b.disabled=($('#ex-t').value||'').trim().toUpperCase()!=='EXCLUIR'};
+window.excluirConta2=async()=>{
+  if(!confirm('Última confirmação: excluir a sua conta e os seus dados do StepOn para sempre?'))return;const b=$('#ex-b');b.disabled=true;b.textContent='Excluindo…';
+  try{await srvPost('/excluir',{confirmar:'EXCLUIR'})}catch(e){b.disabled=false;b.textContent='Excluir minha conta';return toast('Não foi possível excluir agora ('+e.message+'). Tente de novo em instantes.',5000)}
+  if(CFG.token){try{await fetch(API+'/disconnect-app',{method:'DELETE',headers:{Authorization:authH()}})}catch(e){}}
+  const tema=localStorage.getItem('br.tema');Object.keys(localStorage).filter(k=>k.startsWith('br.')).forEach(k=>localStorage.removeItem(k));if(tema)localStorage.setItem('br.tema',tema);
+  localStorage.setItem('br.cfg',JSON.stringify({athlete:'',key:'',token:''}));
+  openSheet(`<div class="hd"><b>Conta excluída</b></div><p class="empty" style="color:var(--txt)">Os seus dados do StepOn foram apagados. Até mais.</p>`,1);setTimeout(()=>location.replace(redirUri()),2200)};
+// ajuda e contato
+window.ajudaHtml=()=>{const q=(t,r)=>`<details class="mrw" style="display:block;border-bottom:1px solid var(--line2)"><summary style="font-weight:600;font-size:15px;cursor:pointer;list-style:none">${t}</summary><p class="empty" style="margin-top:8px;color:var(--txt);line-height:1.5">${r}</p></details>`;
+  return `<div class="mgl">${q('Como entro no ranking?','Na aba Mapa, toque no troféu e depois em Entrar. Só quem entra tem as corridas e as áreas publicadas.')}${q('Não consigo conectar o Intervals','Em Mais › Conexão, toque em Entrar com o Intervals. Se perdeu o acesso, toque em Reconectar. O Intervals só mantém um aparelho conectado por vez.')}${q('Minhas corridas não aparecem','Confira em Mais › Dispositivos se o relógio está enviando para o Intervals.icu e toque em Sincronizar tudo.')}${q('Como denuncio ou bloqueio alguém?','Abra o perfil da pessoa e toque nos três pontinhos no topo. Também dá para denunciar comentários e atividades pelos três pontinhos.')}${q('Como excluo minha conta?','Em Mais › Excluir conta. Os seus dados do StepOn são apagados; a conta do Intervals continua com você.')}</div>
+  <div class="mgt">Fale com a gente</div>${SUPORTE_EMAIL?`<a class="b pri full" href="mailto:${SUPORTE_EMAIL}?subject=StepOn%20-%20Ajuda" style="text-decoration:none">Enviar e-mail para o suporte</a><p class="meta" style="margin-top:8px;text-align:center">${SUPORTE_EMAIL}</p>`:'<p class="empty">O e-mail de contato será divulgado em breve.</p>'}`};
+// denúncias (só o administrador)
+window.denunciasAdmin=async()=>{
+  openSheet(`<div class="hd"><b>Denúncias</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="empty">Carregando…</p>`,1);
+  try{const j=await srvPost('/denuncias',{acao:'lista'}),L=j.denuncias||[];
+    openSheet(`<div class="hd"><b>Denúncias</b><button class="b sm" onclick="closeSheet()">✕</button></div>${L.length?L.map(r=>`<div class="card" style="margin-bottom:10px;${r.st==='resolvida'?'opacity:.55':''}"><div class="row" style="justify-content:space-between"><b style="color:var(--hi)">${esc(r.tipo)} · ${esc((MOT_DEN.find(m=>m[0]===r.motivo)||[,r.motivo])[1])}</b><span class="meta">${fmtD(new Date(r.at).toISOString().slice(0,10))}</span></div><p class="empty" style="margin-top:4px">Contra: <a onclick="openPerfilAmigo('${esc(r.alvo)}')" style="color:var(--blue);cursor:pointer">${esc(frNome(r.alvo))}</a> (${esc(r.alvo)}) · por ${esc(r.de)}</p>${r.trecho?`<p class="empty" style="color:var(--txt)">"${esc(r.trecho)}"</p>`:''}${r.txt?`<p class="empty" style="color:var(--txt)">${esc(r.txt)}</p>`:''}${r.st==='resolvida'?'<span class="tag ok" style="margin-top:6px">Resolvida</span>':`<button class="b sm" style="margin-top:8px" onclick="denunciaResolve('${r.id}')">Marcar como resolvida</button>`}</div>`).join(''):'<p class="empty" style="margin-top:20px">Nenhuma denúncia.</p>'}`,1)}
+  catch(e){toast('Não foi possível carregar: '+e.message,3500)}};
+window.denunciaResolve=async id=>{try{await srvPost('/denuncias',{acao:'resolver',id});denunciasAdmin()}catch(e){toast('Erro: '+e.message,3000)}};
 let MAISP={};
 window.maisAbre=k=>{const m=MAISP[k];if(!m)return;openSheet(`<div class="hd"><b>${m[0]}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+m[1],1);if(k==='con'&&$('#c-go'))connStatus()};
 window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();toast('CONECTADO // '+(a.name||''),2500);sync(1)};
@@ -2614,7 +2684,7 @@ function feedCard(o){
   const st=[['Distância',o.dist?km(o.dist).replace('.',',')+' km':'--'],pace?['Ritmo',pace]:['FC média',o.hr?o.hr+' bpm':'--'],['Tempo',tempoCart(o.mov)]];
   const mapa=o.map==='own'?mapBox(o.id,190):Array.isArray(o.map)&&o.map.length>2?(MAPTR['f'+o.dono+o.id]=o.map,mapBox('f'+o.dono+o.id,190)):'';
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:o.abre?` onclick="openActAmigo('${o.dono}','${o.id}')"`:''}>
-  <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}${o.priv?` · <span class="fpriv">${PRIV_ROT[o.priv]}</span>`:''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div>${o.meu&&!o.mk?`<button class="fdots" aria-label="Mais opções do treino" onclick="event.stopPropagation();menuAtiv('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:''}</div>
+  <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}${o.priv?` · <span class="fpriv">${PRIV_ROT[o.priv]}</span>`:''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div>${o.meu&&!o.mk?`<button class="fdots" aria-label="Mais opções do treino" onclick="event.stopPropagation();menuAtiv('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:(!o.meu&&o.dono&&o.dono!==CFG.athlete?`<button class="fdots" aria-label="Denunciar ou bloquear" onclick="event.stopPropagation();pessoaMenu('${esc(o.dono)}','corrida','${esc(o.id)}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:'')}</div>
   <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2><div class="fjunto" data-jk="${k}">${o.com?comTxt(o.com):''}</div>${seloDes(o.des,1,o.meu?o.id:null)}
   <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
@@ -2667,10 +2737,11 @@ function cmLista(rola){
   const [dono,act]=window._cmK||[],el=$('#cml');if(!el||!dono)return;const k=dono+':'+act,s=SOC[k]||{l:[],m:[]},eu=CFG.athlete;
   const quem=s.l.map(id=>id===eu?'você':frNome(id).split(' ')[0]);
   el.innerHTML=(quem.length?`<div class="cmq">❤ Curtido por ${esc(quem.slice(0,5).join(', '))}${quem.length>5?' e mais '+(quem.length-5):''}</div>`:'')+
-   (s.m.length?s.m.map(c=>{const l=c.l||[],mine=c.id===eu,nome=mine?'Você':String(c.name||'').split(' ')[0];
-     return `<div class="cmi"><img src="${esc(mine?myPic():frPic(c.id))}" alt="" onclick="cmPerfil('${esc(c.id)}')" style="cursor:pointer"><div class="cmb"><div><b onclick="cmPerfil('${esc(c.id)}')" style="cursor:pointer">${esc(nome)}</b><small>${quando(c.t)}</small></div><p>${esc(c.txt)}</p><div class="cmr"><button onclick="cmResp('${esc(String(c.name||'').split(' ')[0])}')">Responder</button>${mine||dono===eu?`<button onclick="socApagar('${dono}','${act}','${c.i}')">Apagar</button>`:''}</div></div><button class="cmc${l.includes(eu)?' on':''}" aria-label="Curtir comentário" onclick="socCurtirC('${c.i}')">${CM_HEART}<span>${l.length||''}</span></button></div>`}).join(''):'<p class="cme">Nenhum comentário ainda.<br>Comece a conversa.</p>');
+   (s.m.filter(c=>!ehBloq(c.id)).length?s.m.filter(c=>!ehBloq(c.id)).map(c=>{const l=c.l||[],mine=c.id===eu,nome=mine?'Você':String(c.name||'').split(' ')[0];
+     return `<div class="cmi"><img src="${esc(mine?myPic():frPic(c.id))}" alt="" onclick="cmPerfil('${esc(c.id)}')" style="cursor:pointer"><div class="cmb"><div><b onclick="cmPerfil('${esc(c.id)}')" style="cursor:pointer">${esc(nome)}</b><small>${quando(c.t)}</small></div><p>${esc(c.txt)}</p><div class="cmr"><button onclick="cmResp('${esc(String(c.name||'').split(' ')[0])}')">Responder</button>${mine||dono===eu?`<button onclick="socApagar('${dono}','${act}','${c.i}')">Apagar</button>`:''}${mine?'':`<button onclick="cmDenuncia('${c.i}')">Denunciar</button>`}</div></div><button class="cmc${l.includes(eu)?' on':''}" aria-label="Curtir comentário" onclick="socCurtirC('${c.i}')">${CM_HEART}<span>${l.length||''}</span></button></div>`}).join(''):'<p class="cme">Nenhum comentário ainda.<br>Comece a conversa.</p>');
   if(rola)el.scrollTop=el.scrollHeight}
 window.cmPerfil=id=>{if(!id)return;if(id===CFG.athlete){closeSheet();go('perf');return}openPerfilAmigo(id)};
+window.cmDenuncia=i=>{const [dono,act]=window._cmK||[],c=((SOC[dono+':'+act]||{m:[]}).m||[]).find(x=>x.i===i);if(!c)return;denunciaAbre(c.id,'comentario',dono+':'+act+':'+i,String(c.txt||'').slice(0,160))};
 window.cmTecla=()=>{const t=$('#cm-t'),b=$('#cm-b');if(t&&b){b.disabled=!t.value.trim();b.classList.toggle('on',!!t.value.trim())}};
 window.cmResp=n=>{const t=$('#cm-t');if(!t)return;t.value='@'+n+' ';t.focus();cmTecla()};
 window.socEnviar=async(dono,act)=>{const t=$('#cm-t'),v=(t.value||'').trim();if(!v)return;t.disabled=true;const r=await socPost(dono,act,{acao:'comentar',txt:v});t.disabled=false;if(r){t.value='';cmTecla();cmLista(1)}else t.focus()};
@@ -3524,7 +3595,8 @@ async function pullAll(){
       if(!medsGet().length&&Array.isArray(sp.meds)&&sp.meds.length){LS.set('meds',sp.meds.map((m,i)=>({...m,id:m.id||('r'+i+Date.now().toString(36))})));window._medL=undefined}}
     LS.set('restOk',1)}catch(e){}
   L.forEach(u=>(u.runs||[]).forEach(r=>{if(r.name&&NOME_GEN.test(r.name))r.name=nomeTraduz(r.name,r.date)}));
-  PUBL=L.filter(u=>u.id!==CFG.athlete);LS.set('pub',PUBL);LS.set('pubAt',Date.now());
+  await bloqSync();
+  PUBL=L.filter(u=>u.id!==CFG.athlete&&!ehBloq(u.id));LS.set('pub',PUBL);LS.set('pubAt',Date.now());
 }
 /* ---------- áreas dominadas ---------- */
 const COR=['#4a9eff','#34c759','#ff5a5f','#ffb020','#b06cff','#ff6ec7','#19c9c0','#ff7a2f','#a3e635','#f43f5e'];
@@ -3718,7 +3790,7 @@ async function frCall(acao,alvo){
   if(!temConta())throw new Error('sem conexão com o Intervals');
   const r=await fetch(PUBURL+'/amigos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao,alvo})});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));
-  FR={friends:j.friends||[],fol:j.fol||j.friends||[],seg:j.seg||j.friends||[],inc:[],out:[],pessoas:j.pessoas||{}};LS.set('frs',FR);return j;
+  const nb=l=>(l||[]).filter(x=>!ehBloq(x));FR={friends:nb(j.friends),fol:nb(j.fol||j.friends),seg:nb(j.seg||j.friends),inc:[],out:[],pessoas:j.pessoas||{}};LS.set('frs',FR);return j;
 }
 const frNome=id=>{const u=PUBL.find(x=>x.id===id);return (u&&u.name)||(FR.pessoas[id]||{}).name||id};
 const frPic=id=>{const u=PUBL.find(x=>x.id===id);return okPic((u&&u.pic)||(FR.pessoas[id]||{}).pic)};
@@ -3829,7 +3901,7 @@ window.openPerfilAmigo=(id,tab)=>{
   const med=[],cmd=(k,t,nome)=>med.push({f:'cmd',k,t,nome,on:true,date:null});[1,10,25,50,100,150,200,300,400,500].filter(c=>runs.length>=c).forEach(c=>cmd(c===1?'1ª':String(c),c===1?'corrida':'corridas',c+'ª corrida'));const her=(k,nome)=>med.push({f:'fe2',k,t:'km',nome,on:true,date:null});if(maxd>=5000)her('5','5 km');if(maxd>=10000)her('10','10 km');if(maxd>=21097)her('21','Meia maratona');if(maxd>=42195)her('42','Maratona');
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
-  let h=`${perfCab({hd:'<b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button>',nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sq:seqRuns(runs),sub:eAmigo?'Amigo':sigo?'Seguindo':'',seg:sn.s,sgd:sn.g})}<div class="sgx">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'sgb big')}</div>`;
+  let h=`${perfCab({hd:`<b>Perfil</b><button class="sgp" onclick="pessoaMenu('${esc(id)}')" aria-label="Mais opções">${IC_DOTS}</button><button class="b sm" onclick="closeSheet()">✕</button>`,nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sq:seqRuns(runs),sub:eAmigo?'Amigo':sigo?'Seguindo':'',seg:sn.s,sgd:sn.g})}<div class="sgx">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'sgb big')}</div>`;
   if(!u||!runs.length)h+=`<p class="empty" style="color:var(--txt)">${esc(frNome(id))} ainda não entrou no ranking, então o app não tem as corridas dessa pessoa. Quando ela entrar, o perfil aparece aqui sozinho.</p>`;
   else{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
@@ -3861,7 +3933,7 @@ window.openTerr=id=>{
   <div class="tds"><div><span>Área</span><b>${fmtKm2(o.km2)}</b></div><div><span>Áreas dominadas</span><b>${terrRegioes(o.geom).length}</b></div><div><span>Última</span><b>${o.last?fmtD(o.last):'--'}</b></div></div>
   ${o.rit?`<p class="tdd">${eu?`No Geral, as suas áreas estão defendidas pelo seu ritmo: <b>${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>. Só toma quem fechar o circuito mais rápido.`:`No Geral, para tomar estas áreas você precisa fechar o circuito mais rápido que ${esc(o.u.name.split(' ')[0])}: <b>abaixo de ${fmtP(o.rit[0])}${o.rit[1]!==o.rit[0]?' a '+fmtP(o.rit[1]):''}/km</b>, conforme o pedaço.`}</p>`:''}
   ${eu?`<div class="tdc"><b>Sua cor no mapa</b>${swatches(minhaCor())}<p class="meta" style="margin-top:8px">Os seus amigos veem as suas áreas nesta cor.</p></div>`:`<div class="sgx" style="margin-top:16px"><button class="sgb big" onclick="openPerfilAmigo('${esc(id)}')">Ver perfil</button>${btnAmizade(id,`openTerr('${esc(id)}')`,'sgb big')}</div>`}
-  <p class="meta" style="margin-top:14px;line-height:1.5">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`,1);
+  ${eu?'':`<p class="meta" style="margin-top:12px"><a onclick="pessoaMenu('${esc(id)}')" style="color:var(--dim);cursor:pointer">Denunciar ou bloquear</a></p>`}<p class="meta" style="margin-top:14px;line-height:1.5">Uma área vira sua quando você fecha um circuito correndo. ${MODO()==='g'?'No Geral, outra pessoa só toma a área se correr por cima com ritmo melhor que o seu.':'Entre amigos, quem correr por cima depois fica com essa parte.'}</p>`,1);
   $('#sbox').dataset.terr=eu?'me':'';
 };
 // "Seu território": separa as áreas em locais (cada pedaço da cidade) e mostra um mapinha de cada
@@ -4754,7 +4826,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-24f'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-25a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},

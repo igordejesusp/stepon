@@ -94,6 +94,7 @@ async function amigos(env, eu, acao, alvo) {
   let aviso = '';
   if (acao !== 'lista') {
     if (!/^i\d{1,12}$/.test(alvo || '') || alvo === eu) return { erro: 'ID inválido' };
+    if ((acao === 'seguir' || acao === 'pedir' || acao === 'aceitar') && ((await lerBl(env, alvo)).includes(eu) || (await lerBl(env, eu)).includes(alvo))) return { erro: 'não foi possível seguir essa pessoa' };
     const ou = await lerF(env, alvo);
     if (acao === 'seguir' || acao === 'pedir' || acao === 'aceitar') {
       if (me.fol.includes(alvo)) aviso = 'ja';
@@ -230,6 +231,110 @@ async function evento(env, a, b) {
 }
 const evLista = (d) => ({ n: Object.keys(d.ins).length, ins: Object.entries(d.ins).sort((x, y) => x[1].t - y[1].t).slice(0, 300).map(([id, v]) => ({ id, name: v.n })) });
 
+
+// ---------- bloquear, denunciar e excluir a conta (exigências das lojas de aplicativos) ----------
+async function lerBl(env, id) { return (await env.BR.get('bl:' + id, 'json')) || []; }
+async function bloquear(env, eu, acao, alvo) {
+  if (acao === 'lista') return { ok: true, bloqueados: await lerBl(env, eu) };
+  if (!/^i\d{1,12}$/.test(alvo || '') || alvo === eu) return { erro: 'ID inválido' };
+  let L = await lerBl(env, eu);
+  if (acao === 'bloquear') {
+    L = com(L, alvo).slice(-300);
+    // os dois deixam de se seguir
+    for (const [a, c] of [[eu, alvo], [alvo, eu]]) {
+      const f = await lerF(env, a);
+      for (const k of ['friends', 'fol', 'seg', 'inc', 'out']) if (Array.isArray(f[k])) f[k] = f[k].filter((x) => x !== c);
+      await gravaF(env, a, f);
+    }
+  } else if (acao === 'desbloquear') L = sem(L, alvo);
+  else return { erro: 'ação inválida' };
+  await env.BR.put('bl:' + eu, JSON.stringify(L));
+  return { ok: true, bloqueados: L };
+}
+const txtLimpo = (x, n) => String(x || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+const MOTIVOS_DEN = ['ofensivo', 'falso', 'impropria', 'trapaca', 'outro'];
+async function denunciar(env, eu, b) {
+  if (!['pessoa', 'corrida', 'comentario', 'foto'].includes(b.tipo) || !/^i\d{1,12}$/.test(b.alvo || '') || b.alvo === eu) return { erro: 'denúncia inválida' };
+  const dia = new Date().toISOString().slice(0, 10), kr = 'rl:' + eu + ':' + dia, n = +(await env.BR.get(kr)) || 0;
+  if (n >= 20) return { erro: 'muitas denúncias hoje; tente amanhã' };
+  await env.BR.put(kr, String(n + 1), { expirationTtl: 172800 });
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const r = { id, de: eu, alvo: b.alvo, tipo: b.tipo, ref: String(b.ref || '').slice(0, 60), motivo: MOTIVOS_DEN.includes(b.motivo) ? b.motivo : 'outro', txt: txtLimpo(b.txt, 500), trecho: txtLimpo(b.trecho, 200), at: Date.now(), st: 'nova' };
+  await env.BR.put('rep:' + id, JSON.stringify(r), { expirationTtl: 60 * 60 * 24 * 365 });
+  const L = (await env.BR.get('repl', 'json')) || [];
+  L.push(id);
+  await env.BR.put('repl', JSON.stringify(L.slice(-500)));
+  return { ok: true };
+}
+// só o administrador lê e encerra as denúncias
+async function denuncias(env, b) {
+  const L = (await env.BR.get('repl', 'json')) || [];
+  if (b.acao === 'resolver' && /^[a-z0-9]{3,20}$/.test(b.id || '')) {
+    const r = await env.BR.get('rep:' + b.id, 'json');
+    if (r) { r.st = 'resolvida'; await env.BR.put('rep:' + b.id, JSON.stringify(r), { expirationTtl: 60 * 60 * 24 * 365 }); }
+  }
+  const out = [];
+  for (const id of L.slice(-100).reverse()) { const r = await env.BR.get('rep:' + id, 'json'); if (r) out.push(r); }
+  return { ok: true, denuncias: out };
+}
+async function excluirConta(env, id) {
+  // fotos
+  const g = (await env.BR.get('g:' + id, 'json')) || [];
+  for (const f of g) await env.BR.delete('p:' + id + ':' + f.a + ':' + f.p);
+  // quem segue e quem é seguido
+  const f = await lerF(env, id);
+  const outros = new Set([...(f.friends || []), ...(f.fol || []), ...(f.seg || []), ...(f.inc || []), ...(f.out || [])]);
+  for (const o of outros) {
+    const fo = await lerF(env, o);
+    for (const k of ['friends', 'fol', 'seg', 'inc', 'out']) if (Array.isArray(fo[k])) fo[k] = fo[k].filter((x) => x !== id);
+    await gravaF(env, o, fo);
+  }
+  // curtidas e comentários (em qualquer atividade) e as atividades dele
+  let cur;
+  do {
+    const l = await env.BR.list({ prefix: 's:', cursor: cur });
+    for (const k of l.keys) {
+      if (k.name.startsWith('s:' + id + ':')) { await env.BR.delete(k.name); continue; }
+      const s = await env.BR.get(k.name, 'json');
+      if (!s) continue;
+      const n0 = (s.l || []).length + (s.m || []).length;
+      s.l = (s.l || []).filter((x) => x !== id);
+      s.m = (s.m || []).filter((c) => c.id !== id).map((c) => { if (c.l) c.l = c.l.filter((x) => x !== id); return c; });
+      if (s.l.length + s.m.length !== n0) { if (!s.l.length && !s.m.length) await env.BR.delete(k.name); else await env.BR.put(k.name, JSON.stringify(s)); }
+    }
+    cur = l.list_complete ? null : l.cursor;
+  } while (cur);
+  // inscrições em eventos
+  cur = undefined;
+  do {
+    const l = await env.BR.list({ prefix: 'ev:', cursor: cur });
+    for (const k of l.keys) { const d = await env.BR.get(k.name, 'json'); if (d && d.ins && d.ins[id]) { delete d.ins[id]; await env.BR.put(k.name, JSON.stringify(d)); } }
+    cur = l.list_complete ? null : l.cursor;
+  } while (cur);
+  // marcações (corri com) e medalhas pedidas
+  cur = undefined;
+  do {
+    const l = await env.BR.list({ prefix: 'mo:', cursor: cur });
+    for (const k of l.keys) {
+      if (k.name.startsWith('mo:' + id + ':')) { await env.BR.delete(k.name); continue; }
+      const o = await env.BR.get(k.name, 'json');
+      if (o && (o.amigos || []).includes(id)) { o.amigos = o.amigos.filter((x) => x !== id); if (o.amigos.length) await env.BR.put(k.name, JSON.stringify(o)); else await env.BR.delete(k.name); }
+    }
+    cur = l.list_complete ? null : l.cursor;
+  } while (cur);
+  cur = undefined;
+  const meds = [];
+  do {
+    const l = await env.BR.list({ prefix: 'mp:', cursor: cur });
+    for (const k of l.keys) { const p = await env.BR.get(k.name, 'json'); if (p && p.athlete === id) { meds.push(k.name.slice(3)); await env.BR.delete(k.name); await env.BR.delete('mi:' + k.name.slice(3)); } }
+    cur = l.list_complete ? null : l.cursor;
+  } while (cur);
+  if (meds.length) { const L = ((await env.BR.get('mpl', 'json')) || []).filter((x) => !meds.includes(x)); await env.BR.put('mpl', JSON.stringify(L)); }
+  // o resto: resumo publicado, detalhes, backup, bloqueios e marcas
+  for (const k of ['a:' + id, 'xr:' + id, 'fora:' + id, 'u:' + id, 'g:' + id, 'm:' + id, 'bl:' + id, 'f:' + id]) await env.BR.delete(k);
+  await trocaNoSnap(env, id, null);
+  return { ok: true };
+}
 
 // ---------- medalhas feitas à mão: pedidos, fila do administrador e imagens prontas ----------
 // 'mp:<id>' = pedido { athlete, nome, n, d, k, t, l, o, foto, at, st }  ·  'mpl' = lista leve da fila  ·  'mi:<id>' = imagem pronta (data URL)
@@ -541,6 +646,18 @@ export default {
       if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
       const r = await amigos(env, b.athlete, b.acao || 'lista', b.alvo);
       return json(req, r, r.erro ? 400 : 200);
+    }
+
+    if (req.method === 'POST' && ['/excluir', '/bloquear', '/denunciar', '/denuncias'].includes(url.pathname)) {
+      let b;
+      try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
+      const a = await confere(b.athlete, b.key, b.token);
+      if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      if (url.pathname === '/excluir') { if (b.confirmar !== 'EXCLUIR') return json(req, { erro: 'confirmação ausente' }, 400); return json(req, await excluirConta(env, b.athlete)); }
+      if (url.pathname === '/bloquear') { const r = await bloquear(env, b.athlete, b.acao || 'lista', b.alvo); return json(req, r, r.erro ? 400 : 200); }
+      if (url.pathname === '/denunciar') { const r = await denunciar(env, b.athlete, b); return json(req, r, r.erro ? 400 : 200); }
+      if (b.athlete !== ADMIN_MED) return json(req, { erro: 'só o administrador' }, 403);
+      return json(req, await denuncias(env, b));
     }
 
     return json(req, { app: 'StepOn', rotas: ['GET /all', 'POST /publish', 'DELETE /me', 'POST /amigos', 'GET /social', 'POST /social', 'GET /fotos', 'GET /foto', 'POST /foto', 'POST /marcar', 'POST /marcados', 'GET /juntos', 'POST /dados', 'POST /oauth/token'] });
