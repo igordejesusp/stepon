@@ -3877,13 +3877,18 @@ function terrData(){
   Z.sort((a,b)=>a.ts-b.ts);
   // mesmo conjunto de áreas, de pessoas e de pontos que da última vez: devolve o resultado pronto (o cálculo era refeito a cada render e travava)
   {const sg=MODO()+'|'+minhaCor()+'|'+P.map(u=>u.id+':'+(u.runs||[]).length+':'+Math.round((u.runs||[]).reduce((t,r)=>t+(r.dist||0),0))+':'+(u.me?'':corDe(u.id,((PUBL.find(x=>x.id===u.id)||{}).cor)))).join(',')+'|'+Z.map(z=>z.u.id+z.d+(z.h||'')+z.p.length+z.p[0]+z.p[z.p.length-1]+(z.r||'')).join(';');
-    if(sg===_tdSig&&TD)return TD;window.__tdSigN=sg}
+    if(sg===_tdSig&&TD)return TD;
+    try{const pc0=JSON.parse(localStorage.getItem('tdc')||'null');
+      if(pc0&&pc0.sg===sg){const T0=pc0.it.map(o=>{const u=P.find(x=>x.id===o.id);return u?{u,geom:o.geom,km2:o.km2,n:o.n,last:o.last,rit:o.rit,cor:o.cor}:null}).filter(Boolean);
+        if(T0.length||!pc0.it.length){TD=T0;_tdSig=sg;return TD}}}catch(e){}
+    window.__tdSigN=sg}
   const pai=Z.map((_,i)=>i),raiz=i=>pai[i]===i?i:(pai[i]=raiz(pai[i])),cruza=(a,b)=>a[0]<=b[1]&&b[0]<=a[1]&&a[2]<=b[3]&&b[2]<=a[3];
   for(let i=0;i<Z.length;i++)for(let k=i+1;k<Z.length&&Z[k].ts-Z[i].ts<=15*60e3;k++)
     if(Z[i].h&&Z[k].h&&Z[i].u.id!==Z[k].u.id&&cruza(Z[i].b,Z[k].b))pai[raiz(k)]=raiz(i);
   const grupos={};Z.forEach((z,i)=>{(grupos[raiz(i)]=grupos[raiz(i)]||[]).push(z)});
-  const G={},pc=window.polygonClipping,n={},last={},anel=z=>{const r=z.p.map(q=>[q[1],q[0]]);r.push(r[0]);return [[r]]};
-  const dif=(a,b)=>a&&a.length&&b&&b.length?(pcSeguro('difference',a,b)||a):(a||[]),uni=(a,b)=>a&&a.length?(b&&b.length?(pcSeguro('union',a,b)||[...a,...b]):a):(b||[]);
+  const G={},pc=window.polygonClipping,n={},last={},anel=z=>{const r=z.p.map(q=>[Math.round(q[1]*1e5)/1e5,Math.round(q[0]*1e5)/1e5]);r.push(r[0]);return [[r]]}; // pontos na grade de ~1 m: vértices quase iguais viram iguais e não nascem lascas
+  const tiny=g=>g.filter(poly=>ringKm2(poly[0])>=0.0003); // some lascas com menos de 300 m²
+  const dif=(a,b)=>a&&a.length&&b&&b.length?(r=>r?tiny(r):a)(pcSeguro('difference',a,b)):(a||[]),uni=(a,b)=>a&&a.length?(b&&b.length?(r=>r?tiny(r):[...a,...b])(pcSeguro('union',a,b)):a):(b||[]);
   // GERAL: cada pedaço de área guarda o ritmo de quem o conquistou; outra pessoa só toma aquele pedaço correndo mais rápido.
   // A própria pessoa mantém o melhor ritmo que já fez ali. Área sem ritmo (dado antigo) segue a regra de quem correu por último.
   const RIT=MODO()==='g';
@@ -3925,7 +3930,9 @@ function terrData(){
   // tira lascas muito pequenas que sobram da junção das áreas (menos de 0,3 ha)
   for(const k in G)G[k]=(G[k]||[]).filter(poly=>ringKm2(poly[0])>=0.003);
   TD=P.map(u=>{const g=G[u.id]||[],pr=(PUBL.find(x=>x.id===u.id)||{});return {u,geom:g,km2:geoKm2(g),n:n[u.id]||0,last:last[u.id]||null,rit:RIT&&RITU?RITU[u.id]||null:null,cor:u.me?minhaCor():corDe(u.id,pr.cor)}}).filter(o=>o.geom.length);
-  _tdSig=window.__tdSigN;return TD;
+  _tdSig=window.__tdSigN;
+  try{const j=JSON.stringify({sg:_tdSig,it:TD.map(o=>({id:o.u.id,geom:o.geom,km2:o.km2,n:o.n,last:o.last,rit:o.rit,cor:o.cor}))});if(j.length<600000)localStorage.setItem('tdc',j)}catch(e){}
+  return TD;
 }
 // bolinha com a foto no meio das maiores áreas de cada um
 let PMK=[];
@@ -5065,7 +5072,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-29d'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-29e'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
