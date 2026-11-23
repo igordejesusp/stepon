@@ -732,6 +732,25 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .rpz{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin:10px 14px 4px;padding:14px 6px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.rpz b{display:block;font-family:var(--m);font-size:28px;color:var(--hi)}.rpz span{font-size:12px;color:var(--dim)}
 .rstart{width:calc(100% - 32px);max-width:440px;height:58px;border-radius:29px;border:0;background:var(--blue);color:#001a33;font-size:19px;font-weight:800;letter-spacing:.01em}
 #rec #r-ctl:has(.rstart){padding-top:6px}
+
+/* calendário: cor e ícone por tipo de treino */
+.day{border-left:4px solid var(--k,transparent)}.day.rest{opacity:.6;padding-top:6px;padding-bottom:6px}
+.kr{display:flex;align-items:center;gap:10px}.kc{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}.kc svg{width:21px;height:21px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.day.rest .kc{width:28px;height:28px}.day.rest .kc svg{width:15px;height:15px}
+.day .pl b{font-size:14px;color:var(--hi)}.day .sub{font-size:12px;color:var(--dim);margin-top:1px}.day .sub .okk{color:#5fd18a}.day .sub .bd2{color:var(--red)}
+.mc .ki{position:absolute;top:4px;right:4px;line-height:0}.mc .ki svg{width:12px;height:12px;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.mc .dot{border-color:var(--k,var(--blue))}.mc .dot.f{background:var(--k,var(--blue))}.mc .dot.x{border-color:var(--red);background:var(--red)}
+.calleg{text-align:center;margin:16px 0 4px;font-size:12px}.calleg a{color:var(--dim);cursor:pointer;opacity:.8}
+#sheet .kc svg{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (min-width:760px){.week .day{border-left:1px solid var(--line);border-top:4px solid var(--k,transparent)}}
+/* emblemas bloqueados menos escuros (tema escuro) */
+:root:not([data-theme="light"]) .esc.off .rzb{stroke:#232a33}:root:not([data-theme="light"]) .esc.off .rzo{fill:#586373;stroke:#586373}:root:not([data-theme="light"]) .esc.off .rz{fill:#8a96a6;opacity:.55}
+:root:not([data-theme="light"]) .esc.off .wo,:root:not([data-theme="light"]) .esc.off .wb{fill:#586373;stroke:#586373}:root:not([data-theme="light"]) .esc.off .wb{stroke:none}:root:not([data-theme="light"]) .esc.off .wd{fill:#1a1f26;stroke:#1a1f26}:root:not([data-theme="light"]) .esc.off .wr{stroke:#8a96a6}
+:root:not([data-theme="light"]) .esc.off .eb0{stroke:#2a3138;fill:#161b21}:root:not([data-theme="light"]) .esc.off .eb1{stroke:#586373}:root:not([data-theme="light"]) .esc.off .eb2{stroke:#8a96a6;opacity:.55}:root:not([data-theme="light"]) .esc.off .et1,:root:not([data-theme="light"]) .esc.off .et2,:root:not([data-theme="light"]) .esc.off .et3{fill:#a5afbd}
+/* desafios: anéis de progresso */
+.dsr{display:flex;align-items:center;gap:16px;padding:16px}.dsr svg{flex:none}.dsl{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}.dsl>div{display:flex;flex-direction:column;gap:1px}.dsl b{font-size:13px;color:var(--hi);display:flex;align-items:center;gap:7px}.dsl b i{width:9px;height:9px;border-radius:50%;flex:none}.dsl span{font-size:12px;color:var(--dim)}.dsl em{font-style:normal;margin-left:auto;color:var(--hi);font-family:var(--m)}
+/* perfil: faixa com 3 números */
+.pstat{display:grid;grid-template-columns:repeat(3,1fr);margin:14px 0 6px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:12px 0;text-align:center}.pstat>div+div{border-left:1px solid var(--line2)}.pstat b{display:block;font-size:22px;color:var(--hi);font-family:var(--m)}.pstat span{font-size:12px;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -1847,6 +1866,36 @@ window.openVital=(k,per)=>{
 
 /* ================= CALENDÁRIO ================= */
 let calMode='sem',calRef=TODAY();
+/* tipos de treino do calendário: cor e ícone (a legenda fica no fim do calendário) */
+const TK={
+ leve:{n:'Leve',c:'#34c759',ex:'Rodagem leve · Soltura',d:'<path d="M3 14c3-6 6-6 9 0s6 6 9 0"/>'},
+ longo:{n:'Longo',c:'#4a9eff',ex:'Longão',d:'<path d="M7 21L10.5 3M17 21L13.5 3"/><path d="M12 7v2.5M12 12.5V15M12 18v1.5"/>'},
+ limiar:{n:'Limiar / ritmo',c:'#f0c24b',ex:'Limiar contínuo · Ritmo de 1 km · Simulado',d:'<path d="M4.5 17a8 8 0 1115 0"/><path d="M12 17l4-5.5"/><circle cx="12" cy="17" r="1.2"/>'},
+ fartlek:{n:'Fartlek e variações',c:'#b06cff',ex:'Fartlek · Acelerações · Escada · Pirâmide',d:'<path d="M2.5 15l3.5-6 3 7 4-10 3 8 3.5-4"/>'},
+ inter:{n:'Intervalado / HIIT',c:'#ff7a2f',ex:'Tiros · HIIT',d:'<path d="M13 2.5L5.5 13.5h5.5l-1 8 8-11.5h-5.5l1-7.5z"/>'},
+ teste:{n:'Teste',c:'#ff6ec7',ex:'Teste de 1 km · Teste de 5 km',d:'<circle cx="12" cy="14" r="7"/><path d="M12 14v-4M9.5 3h5M12 3v4"/>'},
+ prova:{n:'Prova / objetivo',c:'#ff4d5e',ex:'Dia D · Objetivo',d:'<path d="M5.5 21V3.5M5.5 4h12l-2.5 4 2.5 4h-12"/>'},
+ cam:{n:'Caminhada',c:'#7fa8c9',ex:'Corre e caminha · Caminhada',d:'<circle cx="13" cy="4.5" r="1.8"/><path d="M13 7l-2 7M11 14l-3 7M11 14l3 3v4M12.5 9.5l-3.5 2M12.5 9.5l3.5 2"/>'},
+ desc:{n:'Descanso',c:'#6b7480',ex:'Dia livre',d:'<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>'},
+};
+function tipoKind(p){
+  if(!p||p.off)return 'desc';const t=String(p.titulo||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(p.tipo==='prova'||/dia d|objetivo|prova/.test(t))return 'prova';
+  if(/teste/.test(t))return 'teste';
+  if(p.tipo==='caminhada'||/caminhada|corre e caminha/.test(t))return 'cam';
+  if(/tiro|hiit|interval|repeticoes/.test(t))return 'inter';
+  if(/limiar|ritmo de|simulado|tempo run/.test(t))return 'limiar';
+  if(/^soltura/.test(t))return 'leve';
+  if(/fartlek|aceleracao|aceleracoes|escada|piramide|progressiv/.test(t))return 'fartlek';
+  if(p.tipo==='longo'||/longao|longo/.test(t))return 'longo';
+  return 'leve';
+}
+const kSvg=(k,c)=>`<svg viewBox="0 0 24 24" style="stroke:${c||TK[k].c}">${TK[k].d}</svg>`;
+const kChip=k=>`<span class="kc" style="background:${TK[k].c}26">${kSvg(k)}</span>`;
+const durCurta=m=>m==null?'':m>=60?Math.floor(m/60)+' h'+(m%60?' '+m%60:''):m+' min';
+window.calLegenda=()=>openSheet(`<div class="hd"><b>Legenda do calendário</b><button class="b sm" onclick="closeSheet()">✕</button></div>
+  <p class="empty" style="margin:0 0 6px">A cor e o ícone mostram o tipo de cada treino. O app reconhece o tipo pelo nome do treino.</p>
+  ${Object.keys(TK).map(k=>`<div class="kr" style="padding:11px 0;border-bottom:1px solid var(--line2)">${kChip(k)}<div style="flex:1;min-width:0"><b style="display:block;color:var(--hi);font-size:15px">${TK[k].n}</b><span class="meta">${TK[k].ex}</span></div><i style="width:34px;height:8px;border-radius:4px;background:${TK[k].c};flex:none"></i></div>`).join('')}`,1);
 function rCal(){
   const ds0=ymd(TODAY());let h=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><div class="seg"><button class="${calMode==='sem'?'on':''}" onclick="calSet('sem')">SEMANAL</button><button class="${calMode==='mes'?'on':''}" onclick="calSet('mes')">MENSAL</button></div><div class="row"><button class="b sm" onclick="calGo(0)">HOJE</button><button class="b sm pri" onclick="openBib()" aria-label="Escolher um treino da biblioteca">+ TREINO</button></div></div>`;
   if(calMode==='sem'){
@@ -1855,19 +1904,21 @@ function rCal(){
     h+='<div class="week">';
     for(let i=0;i<7;i++){const d=addD(m,i),ds=ymd(d),p=planOn(ds),ex=actsOn(ds),w=W(ds)||{};
       const rk=ex.filter(isRun).reduce((s,a)=>s+(a.dist||0),0);tk+=rk;pk+=p?p.km*1000:0;
-      h+=`<div class="day ${ds===ds0?'today':''}" onclick="openDay('${ds}')"><div class="d"><span>${DOW[d.getDay()]}</span><b>${pad(d.getDate())}</b></div><div style="min-width:0">
-      ${p?`<div class="pl"><span class="tag ${status(p)==='cumprido'?'ok':status(p)==='perdido'?'bad':''}">${tipoIc[p.tipo]}</span> ${esc(p.titulo)} <span class="dim">· ${p.km} km</span></div>`:`<div class="pl dim">${ex.length?'':'Descanso'}</div>`}
+      const kd=p?tipoKind(p):(ex.length?null:'desc'),stp=p&&status(p),du=p?durCurta(treinoDurMin(p)):'';
+      h+=`<div class="day ${ds===ds0?'today':''}${kd==='desc'?' rest':''}" style="--k:${kd?TK[kd].c:'transparent'}" onclick="openDay('${ds}')"><div class="d"><span>${DOW[d.getDay()]}</span><b>${pad(d.getDate())}</b></div><div style="min-width:0">
+      ${p&&kd!=='desc'?`<div class="kr">${kChip(kd)}<div style="min-width:0"><div class="pl"><b>${esc(p.titulo)}</b></div><div class="sub">${p.km} km${du?' · '+du:''}${stp==='cumprido'?' · <span class="okk">feito</span>':stp==='perdido'?' · <span class="bd2">perdido</span>':''}</div></div></div>`:kd==='desc'?`<div class="kr">${kChip('desc')}<div class="pl dim">Descanso</div></div>`:''}
       ${ex.map(a=>`<div class="ex">✓ ${typeIc(a)} ${a.dist?km(a.dist)+' km':fmtT(a.mov)}${isRun(a)&&a.dist?' · '+fmtP(a.mov/a.dist*1000)+'/km':''}${a.hr?' · '+a.hr+' bpm':''}</div>`).join('')}</div>
       <div class="vt">${w.sleep?'☾ '+fmtSleep(w.sleep):''}<br>${w.rhr?'♥ '+w.rhr:''}</div></div>`}
     h+='</div>'+glw('e',2);
-    h+=`<div class="card" style="margin-top:8px"><div class="row" style="justify-content:space-between"><span class="lbl">Volume da semana</span><span class="num">${pk?km(tk)+' / '+km(pk):km(tk)} km</span></div>${pk?`<div class="bar"><i style="width:${clamp(tk/pk*100,0,100)}%"></i></div>`:'<div class="meta" style="margin-top:4px">Sem treinos planejados nesta semana.</div>'}</div>`;
+    h+=`<div class="card" style="margin-top:8px"><div class="row" style="justify-content:space-between"><span class="lbl">Volume da semana</span><span class="num">${pk?km(tk)+' / '+km(pk):km(tk)} km</span></div>${pk?`<div class="bar"><i style="width:${clamp(tk/pk*100,0,100)}%"></i></div>`:'<div class="meta" style="margin-top:4px">Sem treinos planejados nesta semana.</div>'}</div><p class="calleg"><a onclick="calLegenda()">ⓘ Legenda</a></p>`;
   }else{
     const y=calRef.getFullYear(),mo=calRef.getMonth(),f=monday(new Date(y,mo,1));
     h+=`<div class="wk"><button class="b sm" onclick="calGo(-1)">◀</button><b>${MES[mo]} ${y}</b><button class="b sm" onclick="calGo(1)">▶</button></div><div class="mgrid">${['SEG','TER','QUA','QUI','SEX','SÁB','DOM'].map(x=>`<div class="h">${x}</div>`).join('')}`;
     let tot=0;
     for(let i=0;i<42;i++){const d=addD(f,i),ds=ymd(d);if(i>=35&&d.getMonth()!==mo)break;const p=planOn(ds),rk=runsOn(ds).reduce((s,a)=>s+(a.dist||0),0),st=p&&status(p);if(d.getMonth()===mo)tot+=rk;
-      h+=`<div class="mc ${d.getMonth()!==mo?'out':''} ${ds===ds0?'today':''}" onclick="openDay('${ds}')"><span class="n">${d.getDate()}</span>${rk?`<span class="k">${(rk/1000).toFixed(1)}</span>`:p?`<span class="k p">${p.km}</span>`:'<span></span>'}${p?`<span class="dot ${st==='cumprido'||st==='parcial'?'f':st==='perdido'?'x':''}"></span>`:rk?'<span class="dot f"></span>':'<span></span>'}</div>`}
-    h+=`</div>${glw('e',2)}<div class="row meta" style="gap:14px;margin-top:8px"><span><span style="color:var(--blue)">●</span> concluído</span><span><span style="color:var(--blue)">○</span> planejado</span><span style="color:var(--bad)">● perdido</span></div><div class="card" style="margin-top:10px"><div class="row" style="justify-content:space-between"><span class="lbl">Total corrido no mês</span><span class="num">${km(tot)} km</span></div></div>`;
+      const kd2=p&&!p.off?tipoKind(p):null;
+      h+=`<div class="mc ${d.getMonth()!==mo?'out':''} ${ds===ds0?'today':''}" style="${kd2?'--k:'+TK[kd2].c:''}" onclick="openDay('${ds}')"><span class="n">${d.getDate()}</span>${kd2?`<span class="ki">${kSvg(kd2)}</span>`:''}${rk?`<span class="k">${(rk/1000).toFixed(1)}</span>`:p?`<span class="k p">${p.km}</span>`:'<span></span>'}${p?`<span class="dot ${st==='cumprido'||st==='parcial'?'f':st==='perdido'?'x':''}"></span>`:rk?'<span class="dot f"></span>':'<span></span>'}</div>`}
+    h+=`</div>${glw('e',2)}<div class="row meta" style="gap:14px;margin-top:8px"><span><span style="color:var(--blue)">●</span> concluído</span><span><span style="color:var(--blue)">○</span> planejado</span><span style="color:var(--bad)">● perdido</span></div><div class="card" style="margin-top:10px"><div class="row" style="justify-content:space-between"><span class="lbl">Total corrido no mês</span><span class="num">${km(tot)} km</span></div></div><p class="calleg"><a onclick="calLegenda()">ⓘ Legenda</a></p>`;
   }
   $('#cal').innerHTML=h;
 }
@@ -1936,8 +1987,9 @@ function rDes(){
     [`VOLUME DE ${MES[t.getMonth()]}`,`${mo.toFixed(1)} / ${moAlvo} km`,mo/moAlvo],
     ['CONSTÂNCIA',`${seq} / 4 semanas seguidas com 2+ corridas`,seq/4],
   ];
-  let h=`<div class="sec">PROGRESSO</div>`;
-  h+=ch.map(c=>{const v=clamp(c[2],0,1);return `<div class="card ${v>=1?'cur':''}"><div class="row" style="justify-content:space-between"><span class="lbl" style="color:var(--txt)">${c[0]}</span><span class="num ${v>=1?'ok':''}" style="font-size:12px">${Math.round(v*100)}%</span></div><div class="meta" style="margin-top:3px">${c[1]}</div><div class="bar"><i style="width:${v*100}%"></i></div></div>`}).join('');
+  const rgc=[['Semana',`${wk.toFixed(1)} / ${wkPlan} km`,wk/wkPlan,'#4a9eff'],[MES[t.getMonth()].charAt(0)+MES[t.getMonth()].slice(1).toLowerCase(),`${mo.toFixed(1)} / ${moAlvo} km`,mo/moAlvo,'#34c759'],['Constância',`${seq} de 4 semanas com 2+ corridas`,seq/4,'#ff7a2f']];
+  const arc=(r,v,c)=>{const C=2*Math.PI*r,f=isFinite(v)?clamp(v,0,1):0;return `<circle cx="80" cy="80" r="${r}" fill="none" stroke="${c}" stroke-opacity=".2" stroke-width="12"/><circle cx="80" cy="80" r="${r}" fill="none" stroke="${c}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 80 80)"/>`};
+  let h=`<div class="sec">PROGRESSO</div><div class="card dsr"><svg viewBox="0 0 160 160" width="148" height="148">${arc(68,rgc[0][2],rgc[0][3])}${arc(51,rgc[1][2],rgc[1][3])}${arc(34,rgc[2][2],rgc[2][3])}</svg><div class="dsl">${rgc.map(c=>`<div><b><i style="background:${c[3]}"></i>${c[0]}<em>${isFinite(c[2])?Math.round(clamp(c[2],0,1)*100):0}%</em></b><span>${c[1]}</span></div>`).join('')}</div></div>`;
   h+=glw('e')+blocoDes(D.acts.filter(isRun),TODAY(),"openDesafios()");
   const M=PF&&metaDe(PF);
   h+=`<div class="sec">OBJETIVO DO PLANO</div><div class="card"><p class="empty" style="color:var(--txt)">${PF?`Seus treinos seguem o objetivo <b style="color:var(--hi)">${M?M.n:'do questionário'}</b>, com os dias e o volume que você informou.`:'Seus treinos seguem o plano de novembro montado pelo Coach.'}</p>
@@ -3733,7 +3785,7 @@ window.openPerfilAmigo=(id,tab)=>{
   const med=[],cmd=(k,t,nome)=>med.push({f:'cmd',k,t,nome,on:true,date:null});[1,10,25,50,100,150,200,300,400,500].filter(c=>runs.length>=c).forEach(c=>cmd(c===1?'1ª':String(c),c===1?'corrida':'corridas',c+'ª corrida'));const her=(k,nome)=>med.push({f:'fe2',k,t:'km',nome,on:true,date:null});if(maxd>=5000)her('5','5 km');if(maxd>=10000)her('10','10 km');if(maxd>=21097)her('21','Meia maratona');if(maxd>=42195)her('42','Maratona');
   if(runs.length>=10)med.push('10 corridas');if(runs.length>=50)med.push('50 corridas');if(tot>=100000)med.push('100 km somados');if(tot>=500000)med.push('500 km somados');
   const tdo=(TD||[]).find(x=>x.u.id===id),ord=[...runs].sort((a,b)=>String(b.date).localeCompare(String(a.date))),dd=x=>fmtD(x)+'/'+x.slice(2,4);
-  let h=`${perfCab({hd:'<b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button>',nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sub:eAmigo?'Amigo':sigo?'Seguindo':'',seg:sn.s,sgd:sn.g})}<div class="sgx">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'sgb big')}</div>`;
+  let h=`${perfCab({hd:'<b>Perfil</b><button class="b sm" onclick="closeSheet()">✕</button>',nome:frNome(id),pic:frPic(id),perfil:u&&u.perfil,nv,runs:runs.length,tot,sq:seqRuns(runs),sub:eAmigo?'Amigo':sigo?'Seguindo':'',seg:sn.s,sgd:sn.g})}<div class="sgx">${btnAmizade(id,`openPerfilAmigo('${esc(id)}')`,'sgb big')}</div>`;
   if(!u||!runs.length)h+=`<p class="empty" style="color:var(--txt)">${esc(frNome(id))} ainda não entrou no ranking, então o app não tem as corridas dessa pessoa. Quando ela entrar, o perfil aparece aqui sozinho.</p>`;
   else{
     h+=pTabs('FT',FT,`(k=>openPerfilAmigo('${id}',k))`).replace(/onclick="\(k=>openPerfilAmigo\('([^']+)',k\)\)\('(\w+)'\)"/g,`onclick="openPerfilAmigo('$1','$2')"`);
@@ -3753,6 +3805,7 @@ window.openPerfilAmigo=(id,tab)=>{
   h+=`<button class="b full" style="margin-top:14px" onclick="closeSheet()">◀ Voltar</button>`;
   openSheet(h,1);
 };
+const seqRuns=runs=>{const m=monday(TODAY());let s=0;for(let i=0;i<120;i++){const a=addD(m,-7*i),n=runs.filter(x=>{const d=String(x.date).slice(0,10);return d>=ymd(a)&&d<=ymd(addD(a,6))}).length;if(n>=1)s++;else if(i>0)break}return s};
 const medal=i=>['🥇','🥈','🥉'][i]||(i+1)+'º';
 const avatar=(u,s=30)=>`<img src="${esc(u.pic)}" alt="" style="width:${s}px;height:${s}px;border-radius:50%;object-fit:cover;border:1px solid ${u.me?'var(--blue)':'var(--line)'};flex:none">`;
 const swatches=sel=>`<div class="swc">${COR.map(c=>`<button class="${c===sel?'on':''}" style="background:${c}" onclick="setCor('${c}')" aria-label="Cor ${c}"></button>`).join('')}</div>`;
@@ -3999,7 +4052,7 @@ function perfCab(o){
   <div class="pnr"><h2 class="pn">${esc(o.nome)}</h2>${medBloco(o)}${medBtn(o)}</div>${o.sub?`<div class="meta">${o.sub}</div>`:''}
   ${pf.bio?`<p class="pbio">${esc(pf.bio)}</p>`:''}
   ${linkOk(pf.link)?`<a class="plk" href="${esc(pf.link)}" target="_blank" rel="noopener noreferrer nofollow">${LINK_IC}<span>${esc(linkHost(pf.link))}</span></a>`:''}
-  <div class="pcnt"><b>${o.runs}</b> ${o.runs===1?'corrida':'corridas'} · <b>${km(o.tot)}</b> km${o.eu?' em '+yr:' no app'}</div>${o.seg!=null?`<div class="pcnt"><span${o.eu?` class="pseg" onclick="openSeg('s')"`:''}><b>${o.seg}</b> ${o.seg===1?'seguidor':'seguidores'}</span> · <span${o.eu?` class="pseg" onclick="openSeg('g')"`:''}><b>${o.sgd}</b> seguindo</span></div>`:''}</div>`;
+  <div class="pstat"><div><b>${o.runs}</b><span>${o.runs===1?'Corrida':'Corridas'}</span></div><div><b>${km(o.tot)}</b><span>Km${o.eu?' em '+yr:' no app'}</span></div><div><b>${o.seq!=null?o.seq:(o.sq||0)}</b><span>Semanas seguidas</span></div></div>${o.seg!=null?`<div class="pcnt"><span${o.eu?` class="pseg" onclick="openSeg('s')"`:''}><b>${o.seg}</b> ${o.seg===1?'seguidor':'seguidores'}</span> · <span${o.eu?` class="pseg" onclick="openSeg('g')"`:''}><b>${o.sgd}</b> seguindo</span></div>`:''}</div>`;
 }
 window.editaPerfil=()=>{
   const pf=LS.get('perfil',{});window._capaSel=pf.capa||'azul';window._capaImg=pf.capaImg||'';
@@ -4655,7 +4708,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-24c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-24d'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
