@@ -690,6 +690,40 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .tmini{cursor:pointer;padding:12px 14px}.tmd{display:block;font-size:12px;color:var(--dim);margin-bottom:2px}.tmt{display:flex;align-items:center;justify-content:space-between}.tchip{background:var(--cell);border:1px solid var(--line2);border-radius:8px;padding:4px 10px;font-size:11px;letter-spacing:.1em;color:var(--txt);font-weight:600}.tdia{font-size:12px;color:var(--dim)}
 .tmb{display:flex;align-items:center;gap:14px}.tmic{width:44px;height:44px;border-radius:50%;background:var(--cell);border:1px solid var(--line2);display:grid;place-items:center;flex:none}.tmic svg{width:24px;height:24px;fill:#f0a040}
 .tmn{flex:1;min-width:0}.tmn b{display:block;font-size:17px;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tmn small{display:block;font-size:13px;color:var(--dim);margin-top:3px}.tmg{color:var(--dim);font-size:22px;line-height:1;flex:none}
+
+/* gravação em andamento: telas que deslizam na vertical, como no relógio; o mapa aparece puxando para baixo */
+#r-run{display:flex;flex-direction:column;position:relative;min-height:0;padding:0}
+.rv-pg{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:none;transition:transform .2s}.rv-pg::-webkit-scrollbar{display:none}
+.rpg{flex:0 0 100%;min-height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;justify-content:center;padding:34px 26px 10px;box-sizing:border-box;text-align:center;position:relative}
+.rk{font-size:15px;color:var(--dim);margin-top:18px}.rk:first-of-type{margin-top:0}
+.rn{font-family:var(--m);font-size:78px;font-weight:700;color:var(--hi);line-height:1.02;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.rn.md{font-size:62px}
+.rv-st{position:absolute;top:10px;left:0;right:0;text-align:center;font-size:12px;letter-spacing:.16em;color:var(--dim);font-weight:600}.rv-st.pz{color:var(--amber)}
+.rv-ti{font-size:15px;color:var(--txt);font-weight:600;margin-bottom:6px}
+#r-dots{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:4}.rdt{width:6px;height:6px;border-radius:50%;background:var(--line)}.rdt.on{background:var(--hi)}
+#r-alrt{position:absolute;top:8px;left:14px;right:14px;z-index:5;padding:12px 14px;border-radius:14px;background:var(--red);color:#fff;font-weight:800;font-size:18px;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.rgrab{align-self:center;margin:4px 0 8px;padding:7px 20px;border-radius:99px;background:var(--cell);border:1px solid var(--line);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer}
+.rwk-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;text-align:left}.rwk-n{font-size:22px;font-weight:800;color:var(--hi);line-height:1.15}.rwk-r{font-family:var(--m);font-size:28px;font-weight:700;color:var(--hi);white-space:nowrap}
+.rwk-b{height:6px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:10px}.rwk-b i{display:block;height:100%;background:var(--blue)}
+.gzw{position:relative;margin-top:30px}.gz{display:grid;height:24px;border-radius:12px;overflow:hidden}.gz i:nth-child(1),.gz i:nth-child(3){background:#8d2f27}.gz i:nth-child(2){background:#2fbf71}
+.gzd{position:absolute;top:-6px;width:8px;height:36px;border-radius:4px;background:#fff;box-shadow:0 0 0 2px #000;transform:translateX(-50%);transition:left .6s}
+.gzl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:8px}
+.gzp{font-family:var(--m);font-size:56px;font-weight:700;color:var(--hi);margin-top:18px;line-height:1}.gzp small{font-size:16px;color:var(--dim);margin-left:4px}.gzs{font-size:16px;font-weight:700;margin-top:6px}.gzs.ok{color:#5fd18a}.gzs.mn{color:#ff6b5f}
+.rwk-x{margin-top:22px;padding-top:12px;border-top:1px solid var(--line2);font-size:15px;color:var(--dim);text-align:left}.rwk-x b{color:var(--hi)}
+#r-mini{display:none;position:absolute;left:12px;right:12px;bottom:8px;z-index:5;background:#141414;border:1px solid var(--line);border-radius:20px;padding:10px 14px 14px;flex-direction:column;gap:8px}
+#r-mini .mh{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.14em;color:var(--dim);font-weight:600}#r-mini .mh button{background:none;border:0;color:var(--hi);font-size:20px;padding:0 6px;line-height:1}
+#r-mini .mg{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}#r-mini .mg b{display:block;font-family:var(--m);font-size:24px;color:var(--hi)}#r-mini .mg span{font-size:12px;color:var(--dim)}
+@media (max-width:759px){
+  #rec.rvm #rmap{position:absolute;inset:0;z-index:0;visibility:hidden;min-height:0}
+  #rec.rvm.mapa #rmap{visibility:visible}
+  #rec.rvm .rtop{position:relative;z-index:6}
+  #rec.rvm .rctl{position:relative;z-index:6;background:var(--bg)}
+  #rec.rvm #r-run{flex:1;z-index:3;background:var(--bg)}
+  #rec.rvm.mapa #r-run{background:transparent;pointer-events:none}
+  #rec.rvm.mapa #r-pg,#rec.rvm.mapa #r-dots,#rec.rvm.mapa .rgrab,#rec.rvm.mapa #r-alrt{display:none!important}
+  #rec.rvm.mapa #r-mini{display:flex;pointer-events:auto}
+}
+@media (min-width:760px){.rv-pg{height:min(62vh,540px);flex:none}#r-mini,.rgrab{display:none!important}.rn{font-size:64px}.rn.md{font-size:52px}}
 </style>
 </head>
 <body>
@@ -4374,21 +4408,46 @@ function parHtml(t,d,done){
   return `<div class="rpar-h">${w?'ETAPAS (RITMO /KM)':'PARCIAIS (/KM)'}</div><div class="rpar">${vs.map(x=>`<div class="rp${x.cur?' cur':''}"><b>${x.p&&x.p<1200?fmtP(x.p):fmtT(x.t)}</b><i style="height:${alt(x)}px"></i><span>${esc(x.lb)}</span><small>${x.sub||''}</small></div>`).join('')}</div>`;
 }
 function wkUI(){
-  const el=$('#r-wk'),w=REC&&REC.wk;if(!el)return;
-  $('#r-run').classList.toggle('wkon',!!w);
+  const el=$('#r-wk'),w=REC&&REC.wk,p2=$('#r-p2');if(!el||!p2)return;
+  p2.style.display=w?'':'none';$('#r-run').classList.toggle('wkon',!!w);
   if(!w){el.innerHTML='';return}
-  if(w.i>=w.steps.length){el.innerHTML='<div class="etp"><div class="lbl ok">✓ TREINO CONCLUÍDO</div><p class="empty" style="margin-top:4px">Pode desacelerar e tocar em Finalizar quando quiser.</p></div>';return}
+  if(w.i>=w.steps.length){el.innerHTML='<div class="rk" style="color:#5fd18a;font-weight:700">✓ Treino concluído</div><p class="empty" style="margin-top:6px;color:var(--txt)">Pode desacelerar e finalizar quando quiser.</p>';return}
   const e=w.steps[w.i],nx=w.steps[w.i+1],dd=REC.dist-w.d0,tt=recMov()-w.t0,cp=curPace();
   const rem=e.m?Math.max(0,e.m-dd):Math.max(0,e.s-tt),prog=clamp(e.m?dd/e.m:tt/e.s,0,1);
   const remTxt=e.m?(rem>=1000?(rem/1000).toFixed(2).replace('.',',')+' km':Math.round(rem)+' m'):fmtT(rem);
-  let alvo='Ritmo livre';
-  if(e.pace){const lo=Math.min(...e.pace),hi=Math.max(...e.pace);alvo=`Meta ${fmtP(lo)}–${fmtP(hi)}/km`;
-    if(cp)alvo+=cp<lo-3?' · <span class="warn">mais rápido que a meta</span>':cp>hi+3?' · <span class="warn">mais lento que a meta</span>':' · <span class="ok">no ritmo</span>'}
-  el.innerHTML=`<div class="etp"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><span class="lbl">ETAPA ${w.i+1} DE ${w.steps.length}</span>${e.n?`<span class="tag ok">${e.r} / ${e.n}</span>`:''}</div>
-    <div class="row" style="justify-content:space-between;align-items:baseline;flex-wrap:nowrap;margin-top:2px"><span class="wkname">${esc(nomeE(e))} · ${qtd(e)}</span><span class="wkrem">${remTxt}</span></div>
-    <div class="bar"><i style="width:${prog*100}%"></i></div><div class="meta" style="margin-top:5px">${alvo}</div>
-    <div class="meta">${nx?'Depois: '+esc(nomeE(nx))+' · '+qtd(nx):'Última etapa'}</div></div>`;
+  let faixa='<div class="rk" style="margin-top:28px">Ritmo livre nesta etapa</div>';
+  if(e.pace){const lo=Math.min(...e.pace),hi=Math.max(...e.pace),w0=Math.max(15,(hi-lo)*1.5),rg=hi-lo+2*w0,est=!cp?'':cp<lo-3?'forte':cp>hi+3?'leve':'ok';
+    const x=cp?clamp((hi+w0-cp)/rg,0,1)*100:null;
+    faixa=`<div class="gzw"><div class="gz" style="grid-template-columns:${w0}fr ${hi-lo}fr ${w0}fr"><i></i><i></i><i></i></div>${x!=null?`<div class="gzd" style="left:${x}%"></div>`:''}</div>
+      <div class="gzl"><span>Leve</span><span>Meta ${fmtP(lo)}–${fmtP(hi)}/km</span><span>Forte</span></div>
+      <div class="gzp">${cp?fmtP(cp):'--'}<small>/km</small></div><div class="gzs ${est==='ok'?'ok':est?'mn':''}">${!cp?'Aguardando ritmo':est==='ok'?'No ritmo':est==='forte'?'Forte: desacelere':'Leve: acelere'}</div>`}
+  el.innerHTML=`<div class="rv-ti" style="text-align:left">ETAPA ${w.i+1} DE ${w.steps.length}${e.n?' · '+e.r+'/'+e.n:''}</div>
+    <div class="rwk-h"><span class="rwk-n">${esc(nomeE(e))} · ${qtd(e)}</span><span class="rwk-r">${remTxt}</span></div><div class="rwk-b"><i style="width:${prog*100}%"></i></div>
+    ${faixa}<div class="rwk-x">${nx?'Depois: <b>'+esc(nomeE(nx))+' · '+qtd(nx)+'</b>':'Última etapa'}</div>`;
 }
+// aviso fora da faixa de ritmo: depois de 8 s fora, mostra o aviso, vibra e fala; repete a cada 30 s
+const RA={since:0,last:0,on:''};
+function rvAlerta(){
+  const el=$('#r-alrt');if(!el)return;const w=REC&&REC.wk,now=Date.now();let k='';
+  if(w&&REC.st==='run'&&w.i<w.steps.length){const e=w.steps[w.i],cp=curPace();if(e.pace&&cp){const lo=Math.min(...e.pace),hi=Math.max(...e.pace);k=cp<lo-3?'forte':cp>hi+3?'leve':''}}
+  if(!k){RA.since=0;if(RA.on){RA.on='';el.style.display='none'}return}
+  if(!RA.since)RA.since=now;
+  if(now-RA.since>=8000&&(RA.on!==k||now-RA.last>30000)){const msg=k==='forte'?'Mais devagar':'Mais rápido';RA.on=k;RA.last=now;el.textContent=msg;el.style.display='block';try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}say(msg)}
+}
+// bolinhas laterais e mapa por baixo das telas (no celular)
+function rvDots(){const pg=$('#r-pg'),d=$('#r-dots');if(!pg||!d)return;const pp=[...pg.children].filter(x=>x.style.display!=='none'),h=pg.clientHeight||1,i=Math.round(pg.scrollTop/h);
+  if(d.children.length!==pp.length)d.innerHTML=pp.map(()=>'<i class="rdt"></i>').join('');[...d.children].forEach((x,k)=>x.classList.toggle('on',k===i))}
+window.rvMapa=on=>{const r=$('#rec');r.classList.toggle('mapa',!!on);if(on&&RM){setTimeout(()=>{RM.resize();recDraw()},60)}};
+(()=>{let y0=null,dy=0,pull=false,y1=null;
+  const mobile=()=>!matchMedia('(min-width:760px)').matches;
+  document.addEventListener('touchstart',e=>{if(!mobile()||!$('#rec').classList.contains('on'))return;const pg=e.target.closest&&e.target.closest('#r-pg'),mini=e.target.closest&&e.target.closest('#r-mini');
+    y0=pg&&!$('#rec').classList.contains('mapa')&&pg.scrollTop<=0?e.touches[0].clientY:null;y1=mini?e.touches[0].clientY:null;dy=0;pull=false},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>10){pull=true;if(e.cancelable)e.preventDefault();const pg=$('#r-pg');pg.style.transition='none';pg.style.transform=`translateY(${Math.min(dy*.5,120)}px)`}},{passive:false});
+  document.addEventListener('touchend',e=>{const pg=$('#r-pg');
+    if(y0!=null){if(pg){pg.style.transition='';pg.style.transform=''}if(pull&&dy>90)rvMapa(1)}
+    if(y1!=null){const t=e.changedTouches[0].clientY;if(y1-t>40)rvMapa(0)}
+    y0=null;y1=null;pull=false;dy=0});
+})();
 // treino de outro dia feito hoje: o treino muda para hoje
 function moveToToday(ds){
   const hoje=ymd(TODAY()),p=planOn(ds),ex=LS.get('extra',{}),ov=LS.get('ov',{}),c={...p,date:hoje};delete c.adjusted;
@@ -4448,9 +4507,15 @@ function recUI(){
   const st=REC?REC.st:'idle',idle=st==='idle',t=recMov(),d=REC?REC.dist:0,done=REC?REC.splits.reduce((s,x)=>s+x,0):0,now=Date.now();
   if(REC&&st==='run')wkStep();
   $('#r-pre').style.display=idle?'':'none';$('#r-run').style.display=idle?'none':'';
-  $('#r-t').textContent=fmtT(t);$('#r-d').innerHTML=(d/1000).toFixed(2)+'<small> km</small>';
-  $('#r-pa').innerHTML=fmtP(curPace())+'<small>/km</small>';$('#r-pm').innerHTML=(d>50?fmtP(t/d*1000):'--')+'<small>/km</small>';
-  const kd=d%1000;$('#r-pk').innerHTML=(kd>50?fmtP((t-done)/kd*1000):'--')+`<small> km ${Math.floor(d/1000)+1}</small>`;
+  $('#rec').classList.toggle('rvm',!idle);if(idle)$('#rec').classList.remove('mapa');
+  const dTxt=(d/1000).toFixed(2).replace('.',','),pmTxt=d>50?fmtP(t/d*1000):'--';
+  $('#r-t').textContent=fmtT(t);$('#r-d').textContent=dTxt;$('#r-pm').textContent=pmTxt;
+  {// tela da etapa (treino guiado) ou do quilômetro atual (corrida livre)
+    const w=REC&&REC.wk,emE=w&&w.i<w.steps.length;let ld,lt,ti;
+    if(emE){ld=REC.dist-w.d0;lt=t-w.t0;ti='Etapa '+(w.i+1)+' de '+w.steps.length+' · '+nomeE(w.steps[w.i])}else{ld=d%1000;lt=t-done;ti='Km '+(Math.floor(d/1000)+1)}
+    $('#r-lti').textContent=ti;$('#r-ld').textContent=(ld/1000).toFixed(2).replace('.',',');$('#r-lt').textContent=fmtT(Math.max(0,lt));$('#r-lp').textContent=ld>20&&lt>0?fmtP(lt/ld*1000):'--';
+    const stt=st==='pause'?'PAUSADO':st==='run'?'GRAVANDO':'';$('#r-st2').textContent=stt;$('#r-st2').classList.toggle('pz',st==='pause');$('#r-st3').textContent=stt;
+    $('#r-mt').textContent=fmtT(t);$('#r-mp').textContent=pmTxt;$('#r-md').textContent=dTxt;rvDots()}
   $('#r-gps').innerHTML=!FIX?'<span class="warn">PROCURANDO GPS…</span>':FIX.acc<=12?'<span class="ok">GPS ÓTIMO</span>':FIX.acc<=30?'<span class="ok">GPS BOM</span>':'<span class="bad">GPS FRACO</span>';
   $('#r-min').textContent=idle?'✕':'⌄';
   $('#r-st').textContent=st==='pause'?'PAUSADO':st==='run'?'GRAVANDO':'';
@@ -4460,7 +4525,7 @@ function recUI(){
     if(age>10){msg=`<span class="bad">SEM SINAL DE GPS HÁ ${Math.round(age)} s</span>`;if(age>15&&!g.perdeu){g.perdeu=1;say('GPS perdido.')}}
     else if(g.avisa>now)msg=`<span class="warn">O app ficou fora da tela por ${fmtT(g.ult/1000)}. O GPS parou nesse trecho.</span>`}
   const al=$('#r-al');al.innerHTML=msg;al.style.display=msg?'block':'none';
-  wkUI();
+  wkUI();rvAlerta();
   if(!idle){const pe=$('#r-par');if(pe)pe.innerHTML=parHtml(t,d,done)}
   // antes de iniciar: só libera quando o GPS estiver bom (como no relógio)
   if(idle){const ok=!!FIX&&FIX.acc<=30&&now-FIX.t<8000,cat=ok?'ok':!FIX?'busca':'fraco',go=$('#r-go'),gt=$('#r-gate'),fo=$('#r-force');
@@ -4486,11 +4551,21 @@ window.openRec=d=>{
   const el=$('#rec');
   if(!recLive()){const p=planOn(d||ymd(TODAY()));RSEL={p,modo:p&&status(p)!=='cumprido'?'treino':'livre'}}
   if(!el.innerHTML){
-    el.innerHTML=`<div class="rtop"><button class="b sm" id="r-min" onclick="closeRec()" aria-label="Fechar">✕</button><div style="text-align:center"><b style="font-size:12px;letter-spacing:.01em;color:var(--amber)">GRAVAR CORRIDA</b><div class="meta" id="r-gps"></div></div><button class="b sm" id="r-voz" onclick="togVoz()" aria-label="Voz"></button></div>
-    <div id="rmap"><span class="chip" id="r-st" style="position:absolute;z-index:2;left:10px;top:10px;color:var(--red);border-color:var(--red)"></span><div class="ral" id="r-al" style="display:none"></div></div>
+    el.innerHTML=`<div class="rtop"><button class="b sm" id="r-min" onclick="closeRec()" aria-label="Fechar">✕</button><div style="text-align:center"><b style="font-size:12px;letter-spacing:.01em;color:var(--hi)">GRAVAR CORRIDA</b><div class="meta" id="r-gps"></div></div><button class="b sm" id="r-voz" onclick="togVoz()" aria-label="Voz"></button></div>
+    <div id="rmap"><span class="chip" id="r-st" style="position:absolute;z-index:2;left:10px;top:10px;color:var(--red);border-color:var(--red)"></span></div>
+    <div class="ral" id="r-al" style="display:none;z-index:7"></div>
     <div id="r-pre"></div>
-    <div class="rmet" id="r-run" style="display:none"><div class="meta" style="text-align:center;min-height:14px"></div><div id="r-wk"></div><div class="rbig" id="r-t">0:00</div><div class="lbl" style="text-align:center;margin-top:3px">TEMPO EM MOVIMENTO</div>
-    <div class="grid g2" style="margin-top:12px"><div class="cell"><div class="lbl">Distância</div><span class="num big" id="r-d"></span></div><div class="cell"><div class="lbl">Ritmo atual</div><span class="num big" id="r-pa"></span></div><div class="cell"><div class="lbl">Ritmo médio</div><span class="num" id="r-pm"></span></div><div class="cell"><div class="lbl">Km atual</div><span class="num" id="r-pk"></span></div></div><div id="r-par"></div></div>
+    <div class="rmet" id="r-run" style="display:none"><div id="r-alrt"></div>
+      <div class="rv-pg" id="r-pg" onscroll="rvDots()">
+        <div class="rpg" id="r-p0"><div class="rv-st" id="r-st2"></div><div class="rk">Tempo</div><div class="rn" id="r-t">0:00</div><div class="rk">Distância (km)</div><div class="rn" id="r-d">0,00</div><div class="rk">Ritmo médio (/km)</div><div class="rn md" id="r-pm">--</div></div>
+        <div class="rpg" id="r-p1"><div class="rv-ti" id="r-lti"></div><div class="rk">Distância (km)</div><div class="rn" id="r-ld">0,00</div><div class="rk">Tempo</div><div class="rn" id="r-lt">0:00</div><div class="rk">Ritmo (/km)</div><div class="rn md" id="r-lp">--</div></div>
+        <div class="rpg" id="r-p2" style="display:none"><div id="r-wk"></div></div>
+        <div class="rpg" id="r-p3"><div id="r-par"></div></div>
+      </div>
+      <div id="r-dots"></div>
+      <button class="rgrab" onclick="rvMapa(1)">▾ Ver o mapa</button>
+      <div id="r-mini"><div class="mh"><span id="r-st3"></span><button onclick="rvMapa(0)" aria-label="Voltar às telas">⌃</button></div><div class="mg"><div><b id="r-mt">0:00</b><span>Tempo</span></div><div><b id="r-mp">--</b><span>Ritmo médio</span></div><div><b id="r-md">0,00</b><span>Distância (km)</span></div></div></div>
+    </div>
     <div class="rctl" id="r-ctl"></div>`}
   prePaint();
   $('#r-voz').textContent=LS.get('voz',1)?'🔊':'🔇';
@@ -4577,7 +4652,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-24a'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-24b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
