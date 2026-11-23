@@ -3063,12 +3063,16 @@ const PB_ICO='<i class="pbi"><svg viewBox="0 0 24 24"><path class="pbm" d="M13.6
 // união e diferença de polígonos sem derrubar o mapa: se a biblioteca recusar a forma, tenta de novo com a forma limpa e com uma folga de centímetros
 const limpaRing=r=>{const o=[];for(const q of r){const u=o[o.length-1];if(!u||Math.abs(u[0]-q[0])>1e-9||Math.abs(u[1]-q[1])>1e-9)o.push(q)}if(o.length>1&&o[0][0]===o[o.length-1][0]&&o[0][1]===o[o.length-1][1])o.pop();if(o.length)o.push(o[0]);return o};
 const limpaMP=mp=>mp.map(poly=>poly.map(limpaRing).filter(r=>r.length>=4)).filter(p=>p.length);
+const snapMP=mp=>limpaMP(mp.map(poly=>poly.map(r=>r.map(q=>[Math.round(q[0]*1e6)/1e6,Math.round(q[1]*1e6)/1e6]))));
 const jitMP=(mp,e)=>mp.map(poly=>poly.map(r=>r.map((q,i)=>i===r.length-1?r[0]:[q[0]+e*Math.sin(i*12.9898),q[1]+e*Math.cos(i*78.233)])));
 function pcSeguro(op,a,b){const pc=window.polygonClipping;if(!pc)return null;
   const np=x=>x.reduce((n,pl)=>n+pl.reduce((t,r)=>t+r.length,0),0),t0=performance.now();let tent=0;
   const logaLento=()=>{const d=performance.now()-t0;if(d>300)mapDiag('pc '+op+' A:'+a.length+'p/'+np(a)+'v B:'+b.length+'p/'+np(b)+'v tentativa '+tent+' '+Math.round(d)+'ms')};
-  for(const f of [x=>x,limpaMP,x=>jitMP(limpaMP(x),2e-7),x=>jitMP(limpaMP(x),1e-6)]){tent++;try{const r=pc[op](f(a),f(b));logaLento();return r}catch(e){}}
-  logaLento();
+  // no aparelho do André a 3ª tentativa (com deslocamento aleatório dos pontos) levava ~3 s: gera lascas minúsculas e a biblioteca demora muito. Agora a 3ª tentativa só ajusta os pontos a uma grade de ~10 cm.
+  // Limite de tempo: se o recorte já gastou mais de 1,5 s neste cálculo, devolve null e quem chamou usa a forma sem recorte (a área não some e o app não trava)
+  if((window.__pcBud||0)>1500)return null;
+  for(const f of [x=>x,limpaMP,snapMP]){tent++;try{const r=pc[op](f(a),f(b));window.__pcBud=(window.__pcBud||0)+performance.now()-t0;logaLento();return r}catch(e){if(performance.now()-t0>700)break}}
+  window.__pcBud=(window.__pcBud||0)+performance.now()-t0;logaLento();
   window.__pcFalhas=(window.__pcFalhas||0)+1;return null}
 const sst=(L,c)=>`<div class="sst${c===3?' c3':''}">${L.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>`;
 // quem correu junto, descoberto sozinho: corridas de outras pessoas que começaram até 15 min antes ou depois, no mesmo lugar
@@ -3837,6 +3841,7 @@ const _lacM={};
 function lacMemo(id,x){const k=id+'|'+x.map.length;if(_lacM[k])return _lacM[k];let v=[];try{const tr=trimTrack(x.map,1);v=tr?laços(tr,extremos(x.map)):[]}catch(e){}return(_lacM[k]=v)}
 // as áreas de todas as corridas do Igor (calculadas no aparelho, com o trajeto sem os 200 m do começo e do fim)
 function meusLacos(pub){
+  window.__pcBud=0;
   const runs=D.acts.filter(a=>isRun(a)&&AX[a.id]&&AX[a.id].map&&AX[a.id].map.length>8),sig=runs.length+'|'+Math.round(runs.reduce((s,a)=>s+(a.dist||0),0))+'|'+runs.filter(a=>AX[a.id].tv===TVN).length+'|v7';
   if(!pub){const c=LS.get('terrc',null);if(c&&c.sig===sig)return c.v}
   let v=[];for(const a of runs.slice(0,200)){const x=AX[a.id];const L=x.tv===TVN&&Array.isArray(x.terr)?x.terr:lacMemo(a.id,x);const r=a.dist>=500&&a.mov?Math.round(a.mov/a.dist*1000):null;for(const p of L)v.push({d:a.date.slice(0,10),h:a.date.slice(11,16),r,id:a.id,p})}
@@ -3865,6 +3870,7 @@ function pontosMes(u,ate){const pre=String(ate).slice(0,7),R=(u.runs||[]).filter
 //    do grupo, continua dele; onde era de outra pessoa ou de ninguém, fica com quem tem mais pontos na temporada.
 let TD=[],_tdSig=null;
 function terrData(){
+  window.__pcBud=0;
   const P=people(),Z=[];
   for(const u of P){const L=u.me?meusLacos():((PUBL.find(x=>x.id===u.id)||{}).terr||[]);
     for(const z of L){const la=z.p.map(q=>q[0]),lo=z.p.map(q=>q[1]);Z.push({u,d:z.d,h:z.h||null,r:Number.isFinite(z.r)?z.r:null,p:z.p,ts:Date.parse(z.d+'T'+(z.h||'12:00')+':00'),b:[Math.min(...la),Math.max(...la),Math.min(...lo),Math.max(...lo)]})}}
@@ -5059,7 +5065,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-29c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-29d'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
