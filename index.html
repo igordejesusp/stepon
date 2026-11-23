@@ -1487,6 +1487,13 @@ const TM={dark:{cor:MCOR,txt:'#6b727c',halo:'#000',verde:'#0b1d11',parque:'#0e24
 let _mlj=null;
 // mapa reserva: se o OpenFreeMap não carregar (rede, bloqueio, provedor), usa os mapas do OpenStreetMap; se nem isso, desenha só o trajeto
 let MLFB=(Date.now()-LS.get('mlfb',0))<20*60e3,_sonda=null;
+// clone do estilo sem structuredClone (WebViews de Android mais antigos não têm) e opções mais leves para Android
+const clonaSt=o=>JSON.parse(JSON.stringify(o));
+const ANDROID=/Android/i.test(navigator.userAgent||'');
+const optMapa=()=>ANDROID?{antialias:false,pixelRatio:Math.min(window.devicePixelRatio||1,2),fadeDuration:0,maxTileCacheSize:40,refreshExpiredTiles:false}:{};
+// no Android o mapa vem enxuto: sem prédios em 3D, sem pontos de interesse, sem números de casa e sem a imagem de relevo do mundo (menos peso para a placa de vídeo)
+function aliviaEstilo(st){if(!ANDROID||!st||!st.layers)return st;
+  st.layers=st.layers.filter(l=>!(l.type==='fill-extrusion'||/^poi|housenumber|building-3d|building_3d/i.test(l.id)||(l.type==='raster'&&l.source==='ne2_shaded')));return st}
 function estiloRaster(){const t=TEMA();
   // a CARTO passou a exigir chave (devolve uma imagem "API KEY REQUIRED"); o mapa reserva agora é o do próprio OpenStreetMap, escurecido no tema escuro
   return {version:8,sources:{r:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap'}},layers:[{id:'fundo',type:'background',paint:{'background-color':t==='light'?'#e3e9ee':'#000'}},{id:'r',type:'raster',source:'r',paint:t==='light'?{'raster-saturation':-.55,'raster-brightness-min':.12}:{'raster-saturation':-.85,'raster-brightness-max':.36,'raster-contrast':.2}}]}}
@@ -1556,7 +1563,7 @@ function drawMaps(){
       if(!el.isConnected)return fim();
       const st=el.dataset.fb?estiloRaster():await mlLoad(),box=document.createElement('div');box.style.cssText='position:absolute;inset:0';el.prepend(box);
       const ll=tr.map(p=>[p[1],p[0]]),b=ll.reduce((b,p)=>b.extend(p),new maplibregl.LngLatBounds(ll[0],ll[0]));
-      const m=new maplibregl.Map({container:box,style:structuredClone(st),interactive:false,pitch:0,bearing:0,maxPitch:0,attributionControl:false,preserveDrawingBuffer:true,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:pd?{top:pd,bottom:pd,left:pd,right:pd}:{top:24,bottom:24,left:28,right:28},maxZoom:17}});
+      const m=new maplibregl.Map({...optMapa(),container:box,style:clonaSt(aliviaEstilo(clonaSt(st))),interactive:false,pitch:0,bearing:0,maxPitch:0,attributionControl:false,preserveDrawingBuffer:true,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:pd?{top:pd,bottom:pd,left:pd,right:pd}:{top:24,bottom:24,left:28,right:28},maxZoom:17}});
       let falhas=0,feito=0;m.on('error',e=>{if(e&&(e.tile||e.sourceId))falhas++});
       const refazRota=(why)=>{if(feito++)return;clearInterval(vig);if(el.isConnected)mapDiag('cartão: '+(why||'falhou'));try{m.remove()}catch(e){}box.remove();fim();if(!el.isConnected)return;
         if(document.hidden){el.classList.remove('ok');return} // aba escondida não desenha o mapa: não é falha, tenta de novo depois
@@ -3872,9 +3879,10 @@ function rComp(){
   pcLoad().then(()=>{terrData();infoTerr();return mlLoad()}).then(st=>{
     if(CM&&ctxPerdido(CM)){mapDiag('mapa: contexto WebGL perdido, refeito');try{CM.remove()}catch(e){}CM=null}
     if(CM){CM.resize();if(CM.isStyleLoaded()&&CM.getSource('terr'))pintaTerr();return}
+    if(!window.maplibregl||!(maplibregl.supported?maplibregl.supported():true)){mapDiag('mapa: este aparelho/navegador não oferece WebGL');const c=$('#c-info');if(c)c.textContent='Este aparelho não consegue abrir o mapa (WebGL). Tente o Chrome atualizado.';return}
     const lp=LS.get('lastpos',null),c0=TD.length?[TD[0].geom[0][0][0][0],TD[0].geom[0][0][0][1]]:null;
-    CM=new maplibregl.Map({container:'cmap',style:structuredClone(st),center:lp||c0||[-48.277,-18.918],zoom:lp?14:13,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
-    CM.touchZoomRotate.disableRotation();vigiaMapa(CM,()=>{try{CM.remove()}catch(e){}CM=null;render()});
+    CM=new maplibregl.Map({...optMapa(),container:'cmap',style:clonaSt(aliviaEstilo(clonaSt(st))),center:lp||c0||[-48.277,-18.918],zoom:lp?14:13,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
+    CM.on('error',e=>{if(e&&!e.tile&&!e.sourceId)mapDiag('mapa erro: '+String((e.error&&e.error.message)||e.message||'').slice(0,100))});CM.touchZoomRotate.disableRotation();vigiaMapa(CM,()=>{try{CM.remove()}catch(e){}CM=null;render()});
     CM.getCanvas().addEventListener('webglcontextlost',()=>{mapDiag('mapa: contexto WebGL perdido');setTimeout(()=>{if(CM&&ctxPerdido(CM)){try{CM.remove()}catch(e){}CM=null;if(VIEW==='comp')rComp()}},2500)});
     CM.on('load',()=>{
       CM.addSource('terr',{type:'geojson',data:terrGeo()});CM.addSource('eu',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
@@ -3887,7 +3895,7 @@ function rComp(){
       drawPins();if(!lp)fitPlaces();
       locateMe(0,1);
     });
-  }).catch(e=>{mapDiag('mapa: '+(e&&e.message||'erro'));$('#c-info').textContent='Mapa indisponível sem internet'});
+  }).catch(e=>{mapDiag('mapa: '+(e&&e.message||'erro')+(e&&e.stack?' @ '+String(e.stack).split('\n')[1]:''));const c=$('#c-info');if(c)c.textContent=navigator.onLine===false?'Mapa indisponível sem internet':'Mapa não abriu. Veja Mais › Diagnóstico do mapa'});
   rkAtualiza();
   if(LS.get('comp',null)==null&&!$('#sheet').classList.contains('on')&&!window._compChk){window._compChk=1;pullAll().catch(()=>{}).then(()=>{if(VIEW!=='comp')return;if(LS.get('comp',null)==null)openCompCfg(1);else rComp()})}
   if(Date.now()-LS.get('pubAt',0)>120e3)rede();
@@ -4901,7 +4909,7 @@ window.openRec=d=>{
   clearInterval(RTK);RTK=setInterval(recUI,1000);recUI();
   mlLoad().then(st=>{
     if(RM){RM.resize();recDraw();return}
-    RM=new maplibregl.Map({container:'rmap',style:structuredClone(st),center:FIX?[FIX.ll[1],FIX.ll[0]]:[-48.277,-18.918],zoom:FIX?16:12,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
+    RM=new maplibregl.Map({...optMapa(),container:'rmap',style:clonaSt(aliviaEstilo(clonaSt(st))),center:FIX?[FIX.ll[1],FIX.ll[0]]:[-48.277,-18.918],zoom:FIX?16:12,dragRotate:false,pitchWithRotate:false,maxPitch:0,attributionControl:{compact:true,customAttribution:'OpenFreeMap'}});
     vigiaMapa(RM,()=>{try{RM.remove()}catch(e){}RM=null});
     RM.on('load',()=>{
       RM.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'MultiLineString',coordinates:[]}}});RM.addSource('me',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
@@ -4980,7 +4988,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-26c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-27a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
