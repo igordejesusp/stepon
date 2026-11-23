@@ -724,6 +724,14 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
   #rec.rvm.mapa #r-mini{display:flex;pointer-events:auto}
 }
 @media (min-width:760px){.rv-pg{height:min(62vh,540px);flex:none}#r-mini,.rgrab{display:none!important}.rn{font-size:64px}.rn.md{font-size:52px}}
+
+/* antes de iniciar: mapa, zeros e o botão Iniciar (como no Strava) */
+.rpt{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.rpt-i{min-width:0}.rpt-i span{display:block;font-size:12px;color:var(--dim)}.rpt-i b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:16px;color:var(--hi);overflow:hidden;margin-top:1px;line-height:1.2}.rpt-i small{font-size:12px;color:var(--dim)}
+.rpt .seg{flex:none}.rpt .seg button{font-size:12px;padding:0 12px;min-height:34px}
+.rpz{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin:10px 14px 4px;padding:14px 6px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.rpz b{display:block;font-family:var(--m);font-size:28px;color:var(--hi)}.rpz span{font-size:12px;color:var(--dim)}
+.rstart{width:calc(100% - 32px);max-width:440px;height:58px;border-radius:29px;border:0;background:var(--blue);color:#001a33;font-size:19px;font-weight:800;letter-spacing:.01em}
+#rec #r-ctl:has(.rstart){padding-top:6px}
 </style>
 </head>
 <body>
@@ -4464,12 +4472,9 @@ window.fazerTreino=ds=>{
 };
 window.rsel=m=>{RSEL.modo=m;prePaint();recUI()};
 function prePaint(){
-  const el=$('#r-pre');if(!el)return;const p=RSEL.p,tr=RSEL.modo==='treino'&&p;
-  el.innerHTML=(p?`<div class="row" style="justify-content:space-between"><span class="lbl">TREINO DE HOJE</span>${tagStx(status(p))}</div><h2 style="margin-top:2px">${esc(p.titulo)}</h2><div class="meta">${kmTxt(p.km)} km</div>${stepsHtml(p)}
-    <div class="seg" style="margin:10px 0 0"><button class="${tr?'on':''}" onclick="rsel('treino')">TREINO GUIADO</button><button class="${tr?'':'on'}" onclick="rsel('livre')">CORRIDA LIVRE</button></div>`
-    :`<div class="lbl">CORRIDA LIVRE</div><p class="empty" style="margin-top:4px">Hoje não há treino planejado. Toque em Iniciar para gravar uma corrida livre.</p>`)
-    +`<div id="r-gatew" style="margin-top:10px"><p class="empty" id="r-gate"></p><button class="b sm" id="r-force" style="margin-top:6px" onclick="recGo(1)">Iniciar sem esperar o GPS</button></div>
-    <p class="empty" style="margin-top:8px">Para o GPS não parar: deixe a tela ligada e não troque de app. No iPhone: Ajustes › Tela e Brilho › Bloqueio Automático › Nunca.</p>`;
+  const el=$('#r-pre');if(!el)return;const p=RSEL.p,tr=RSEL.modo==='treino'&&p,m=p?treinoDurMin(p):null;
+  el.innerHTML=(p&&status(p)!=='cumprido'?`<div class="rpt"><div class="rpt-i"><span>Treino de hoje</span><b>${esc(p.titulo)}</b><small>${[tempoEst(m),kmTxt(p.km)+' km'].filter(Boolean).join(' · ')}</small></div><div class="seg"><button class="${tr?'on':''}" onclick="rsel('treino')">Fazer</button><button class="${tr?'':'on'}" onclick="rsel('livre')">Livre</button></div></div>`:'')
+    +`<div class="rpz"><div><b>0:00</b><span>Tempo</span></div><div><b>--</b><span>Ritmo médio</span></div><div><b>0,00</b><span>Distância (km)</span></div></div>`;
 }
 function onPos(p){
   const c=p.coords,now=Date.now();FIX={acc:c.accuracy,ll:[c.latitude,c.longitude],t:now};
@@ -4529,12 +4534,10 @@ function recUI(){
   if(!idle){const pe=$('#r-par');if(pe)pe.innerHTML=parHtml(t,d,done)}
   // antes de iniciar: só libera quando o GPS estiver bom (como no relógio)
   if(idle){const ok=!!FIX&&FIX.acc<=30&&now-FIX.t<8000,cat=ok?'ok':!FIX?'busca':'fraco',go=$('#r-go'),gt=$('#r-gate'),fo=$('#r-force');
-    if(go){go.disabled=!ok;go.textContent=ok?'INICIAR':'GPS…'}
-    if(fo)fo.style.display=ok?'none':'';
-    if(gt&&gt.dataset.c!==cat){gt.dataset.c=cat;gt.innerHTML=cat==='ok'?'<span class="ok">✓ GPS pronto. Pode começar.</span>':cat==='busca'?'<span class="warn">Procurando o sinal de GPS. Fique em um lugar aberto…</span>':'<span class="warn">Sinal de GPS fraco. Espere ficar verde antes de começar.</span>'}}
+    if(go)go.disabled=false}
   const want=idle?'i':st+(REC&&REC.wk?'w':'');
   if($('#r-ctl').dataset.st!==want){$('#r-ctl').dataset.st=want;
-    $('#r-ctl').innerHTML=idle?`<button class="rbtn" id="r-go" onclick="recGo()" disabled>GPS…</button>`
+    $('#r-ctl').innerHTML=idle?`<button class="rstart" id="r-go" onclick="recGo(1)">Iniciar</button>`
       :st==='run'?`<button class="rbtn amb" onclick="recPause()">PAUSAR</button>${REC.wk?`<button class="rbtn" onclick="recSkip()">PULAR<br>ETAPA</button>`:''}`
       :`<button class="rbtn" onclick="recGo()">CONTINUAR</button><button class="rbtn red" onclick="recEnd()">FINALIZAR</button>`}
 }
@@ -4652,7 +4655,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-24b'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-24c'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
