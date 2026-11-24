@@ -807,6 +807,16 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 #tabbar button.on{background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 10px rgba(255,255,255,.1),0 2px 8px rgba(0,0,0,.18);-webkit-backdrop-filter:blur(2px) saturate(1.6);backdrop-filter:blur(2px) saturate(1.6)}
 :root[data-theme="light"] #tabbar button.on{background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,.4))}
 .gb svg,#tabbar svg{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35))}
+
+/* evento: dia da prova, ranking ao vivo */
+.evhoje .evsub{margin-top:6px;font-size:13px;color:#b6c3d4}.evq.apurando{color:#f0c24b}.evq.fim{color:#7cc4ff}
+.evm2{border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;background:var(--card)}.evm2 b{font-size:18px;color:var(--hi)}.evm2 span{font-size:14px;color:var(--txt)}.evm2 small{font-size:12px;color:var(--dim)}
+.evm2.ok{border-color:rgba(74,158,255,.45)}.evm2.ruim{border-color:rgba(224,68,47,.55)}.evm2.ruim b{color:var(--red)}
+.evrl{display:flex;flex-direction:column}.evrk{display:flex;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid var(--line)}.evrk:first-child{border-top:0}.evrk.eu{background:rgba(74,158,255,.08);border-radius:12px;padding-left:8px;padding-right:8px}
+.evrp{width:30px;text-align:center;font-size:20px;color:var(--dim);flex:none}.evrn{flex:1;min-width:0;display:flex;flex-direction:column}.evrn b{font-size:15px;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.evrn em{font-style:normal;font-size:11px;color:#f0c24b}
+.evrt{display:flex;flex-direction:column;align-items:flex-end}.evrt b{font-size:16px;color:var(--hi);font-variant-numeric:tabular-nums}.evrt small{font-size:11px;color:var(--dim)}.evrx{border:0;background:none;color:var(--dim);font-size:16px;padding:6px;min-width:34px;min-height:34px}
+.evdq{margin:8px 0 0}.evprm{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.evprm div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--txt)}.evprm .evmed{width:54px;height:auto}
+.evenc{background:transparent;border:1px solid rgba(224,68,47,.6);color:var(--red)}.evcta2{display:flex;flex-direction:column}
 </style>
 </head>
 <body>
@@ -1017,7 +1027,7 @@ async function sync(full){
     await analyzeRuns(full);
     await puxaMarcados().catch(()=>{});
     if(LS.get('comp',null)!=='sim')await pullAll().catch(()=>{});
-    corrigeEnvios().catch(()=>{});
+    corrigeEnvios().catch(()=>{});evEnviaResultado().catch(()=>{});
     LS.set('redeAt',0);rede(); // corrida nova entra no ranking público (só para quem aceitou) e os amigos são atualizados
     toast('SINCRONIZADO // '+D.acts.length+' ATIVIDADES');
   }catch(e){const neg=/HTTP 40[13]/.test(e.message);LS.set('authRuim',neg?1:0);toast(e.message==='SEM CHAVE'?'CONECTE O INTERVALS EM MAIS':neg?(CFG.token?'ESTE APARELHO PERDEU O ACESSO. TOQUE EM RECONECTAR':'O INTERVALS NÃO ACEITOU A CONEXÃO. TOQUE EM ENTRAR COM O INTERVALS'):'FALHA NA SINCRONIZAÇÃO // '+e.message,4500)}
@@ -1807,7 +1817,7 @@ function rIni(){
   h+=`<div class="sec">ÚLTIMO TREINO<small>${last?DOW[parseD(last.date).getDay()]+' '+last.date.slice(8,10)+'/'+last.date.slice(5,7):''}</small></div>`;
   if(last){const pace=last.dist?fmtP(last.mov/last.dist*1000)+' /km':'',rt=(AX[last.id]||{}).map;
     h+=`<div class="card ucomp" onclick="openAct('${last.id}')"><div class="uc-t">${esc(last.name)}</div><div class="uc-b"><span class="uc-ic"><svg viewBox="0 0 24 24"><path class="ifill" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg></span><div class="uc-n"><b>${km(last.dist).replace('.',',')} km</b><span>${fmtT(last.mov)}${pace?' · '+pace:''}</span></div>${rt?`<div class="uc-r">${rotaSvg(rt,200,160)}</div>`:''}</div></div>`;
-    {const pgI=desempBox(cur),ev=EVENTOS.find(x=>Date.now()<Date.parse(x.fim)+864e5);
+    {const pgI=desempBox(cur),ev=evAtual();
      h+=ev&&evDentro(ev.id)?pgI+eventoBloco():eventoBloco()+pgI}} // quem já se inscreveu vê o evento fininho, depois do cartão de desempenho
   else h+=`<div class="card"><p class="empty">Nenhuma corrida registrada ainda.</p></div>`+eventoBloco();
   setTimeout(()=>evCarrega('stepon1'),0);
@@ -1826,9 +1836,11 @@ function rIni(){
   const mP=h.length;
   // próxima atividade
   const nx=plan().filter(p=>p.date>=ds&&!casaPlano()[p.date])[0];
-  h+=`<div class="sec">${nx&&nx.date===ds?'ATIVIDADE DE HOJE':'PRÓXIMA ATIVIDADE'}</div>`;
+  const eh=eventoHojeCard();
+  h+=`<div class="sec">${eh||(nx&&nx.date===ds)?'ATIVIDADE DE HOJE':'PRÓXIMA ATIVIDADE'}</div>`;
   if(pbLivreHoje())h+=`<div class="card"><p class="empty" style="color:var(--txt)">Hoje é dia livre: você escolheu descansar. O plano segue normal amanhã.</p><button class="b full" style="margin-top:8px" onclick="pbVolta('${ds}')">Voltar ao treino de hoje</button></div>`;
-  if(nx){const adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
+  if(eh)h+=eh;
+  else if(nx){const adj=adjust(nx,r),st=status(nx),d=parseD(nx.date);
     h+=treinoMini(nx,ds)}
   else if(PF)h+=`<div class="card cur"><h2>Plano concluído</h2><p class="empty" style="margin-top:4px">Os treinos deste ciclo acabaram. Responda o questionário de novo para montar o próximo com base no que você fez.</p><button class="b pri full" style="margin-top:10px" onclick="redoPlan()">Montar o próximo plano</button></div>`;
   else h+=`<div class="card"><p class="empty">Nenhuma atividade planejada.</p><button class="b full" style="margin-top:8px" onclick="openBib()">+ Escolher um treino</button></div>`;
@@ -4266,7 +4278,7 @@ function bonusTemporada(atualTeste){
 }
 function meuXp(){ // todas as corridas (também as marcadas à mão): 1 ponto por km e 3 por treino, mais o bônus de temporada
   const runs=D.acts.filter(isRun),km=runs.reduce((s,r)=>s+(r.dist||0),0)/1000,tr=runs.filter(r=>(r.dist||0)>=1000).length;
-  return Math.round(km+3*tr)+bonusTotal();
+  return Math.max(0,Math.round(km+3*tr)+bonusTotal()-evPenal());
 }
 function xpDe(u){ // de outra pessoa: o total que o app dela mandou; se não mandou, o que dá para calcular do que ela publicou
   if(Number.isFinite(u.xp)&&u.xp>0)return u.xp;
@@ -4291,20 +4303,29 @@ window.openNiveis=()=>{
 };
 /* ================= eventos: corridas online ================= */
 // horários em Brasília (-03:00); quem está em outro fuso vê o horário local na página
-const EVENTOS=[{id:'stepon1',nome:'1ª Corrida StepOn',dist:5000,km:'5 km',data:'2026-11-29',ini:'2026-11-29T06:00:00-03:00',fim:'2026-11-29T18:00:00-03:00',penal:100}];
+const EVENTOS=[{id:'stepon1',nome:'1ª Corrida StepOn',dist:5000,km:'5 km',data:'2026-11-29',ini:'2026-11-29T00:00:00-03:00',fim:'2026-11-29T23:59:59-03:00',penal:100}];
 const evPorId=id=>EVENTOS.find(e=>e.id===id);
 let EVS=LS.get('evs',{}); // o que o servidor disse: {id:{n,ins:[{id,name}],at}}
 const evDentro=id=>!!(LS.get('evt',{})[id]||{}).in;
+const evSet=(id,j)=>{EVS[id]={n:j.n,ins:j.ins||[],rank:j.rank||[],enc:j.enc||null,dq:j.dq||[],at:Date.now()};LS.set('evs',EVS)};
+const evEnc=id=>!!(EVS[id]&&EVS[id].enc);
 function evQuando(e){const hoje=ymd(TODAY()),dias=Math.round((parseD(e.data)-parseD(hoje))/864e5),now=Date.now();
-  if(now>=Date.parse(e.fim))return {k:'fim',t:'Encerrada'};
+  if(evEnc(e.id))return {k:'fim',t:'Encerrada'};
+  if(now>=Date.parse(e.fim))return {k:'apurando',t:'Apurando resultados'};
   if(now>=Date.parse(e.ini))return {k:'agora',t:'Acontecendo agora'};
   return {k:'antes',t:dias<=0?'É hoje':dias===1?'Começa amanhã':`Faltam ${dias} dias`}}
 function evHoras(e){const f=d=>{const x=new Date(d);return x.getMinutes()?`${x.getHours()}h${String(x.getMinutes()).padStart(2,'0')}`:`${x.getHours()}h`};
-  const br=new Date().getTimezoneOffset()===180;return {br:'6h às 18h',local:br?null:`${f(e.ini)} às ${f(e.fim)}`}}
+  const br=new Date().getTimezoneOffset()===180;return {br:'0h às 23h59',local:br?null:`${f(e.ini)} às ${f(e.fim)}`}}
 const dataEv=e=>{const d=parseD(e.data);return `${DOW[d.getDay()]} ${d.getDate()} ${MES3[d.getMonth()]}`};
 const EV_ARTE="url('data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M66 24 L27 35 L73 65 L14 79' fill='none' stroke='#fff' stroke-width='15' stroke-linejoin='round'/><circle cx='87' cy='18.5' r='8.5' fill='#4a9eff'/></svg>").replace(/'/g,'%27')+"') right 6px center/auto 62% no-repeat";
+const evMedPega=id=>!!(LS.get('evmed',{})[id])||medsGet().some(m=>m.id==='ev-'+id);
+// evento que ainda aparece na home: até 1 dia depois do fim, ou (se encerrado) até a pessoa pegar a medalha (máx. 14 dias)
+const evAtual=()=>EVENTOS.find(x=>Date.now()<Date.parse(x.fim)+864e5||(evEnc(x.id)&&evDentro(x.id)&&!evMedPega(x.id)&&Date.now()<Date.parse(x.fim)+14*864e5))||null;
+// no dia da prova (e até pegar a medalha) quem está inscrito vê o cartão grande no lugar da próxima atividade
+const evCardHoje=e=>!!e&&evDentro(e.id)&&(evQuando(e).k!=='antes')&&!(evEnc(e.id)&&evMedPega(e.id))&&(ymd(TODAY())>=e.data);
 function eventoBloco(){
-  const e=EVENTOS.find(x=>Date.now()<Date.parse(x.fim)+864e5)||null;if(!e)return '';
+  const e=evAtual();if(!e)return '';
+  if(evCardHoje(e))return '';
   const q=evQuando(e),S=EVS[e.id]||{},n=S.n!=null?S.n:null,dentro=evDentro(e.id),hr=evHoras(e);
   if(dentro)return `<div class="card evm" onclick="openEvento('${e.id}')"><span class="evmt">EVENTO</span><span class="evmn">${esc(e.nome)}</span><span class="evmi">✓ Inscrito</span><span class="evmg">›</span></div>`;
   return `<div class="card evc" onclick="openEvento('${e.id}')" style="background:${EV_ARTE},radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.40),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.13),transparent 60%),#05080d">
@@ -4317,7 +4338,7 @@ function eventoBloco(){
 // lista de inscritos e a minha inscrição (se este aparelho ainda não sabia, o servidor corrige)
 async function evCarrega(id,force){
   const e=evPorId(id);if(!e)return;const S=EVS[id];if(!force&&S&&Date.now()-(S.at||0)<90e3)return;
-  try{const r=await fetch(PUBURL+'/evento?ev='+id);if(!r.ok)return;const j=await r.json();EVS[id]={n:j.n,ins:j.ins||[],at:Date.now()};LS.set('evs',EVS);
+  try{const r=await fetch(PUBURL+'/evento?ev='+id);if(!r.ok)return;const j=await r.json();evSet(id,j);
     if(CFG.athlete&&(j.ins||[]).some(x=>x.id===CFG.athlete)&&!evDentro(id)){const T=LS.get('evt',{});T[id]={in:1,t:Date.now()};LS.set('evt',T);evAplicaPlano(e,1)}
     if(VIEW==='ini'&&!$('#sheet').classList.contains('on'))render();evPaginaAtualiza(id)}catch(x){}
 }
@@ -4375,37 +4396,153 @@ window.evParticipar=async id=>{const e=evPorId(id);if(!e)return;
   if(!temConta())return toast('Entre com o Intervals para participar.',3500);
   const b=$('#ev-b');if(b){b.disabled=true;b.textContent='Inscrevendo…'}
   try{const r=await fetch(PUBURL+'/evento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),ev:id,acao:'participar'})}),j=await r.json();
-    if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));EVS[id]={n:j.n,ins:j.ins||[],at:Date.now()};LS.set('evs',EVS);
+    if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));evSet(id,j);
     const T=LS.get('evt',{});T[id]={in:1,t:Date.now()};LS.set('evt',T);evAplicaPlano(e);toast('Você está inscrito! O seu treino do dia virou a prova.',4200);
   }catch(x){toast('Não deu para participar: '+x.message,4000)}
   openEvento(id)};
 window.evSair=async id=>{const e=evPorId(id);if(!e)return;
   if(!confirm('Sair da '+e.nome+'?\n\nO seu treino original do dia '+fmtD(e.data)+' volta ao calendário.'))return;
   try{const r=await fetch(PUBURL+'/evento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),ev:id,acao:'sair'})}),j=await r.json();
-    if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));EVS[id]={n:j.n,ins:j.ins||[],at:Date.now()};LS.set('evs',EVS);
+    if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));evSet(id,j);
     const T=LS.get('evt',{});delete T[id];LS.set('evt',T);evRestaura(e);toast('Você saiu da prova. O treino original voltou.',3500)}
   catch(x){toast('Não deu para sair: '+x.message,4000)}
   render();openEvento(id)};
 const EV_IC={cal:'<path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/>',rel:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',dist:'<path d="M5 20V4M5 5h12l-2.2 3.4L17 12H5"/>',pin:'<path d="M12 21s7-6.2 7-11.2A7 7 0 0 0 5 9.8C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',gra:'<path d="M12 3v18M7 8.5c0-2 2-3 5-3s5 1 5 3-2 3-5 3-5 1-5 3 2 3 5 3 5-1 5-3"/>',gente:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.4 2.7-5.6 6-5.6s6 2.2 6 5.6M16 5.2a3 3 0 0 1 0 5.6M18 14.6c1.8.7 3 2.4 3 5"/>'};
 const evTile=(ic,l,v,sub)=>`<div class="evtl"><svg viewBox="0 0 24 24">${EV_IC[ic]}</svg><span>${l}</span><b>${v}</b>${sub?`<small>${sub}</small>`:''}</div>`;
-function evPaginaAtualiza(id){const S=EVS[id];if(!S||!document.getElementById('ev-ins'))return;const el=document.getElementById('ev-ins');el.innerHTML=evInscritosHtml(id);const c=document.getElementById('ev-cont');if(c)c.textContent=(S.n||0)+' '+((S.n||0)===1?'inscrito':'inscritos')}
+function evPaginaAtualiza(id){const S=EVS[id];if(!S)return;const rk=document.getElementById('ev-rank');if(rk)rk.innerHTML=evRankHtml(id);if(!document.getElementById('ev-ins'))return;const el=document.getElementById('ev-ins');el.innerHTML=evInscritosHtml(id);const c=document.getElementById('ev-cont');if(c)c.textContent=(S.n||0)+' '+((S.n||0)===1?'inscrito':'inscritos')}
 function evInscritosHtml(id){const S=EVS[id]||{n:0,ins:[]},L=(S.ins||[]).slice(0,40);
   return L.length?`<div class="evpl">${L.map(x=>`<span class="evp ${x.id===CFG.athlete?'eu':''}" title="${esc(x.name)}">${esc((x.name||'?').trim().charAt(0).toUpperCase())}</span>`).join('')}${S.n>L.length?`<span class="evp mais">+${S.n-L.length}</span>`:''}</div>`:'<p class="meta">Seja a primeira pessoa a se inscrever.</p>'}
-window.openEvento=id=>{const e=evPorId(id);if(!e)return;const q=evQuando(e),S=EVS[id]||{n:0,ins:[]},dentro=evDentro(id),hr=evHoras(e),fim=q.k==='fim',pen=e.penal;
+/* ---------- dia da prova: conferência da corrida, ranking em tempo real, encerrar e medalha ---------- */
+let EVR=LS.get('evr',{}); // a minha última conferência: {evento:{k:'sem'|'invalida'|'ok'|'rev'|'desc'|'erro',t,act,m,at}}
+const evMeu=id=>((EVS[id]||{}).rank||[]).find(x=>x.id===CFG.athlete)||null;
+const evDQme=id=>((EVS[id]||{}).dq||[]).find(x=>x.id===CFG.athlete)||null;
+function evPenal(){let n=0;try{for(const e of EVENTOS)if(evDQme(e.id))n+=e.penal||0}catch(x){}return n}
+const evPost=async(id,b)=>{const r=await fetch(PUBURL+'/evento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),ev:id,...b})}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));evSet(id,j);return j};
+// o que o histórico da própria pessoa diz que ela consegue fazer nos 5 km (melhor 5 km e previsão pelo VDOT, o que for mais rápido); sem histórico, null
+function evRef(e){
+  const lim=ymd(addD(parseD(e.data),-120)),runs=D.acts.filter(a=>isRun(a)&&!isMan(a)&&!isMk(a)&&a.date.slice(0,10)<e.data&&a.date.slice(0,10)>=lim&&AX[a.id]&&AX[a.id].map);
+  if(runs.length<3)return null;
+  let vm=0,d5=Infinity;
+  for(const a of runs)for(const [dist] of BE){if(dist<1000||dist>21100)continue;const t=bestIn(a,dist);if(!t)continue;const v=vdot(dist,t);if(v>vm)vm=v;if(dist===5000&&t<d5)d5=t}
+  const pred=vm?predict(vm,e.dist):Infinity;return {ref:Math.min(d5,pred),n:runs.length}}
+// confere as corridas do dia: horário, a pé, 5 km, GPS, velocidade e se o tempo combina com os treinos da pessoa
+async function evValida(e){
+  const ini=Date.parse(e.ini),fim=Date.parse(e.fim)+5*60e3,minD=e.dist*0.99;
+  const C=D.acts.filter(a=>/^(Run|TrailRun)$/.test(a.type||'')&&!isMan(a)&&!isMk(a)&&a.mov>0).map(a=>({a,st:Date.parse(a.date)})).filter(o=>o.st>=ini&&o.st+o.a.mov*1000<=fim);
+  if(!C.length){const x=D.acts.some(a=>isRun(a)&&Date.parse(a.date)>=ini&&Date.parse(a.date)<=fim&&(isMan(a)||!/^(Run|TrailRun)$/.test(a.type||'')));
+    return {k:x?'invalida':'sem',m:x?'Achei atividade sua hoje, mas esteira ou atividade lançada à mão não vale para a prova (só corrida a pé com GPS).':'Ainda não achei uma corrida sua dentro do horário da prova. Corra e sincronize o relógio.'}}
+  const G=C.filter(o=>(o.a.dist||0)>=minD);
+  if(!G.length)return {k:'sem',m:'Achei uma corrida sua de hoje, mas com menos de '+e.km+'.'};
+  const ref=evRef(e);let ultimo=null;
+  const ord=G.map(o=>({...o,t:Math.round(bestIn(o.a,e.dist)||o.a.mov*e.dist/o.a.dist)})).sort((x,y)=>x.t-y.t);
+  for(const o of ord.slice(0,3)){const a=o.a,t=o.t;
+    if(t<720){ultimo={k:'invalida',m:'O tempo de '+fmtT(t)+' nos '+e.km+' não é possível para corrida a pé.'};continue}
+    try{const sr=await api(`/activity/${a.id}/streams?types=time,distance,latlng`),f=k=>sr.find(x=>x.type===k)||{},ll=f('latlng'),tm=(f('time').data)||[];
+      if(!ll.data||!ll.data2){ultimo={k:'invalida',m:'A atividade não tem GPS (esteira ou sem trajeto). A prova exige corrida a pé com GPS.'};continue}
+      const vm=velMax(ll.data,ll.data2,tm);
+      if(vm>8.5){ultimo={k:'invalida',m:'O trajeto tem trechos acima de '+Math.round(vm*3.6)+' km/h, o que não combina com corrida a pé.'};continue}
+    }catch(x){return {k:'erro',m:'Não consegui conferir o GPS agora. Toque em Atualizar para tentar de novo.'}}
+    let k='ok',m='Corrida válida.';
+    if(ref&&isFinite(ref.ref)){const r=t/ref.ref;
+      if(r<0.90){k='desc';m='Tempo '+Math.round((1-r)*100)+'% melhor do que os seus treinos recentes indicam ('+fmtT(ref.ref)+'). Desclassificado automaticamente.'}
+      else if(r<0.95){k='rev';m='Tempo '+Math.round((1-r)*100)+'% melhor do que os seus treinos recentes indicam ('+fmtT(ref.ref)+'). Em revisão pelo administrador.'}}
+    else m='Corrida válida (sem histórico suficiente para comparar com os seus treinos).';
+    return {k,t,act:a.id,ini:o.st,mov:a.mov,m}}
+  return ultimo||{k:'sem',m:'Nenhuma corrida sua valeu para a prova.'}}
+let _evBusy=0;
+async function evEnviaResultado(e){
+  e=e||EVENTOS.find(x=>evDentro(x.id)&&Date.now()>=Date.parse(x.ini)&&!evEnc(x.id));
+  if(!e||!evDentro(e.id)||evEnc(e.id)||!temConta()||_evBusy||Date.now()<Date.parse(e.ini))return null;_evBusy=1;
+  try{const v=await evValida(e);EVR[e.id]={...v,at:Date.now()};LS.set('evr',EVR);
+    if(v.k==='ok'||v.k==='rev'||v.k==='desc'){
+      try{await evPost(e.id,{acao:'resultado',t:v.t,ini:v.ini,mov:v.mov,act:v.act,st:v.k,m:v.m})}
+      catch(x){EVR[e.id]={k:'invalida',m:'O servidor recusou o resultado: '+x.message,at:Date.now()};LS.set('evr',EVR)}}
+    evPaginaAtualiza(e.id);evDiaAtualiza(e.id);return v}
+  catch(x){return null}finally{_evBusy=0}}
+function evRankHtml(id){
+  const S=EVS[id]||{},R=S.rank||[],e=evPorId(id),adm=souAdmin()&&!S.enc,n=S.n||(S.ins||[]).length||0;
+  const pic=x=>x===CFG.athlete?myPic():frPic(x);
+  const rows=R.map((x,i)=>`<div class="evrk ${x.id===CFG.athlete?'eu':''}"><span class="evrp">${medal(i)}</span>${avatar({pic:pic(x.id),me:x.id===CFG.athlete},32)}<span class="evrn"><b>${esc(String(x.name||'').split(' ').slice(0,2).join(' '))}</b>${x.st==='rev'?'<em>em revisão</em>':''}</span><span class="evrt"><b>${fmtT(x.t)}</b><small>${fmtP(x.t/(e.dist/1000))}/km</small></span>${adm&&x.id!==CFG.athlete?`<button class="evrx" aria-label="Desclassificar" onclick="evDesclassifica('${id}','${x.id}')">✕</button>`:''}</div>`).join('');
+  const dq=(S.dq||[]).map(x=>`<p class="meta evdq">Desclassificado: ${esc(String(x.name||'').split(' ')[0])}${x.m?' · '+esc(x.m):''}${souAdmin()&&!S.enc?` <button class="lk" onclick="evPerdoa('${id}','${x.id}')">Perdoar</button>`:''}</p>`).join('');
+  return `<p class="meta" style="margin:0 0 8px">${R.length} ${R.length===1?'concluiu':'concluíram'} · ${n} ${n===1?'inscrito':'inscritos'}${S.enc?' · resultado final':' · ao vivo'}</p>`+(rows?`<div class="evrl">${rows}</div>`:'<p class="empty" style="margin:6px 0">Ninguém concluiu ainda. O primeiro tempo aparece aqui assim que a corrida for sincronizada.</p>')+dq}
+function evMeuHtml(id){
+  const e=evPorId(id),eu=evMeu(id),dq=evDQme(id),v=EVR[id]||null;
+  if(dq)return `<div class="evm2 ruim"><b>Você foi desclassificado</b><span>${esc(dq.m||'')}</span><small>Você perde ${e.penal} pontos de nível.</small></div>`;
+  if(eu)return `<div class="evm2 ok"><b>${medal(eu.pos-1)} Sua marca: ${fmtT(eu.t)}</b><span>${fmtP(eu.t/(e.dist/1000))}/km · ${eu.pos}º lugar</span>${eu.st==='rev'?'<small>A sua corrida está em revisão pelo administrador.</small>':''}</div>`;
+  if(v&&v.k==='invalida')return `<div class="evm2 ruim"><b>Esta corrida não valeu</b><span>${esc(v.m)}</span></div>`;
+  return `<div class="evm2"><b>Você ainda não completou a prova</b><span>${esc((v&&v.m)||'Corra os '+e.km+' e sincronize o relógio. O seu tempo entra no ranking na hora.')}</span></div>`}
+const evFalta=e=>{const ms=Date.parse(e.fim)-Date.now();if(ms<=0)return '';const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return 'faltam '+(h?h+' h ':'')+m+' min'};
+function evDiaAtualiza(id){const q=document.getElementById('evd-meu');if(!q)return;q.innerHTML=evMeuHtml(id);const f=document.getElementById('evd-falta'),e=evPorId(id);if(f&&e&&!evEnc(id)&&Date.now()<Date.parse(e.fim))f.textContent=evFalta(e);
+  const enc=!!document.getElementById('evd-enc');if(enc!==evEnc(id))openEventoDia(id)}
+window.evPegaMedalha=id=>{const e=evPorId(id),S=EVS[id]||{},r=evMeu(id);if(!e||!S.enc||!r)return toast('Você não tem medalha nesta prova.',3000);
+  const tipo=r.pos===1?'ouro':r.pos===2?'prata':r.pos===3?'bronze':'final';
+  const L=medsGet();if(!L.some(m=>m.id==='ev-'+id)){L.unshift({id:'ev-'+id,n:e.nome,d:e.data,k:e.dist,t:r.t,l:r.pos<=3?r.pos+'º lugar':'Finalista',o:'',v:'l',sp:'co',e:tipo});medSalva(L);window._medL={eu:L}}
+  const T=LS.get('evmed',{});T[id]=1;LS.set('evmed',T);toast(r.pos<=3?'Parabéns! Medalha de '+({ouro:'ouro',prata:'prata',bronze:'bronze'})[tipo]+' guardada em Medalhas.':'Parabéns! Medalha de finalista guardada em Medalhas.',4500);
+  render();closeSheet();setTimeout(()=>{try{medAbre('eu',0)}catch(x){}},350)};
+window.evEncerra=async id=>{if(!souAdmin())return;const e=evPorId(id),S=EVS[id]||{};
+  if(!confirm('Encerrar a '+e.nome+' agora?\n\n'+(S.rank||[]).length+' pessoas com resultado. A classificação fica fixa e todos poderão pegar a medalha.'))return;
+  try{await evPost(id,{acao:'encerrar'});toast('Prova encerrada. A classificação é oficial.',3500)}catch(x){toast('Não deu para encerrar: '+x.message,4000)}
+  render();openEventoDia(id)};
+window.evReabre=async id=>{if(!souAdmin()||!confirm('Reabrir a prova? A classificação volta a ser ao vivo.'))return;try{await evPost(id,{acao:'reabrir'})}catch(x){toast('Não deu: '+x.message,3500)}render();openEventoDia(id)};
+window.evDesclassifica=async(id,alvo)=>{if(!souAdmin())return;const m=prompt('Motivo da desclassificação (aparece para todos):','Tempo incompatível com os treinos dele');if(m===null)return;
+  try{await evPost(id,{acao:'desclassificar',alvo,m})}catch(x){toast('Não deu: '+x.message,3500)}evPaginaAtualiza(id)};
+window.evPerdoa=async(id,alvo)=>{if(!souAdmin())return;try{await evPost(id,{acao:'perdoar',alvo})}catch(x){toast('Não deu: '+x.message,3500)}evPaginaAtualiza(id)};
+window.evAtualiza=async id=>{const e=evPorId(id),b=$('#evd-at');if(b){b.disabled=true;b.textContent='Atualizando…'}
+  try{await sync()}catch(x){}try{await evEnviaResultado(e)}catch(x){}await evCarrega(id,1);evPaginaAtualiza(id);evDiaAtualiza(id);if(b){b.disabled=false;b.textContent='Atualizar'}};
+window.openEvento=id=>{const e=evPorId(id);if(!e)return;if(evDentro(id)&&evQuando(e).k!=='antes')return openEventoDia(id);return openEventoInfo(id)};
+window.openEventoDia=id=>{const e=evPorId(id);if(!e)return;const q=evQuando(e),S=EVS[id]||{n:0,ins:[]},enc=!!S.enc,adm=souAdmin(),eu=evMeu(id),pega=evMedPega(id);
+  const st=enc?'Prova encerrada':q.k==='apurando'?'Apurando resultados':'Você tem até as 23h59 para correr';
+  let cta='';
+  if(enc){cta=eu?(pega?`<button class="b full" onclick="closeSheet();go('perf')">Medalha guardada em Medalhas</button>`:`<button class="b pri full evbtn" onclick="evPegaMedalha('${id}')">Pegar a minha medalha</button>`):`<p class="meta" style="text-align:center">Você não teve resultado válido nesta prova.</p>`}
+  else if(q.k==='agora'){cta=`<div class="tzb"><button class="tzp1" onclick="closeSheet();fazerTreino('${e.data}')"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" stroke="none"/></svg><span>Fazer treino agora</span></button>${hasWatch()?`<button class="tzi" aria-label="Enviar para o relógio" onclick="closeSheet();sendWatch('${e.data}')"><svg viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 3h5M9.5 21h5M12 14.5v-4M10.2 12.2L12 10.4l1.8 1.8"/></svg></button>`:''}</div><button class="lk" id="evd-at" style="margin-top:10px;align-self:center" onclick="evAtualiza('${id}')">Atualizar</button>`}
+  else cta=`<button class="lk" id="evd-at" onclick="evAtualiza('${id}')">Atualizar</button>`;
+  const prem=`<div class="evpr evprm"><div>${EV_MED.ouro}<b>1º</b></div><div>${EV_MED.prata}<b>2º</b></div><div>${EV_MED.bronze}<b>3º</b></div><div>${EV_MED.final}<b>Finalista</b></div></div>`;
+  const admin=adm?(enc?`<button class="lk" style="margin-top:22px" onclick="evReabre('${id}')">Reabrir a prova (administrador)</button>`:`<button class="b full evenc" style="margin-top:22px" onclick="evEncerra('${id}')">Encerrar a prova agora (administrador)</button>`):'';
+  openSheet(`<div class="hd"><b>Evento</b><button class="b sm" onclick="closeSheet()">✕</button></div>${enc?'<i id="evd-enc" hidden></i>':''}
+  <div class="evh" style="min-height:0;background:${EV_ARTE.replace('right 6px center/auto 62%','right 12px top 14px/auto 40px')},radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.45),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.14),transparent 60%),#05080d"><span class="evt">EVENTO · HOJE</span>
+    <div class="evhb" style="padding-top:56px"><div class="evk">Corrida online · gratuita · ${e.km}</div><h2>${esc(e.nome)}</h2>
+    <div class="evf"><span class="evq ${q.k}">${st}</span>${!enc&&q.k==='agora'?`<span class="evn" id="evd-falta">${evFalta(e)}</span>`:''}</div></div></div>
+  <div id="evd-meu" style="margin-top:14px">${evMeuHtml(id)}</div>
+  <div class="evcta2" style="margin-top:12px">${cta}</div>
+  <div class="evs"><h4>Classificação</h4><div id="ev-rank">${evRankHtml(id)}</div></div>
+  <div class="evs"><h4>Premiação</h4>${prem}<p class="meta" style="margin-top:10px">Quem concluir ganha a medalha. Depois que o administrador encerra a prova, você pega a sua aqui mesmo.</p></div>
+  <button class="lk" style="margin-top:18px" onclick="openEventoInfo('${id}')">Ver regras e informações da prova ›</button>${admin}`,1);
+  clearInterval(window._evPoll);let tk=0;window._evPoll=setInterval(()=>{if(!document.getElementById('ev-rank')||!document.getElementById('evd-meu')){clearInterval(window._evPoll);return}
+    tk++;evCarrega(id,1).then(()=>{evDiaAtualiza(id)});
+    if(tk%3===0&&!evEnc(id)&&evQuando(e).k==='agora'&&Date.now()-(D.at||0)>150e3)sync().then(()=>evEnviaResultado(e)).catch(()=>{})},20000);
+  evCarrega(id,1).then(()=>evDiaAtualiza(id));evEnviaResultado(e).catch(()=>{})};
+// cartão grande na home no dia da prova (no lugar da próxima atividade)
+const EV_BG="radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.40),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.13),transparent 60%),#05080d";
+function eventoHojeCard(){
+  const e=evAtual();if(!e||!evCardHoje(e))return '';
+  const q=evQuando(e),S=EVS[e.id]||{},eu=evMeu(e.id),dq=evDQme(e.id),enc=!!S.enc;let l1,l2;
+  if(dq){l1='Você foi desclassificado';l2=esc(dq.m||'')}
+  else if(enc){l1=eu?'Prova encerrada · você ficou em '+eu.pos+'º lugar':'Prova encerrada';l2=eu?(evMedPega(e.id)?'Medalha guardada':'Toque para pegar a sua medalha'):'Você não teve resultado válido'}
+  else if(q.k==='apurando'){l1='Apurando resultados';l2='Sincronize a sua corrida para entrar no ranking'}
+  else{l1=eu?'Sua marca: '+fmtT(eu.t)+' · '+eu.pos+'º lugar':'A prova já começou';l2=eu?'Toque para ver o ranking ao vivo':'Você tem até as 23h59 para correr os '+e.km}
+  return `<div class="card evc evhoje" onclick="openEvento('${e.id}')" style="background:${EV_ARTE},${EV_BG}"><span class="evt">EVENTO · HOJE</span><div class="evb"><div class="evk">Corrida online · gratuita</div><h3>${esc(e.nome)}</h3><div class="evch"><span>${e.km}</span><span>${dataEv(e)}</span><span>até 23h59</span></div><div class="evf"><span class="evq ${q.k}">${l1}</span></div><div class="evsub">${l2}</div></div><span class="evg2">›</span></div>`}
+// avisos do evento no sino: "hoje é a prova" (00h) e o resultado
+function evNotifs(){for(const e of EVENTOS){const S=EVS[e.id]||{},agora=Date.now();
+  if(agora>=Date.parse(e.ini)&&agora<Date.parse(e.fim)&&!S.enc)ntAdd('ev:dia:'+e.id,'evento','Hoje é a '+e.nome+'!',evDentro(e.id)?'Você tem até as 23h59 para correr os '+e.km+'. Boa prova!':'Corrida online de '+e.km+'. Você tem até as 23h59 para participar e correr.',{t:Date.parse(e.ini),go:{k:'evento',id:e.id},av:{k:'me'}});
+  if(S.enc&&evDentro(e.id)){const eu=evMeu(e.id),dq=evDQme(e.id);
+    if(dq)ntAdd('ev:dq:'+e.id,'evento','Você foi desclassificado da '+e.nome,(dq.m?dq.m+' ':'')+'Você perdeu '+e.penal+' pontos de nível.',{t:S.enc.at,go:{k:'evento',id:e.id},av:{k:'me'}});
+    else if(eu)ntAdd('ev:enc:'+e.id,'evento','Prova encerrada: você ficou em '+eu.pos+'º',eu.pos<=3?'Parabéns! Toque para pegar a sua medalha.':'Você concluiu a '+e.nome+'. Toque para pegar a sua medalha de finalista.',{t:S.enc.at,go:{k:'evento',id:e.id},av:{k:'me'}});
+    else ntAdd('ev:enc:'+e.id,'evento','A '+e.nome+' terminou','Você não teve um resultado válido nesta prova.',{t:S.enc.at,go:{k:'evento',id:e.id},av:{k:'me'}})}}}
+window.openEventoInfo=id=>{const e=evPorId(id);if(!e)return;const q=evQuando(e),S=EVS[id]||{n:0,ins:[]},dentro=evDentro(id),hr=evHoras(e),fim=q.k==='fim'||q.k==='apurando',pen=e.penal;
   const cta=fim?`<button class="b full" disabled>Evento encerrado</button>`:dentro?`<div class="evok"><b>✓ Você está inscrito</b><span>O seu treino de ${fmtD(e.data)} já é a prova.</span></div><button class="evsair" onclick="evSair('${id}')">Sair da prova</button>`:`<button class="b pri full evbtn" id="ev-b" onclick="evParticipar('${id}')">Participar · é grátis</button>`;
   openSheet(`<div class="hd"><b>Evento</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="evh" style="background:${EV_ARTE.replace('right 16px center/auto 66%','right 8px top 12px/auto 52px')},radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.45),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.14),transparent 60%),#05080d"><span class="evt">EVENTO</span>
-    <div class="evhb"><div class="evk">Corrida online · gratuita</div><h2>${esc(e.nome)}</h2><p>A primeira prova do StepOn. Corra 5 km onde estiver, dentro de uma janela de 12 horas, e entre no ranking.</p>
+  <div class="evh" style="background:${EV_ARTE.replace('right 6px center/auto 62%','right 12px top 14px/auto 40px')},radial-gradient(120% 140% at 100% 0%,rgba(74,158,255,.45),transparent 55%),radial-gradient(90% 100% at 0% 100%,rgba(240,194,75,.14),transparent 60%),#05080d"><span class="evt">EVENTO</span>
+    <div class="evhb"><div class="evk">Corrida online · gratuita</div><h2>${esc(e.nome)}</h2><p>A primeira prova do StepOn. Corra 5 km onde estiver, a qualquer hora do dia, e entre no ranking em tempo real.</p>
     <div class="evf"><span class="evq ${q.k}">${q.t}</span><span class="evn" id="ev-cont">${S.n||0} ${(S.n||0)===1?'inscrito':'inscritos'}</span></div></div></div>
   <div class="evg">${evTile('cal','Data',dataEv(e)+' de 2026')}${evTile('rel','Horário',hr.br,hr.local?`No seu horário: ${hr.local}`:'Horário de Brasília')}${evTile('dist','Distância',e.km,'Um esforço contínuo')}${evTile('pin','Onde','Qualquer lugar','Rua, pista, parque, do outro lado do mundo')}${evTile('gra','Custo','Grátis','Sem taxa de inscrição')}${evTile('gente','Formato','Online','Cada um corre no seu lugar')}</div>
-  <div class="evs"><h4>Como funciona</h4><ol class="evo"><li><b>Participe.</b> Toque em Participar: você já fica inscrito.</li><li><b>Seu treino vira a prova.</b> O treino que você tinha em ${fmtD(e.data)} é trocado pela prova de ${e.km}. Não acumula. Se quiser correr mais, adicione outro treino à mão no calendário.</li><li><b>Corra no dia.</b> Entre as ${hr.br} (Brasília), com o relógio ou gravando pelo app.</li><li><b>O app confere e monta o ranking.</b> Vence o menor tempo nos ${e.km}.</li></ol></div>
-  <div class="evs"><h4>O que vale</h4><ul class="evl"><li>Corrida a pé, com GPS: relógio ou gravação pelo StepOn.</li><li>Distância mínima de ${e.km} em uma única atividade. O tempo oficial é o seu melhor trecho de ${e.km} nela.</li><li>A atividade precisa acontecer inteira entre as ${hr.br} (Brasília) do dia ${fmtD(e.data)}.</li><li>Conta a sua atividade mais rápida que cumpra as regras.</li><li>A corrida precisa estar sincronizada com o StepOn até as 23h59 do dia seguinte.</li></ul></div>
+  <div class="evs"><h4>Como funciona</h4><ol class="evo"><li><b>Participe.</b> Toque em Participar: você já fica inscrito.</li><li><b>Seu treino vira a prova.</b> O treino que você tinha em ${fmtD(e.data)} é trocado pela prova de ${e.km}. Não acumula. Se quiser correr mais, adicione outro treino à mão no calendário.</li><li><b>Corra no dia.</b> Entre as ${hr.br} (Brasília), com o relógio ou gravando pelo app.</li><li><b>O app confere e monta o ranking.</b> Vence o menor tempo nos ${e.km}. O ranking atualiza em tempo real, conforme as corridas são sincronizadas.</li></ol></div>
+  <div class="evs"><h4>O que vale</h4><ul class="evl"><li>Corrida a pé, com GPS: relógio ou gravação pelo StepOn.</li><li>Distância mínima de ${e.km} em uma única atividade (com 1% de folga do GPS). O tempo oficial é o seu melhor trecho de ${e.km} nela.</li><li>A atividade precisa acontecer inteira entre as ${hr.br} (Brasília) do dia ${fmtD(e.data)}.</li><li>Conta a sua atividade mais rápida que cumpra as regras.</li><li>A corrida precisa estar sincronizada com o StepOn até as 23h59 do dia seguinte.</li></ul></div>
   <div class="evs"><h4>O que não vale</h4><ul class="evl nao"><li>Bicicleta, patins, patinete, moto, carro ou qualquer meio que não seja a pé.</li><li>Esteira, atividade sem GPS ou lançada à mão.</li><li>Trajeto ou velocidade incompatível com corrida a pé.</li><li>Atividade fora do horário ou com menos de ${e.km}.</li></ul>
-    <div class="evpn"><b>Desclassificação</b><p>O app confere o horário, a distância, o GPS e a velocidade de cada atividade. Se a atividade não valer, a pessoa é desclassificada, sai do ranking e perde <b>${pen} pontos de nível</b> no StepOn. Aqui vale o jogo limpo.</p></div></div>
+    <div class="evpn"><b>Desclassificação</b><p>O app confere o horário, a distância, o GPS, a velocidade e se o tempo combina com os seus treinos anteriores. Se a atividade não valer, a pessoa é desclassificada, sai do ranking e perde <b>${pen} pontos de nível</b> no StepOn. Aqui vale o jogo limpo.</p></div></div>
   <div class="evs"><h4>Premiação</h4><div class="evpr"><div>${EV_MED.ouro}<b>1º lugar</b><span>Medalha de ouro exclusiva</span></div><div>${EV_MED.prata}<b>2º lugar</b><span>Medalha de prata</span></div><div>${EV_MED.bronze}<b>3º lugar</b><span>Medalha de bronze</span></div><div>${EV_MED.final}<b>Finalista</b><span>Medalha azul para quem concluir</span></div></div>
-    <p class="meta" style="margin-top:12px">Quem concluir a prova ganha a medalha de <b>Finalista da ${esc(e.nome)}</b>. As medalhas ficam no seu perfil, em Conquistas.</p></div>
+    <p class="meta" style="margin-top:12px">Quem concluir a prova ganha a medalha de <b>Finalista da ${esc(e.nome)}</b>. Depois que a prova for encerrada, você pega a medalha na hora. Ela fica guardada em Medalhas, no seu perfil.</p></div>
   <div class="evs"><h4>Inscritos</h4><div id="ev-ins">${evInscritosHtml(id)}</div></div>
-  <div class="evs"><h4>Classificação</h4><p class="meta">${fim?'A classificação oficial aparece aqui.':'A classificação aparece aqui no dia da prova, assim que as corridas forem sincronizadas.'}</p></div>
+  <div class="evs"><h4>Classificação</h4><div id="ev-rank">${evRankHtml(id)}</div></div>
   <div class="evcta">${cta}</div>`,1);
   evCarrega(id,1)};
 /* ================= perfil estilo rede social: capa, foto, bio, link e selos ================= */
@@ -5090,7 +5227,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-30c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-01a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -5119,6 +5256,7 @@ async function notifRefresh(force){
       for(const id of (FR.seg||[]))if(!B.seg.includes(id)){B.seg.push(id);ntAdd('sg:'+id,'amigo',`${String(frNome(id)).split(' ')[0]} começou a seguir você`,'Toque para ver o perfil.',{go:{k:'perfil',id},av:{k:'u',id}})}
       for(const e of EVENTOS){await evCarrega(e.id);const S=EVS[e.id];if(!S||!S.ins)continue;
         for(const x of S.ins){if(x.id!==me&&(FR.fol||[]).includes(x.id))ntAdd('ev:'+e.id+':'+x.id,'evento',`${String(frNome(x.id)||x.name).split(' ')[0]} entrou na ${e.nome}`,'Vai lá dar uma olhada na corrida.',{go:{k:'evento',id:e.id},av:{k:'u',id:x.id}})}}}catch(e){}
+    try{evNotifs()}catch(x){}
     const titulo=a=>a.name||nomeHora(a.date);
     if(temConta()){try{await medSync(B)}catch(e){}}
     bonusTemporada();

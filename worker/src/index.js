@@ -214,22 +214,70 @@ async function marcar(env, a, b) {
   return { ok: true, amigos: novos };
 }
 
-// ---------- eventos (corridas online): inscritos ----------
-// 'ev:<evento>' = { ins: { <atleta>: { n: nome, t: quando } } }. Só os eventos listados aqui existem.
+// ---------- eventos (corridas online): inscritos, resultados, classificação ----------
+// 'ev:<evento>' = { ins: { <atleta>: { n, t } }, res: { <atleta>: { n, t(s), act, ini(ms), st, m, at } }, desc: { <atleta>: { at, m } }, enc: { at, rank } }
+// st = 'ok' (vale), 'rev' (suspeito: aparece com aviso e o administrador decide) ou 'desc' (desclassificado pelo app). Só os eventos listados aqui existem.
 const EVENTOS_OK = ['stepon1'], MAXINS = 5000;
+const EV_JANELA = { stepon1: { ini: Date.parse('2026-11-29T00:00:00-03:00'), fim: Date.parse('2026-11-29T23:59:59-03:00'), dist: 5000 } };
 async function evento(env, a, b) {
   const ev = String(b.ev || '');
   if (!EVENTOS_OK.includes(ev)) return { erro: 'evento inválido' };
   const k = 'ev:' + ev, d = (await env.BR.get(k, 'json')) || { ins: {} };
+  d.res = d.res || {}; d.desc = d.desc || {}; d.perd = d.perd || {};
+  const admin = b.athlete === ADMIN_MED;
   if (b.acao === 'participar') {
+    if (d.enc) return { erro: 'evento encerrado' };
     if (!d.ins[b.athlete] && Object.keys(d.ins).length >= MAXINS) return { erro: 'evento lotado' };
     d.ins[b.athlete] = { n: String(a.name || b.athlete).slice(0, 60), t: (d.ins[b.athlete] || {}).t || Date.now() };
-  } else if (b.acao === 'sair') delete d.ins[b.athlete];
-  else return { erro: 'ação inválida' };
+  } else if (b.acao === 'sair') {
+    if (d.enc) return { erro: 'evento encerrado' };
+    delete d.ins[b.athlete]; delete d.res[b.athlete];
+  } else if (b.acao === 'resultado') {
+    // o app confere a corrida (horário, a pé, GPS, histórico) e manda o resultado; aqui só se checa o que dá para checar sem o GPS
+    if (d.enc) return { erro: 'evento encerrado' };
+    if (!d.ins[b.athlete]) return { erro: 'você não está inscrito' };
+    const J = EV_JANELA[ev], t = Math.round(+b.t), ini = Math.round(+b.ini), mov = Math.round(+b.mov);
+    let st = ['ok', 'rev', 'desc'].includes(b.st) ? b.st : 'ok';
+    if (d.perd[b.athlete] && st === 'desc') st = 'rev'; // o administrador já perdoou: continua valendo, só marcado em revisão
+    if (!(t >= 720 && t <= 7200)) return { erro: 'tempo fora do possível' }; // 5 km em menos de 12 min ou mais de 2 h não é prova válida
+    if (!(ini >= J.ini && ini + mov * 1000 <= J.fim + 5 * 60e3)) return { erro: 'atividade fora do horário do evento' };
+    if (!/^[A-Za-z0-9_-]{1,40}$/.test(String(b.act || ''))) return { erro: 'atividade inválida' };
+    const ant = d.res[b.athlete];
+    if (ant && ant.st !== 'desc' && st !== 'desc' && ant.t <= t && ant.act !== b.act) return { ok: true, ...evLista(d, b.athlete) }; // vale a mais rápida
+    d.res[b.athlete] = { n: String(a.name || b.athlete).slice(0, 60), t, act: String(b.act), ini, st, m: String(b.m || '').slice(0, 160), at: Date.now() };
+  } else if (b.acao === 'encerrar') {
+    if (!admin) return { erro: 'só o administrador' };
+    if (d.enc) return { erro: 'evento já encerrado' };
+    d.enc = { at: Date.now(), por: b.athlete, rank: evRank(d) };
+  } else if (b.acao === 'reabrir') {
+    if (!admin) return { erro: 'só o administrador' };
+    delete d.enc;
+  } else if (b.acao === 'desclassificar' || b.acao === 'perdoar') {
+    if (!admin) return { erro: 'só o administrador' };
+    const alvo = String(b.alvo || '');
+    if (!d.ins[alvo]) return { erro: 'pessoa não inscrita' };
+    if (b.acao === 'desclassificar') { d.desc[alvo] = { at: Date.now(), m: String(b.m || 'Desclassificado pelo administrador').slice(0, 160) }; delete d.perd[alvo]; }
+    else { delete d.desc[alvo]; d.perd[alvo] = 1; if (d.res[alvo] && d.res[alvo].st === 'desc') d.res[alvo].st = 'ok'; }
+    if (d.enc) d.enc.rank = evRank(d);
+  } else return { erro: 'ação inválida' };
   await env.BR.put(k, JSON.stringify(d));
-  return { ok: true, ...evLista(d) };
+  return { ok: true, ...evLista(d, b.athlete) };
 }
-const evLista = (d) => ({ n: Object.keys(d.ins).length, ins: Object.entries(d.ins).sort((x, y) => x[1].t - y[1].t).slice(0, 300).map(([id, v]) => ({ id, name: v.n })) });
+// classificação: só quem tem resultado que vale e não foi desclassificado; menor tempo primeiro (empate: quem correu primeiro)
+function evRank(d) {
+  return Object.entries(d.res || {}).filter(([id, r]) => r.st !== 'desc' && !(d.desc || {})[id])
+    .sort((x, y) => x[1].t - y[1].t || x[1].ini - y[1].ini)
+    .map(([id, r], i) => ({ id, name: r.n, t: r.t, st: r.st, m: r.m, act: r.act, pos: i + 1 }));
+}
+const evLista = (d) => {
+  const dq = Object.entries(d.res || {}).filter(([id, r]) => r.st === 'desc' || (d.desc || {})[id]).map(([id, r]) => ({ id, name: r.n, m: ((d.desc || {})[id] || {}).m || r.m || '' }));
+  for (const id of Object.keys(d.desc || {})) if (!dq.some((x) => x.id === id)) dq.push({ id, name: (d.ins[id] || {}).n || id, m: d.desc[id].m });
+  return {
+    n: Object.keys(d.ins).length,
+    ins: Object.entries(d.ins).sort((x, y) => x[1].t - y[1].t).slice(0, 300).map(([id, v]) => ({ id, name: v.n })),
+    rank: d.enc ? d.enc.rank : evRank(d), enc: d.enc ? { at: d.enc.at } : null, dq,
+  };
+};
 
 
 // ---------- bloquear, denunciar e excluir a conta (exigências das lojas de aplicativos) ----------
