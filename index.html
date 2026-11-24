@@ -851,6 +851,8 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .dkh4{font-size:16px;color:var(--hi);margin:20px 0 8px}
 .dkz{display:flex;flex-direction:column;gap:10px;margin:14px 0 16px}.dkzr{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center}.dkzl{font-size:13px;font-weight:700;color:var(--dim)}.dkzb{display:flex;align-items:center;gap:8px;min-width:0}.dkzb i{display:block;height:26px;border-radius:5px}.dkzb b{font-size:14px;color:var(--hi)}.dkzf{font-size:12px;color:var(--dim);white-space:nowrap}
 .dkhmh{display:grid;grid-template-columns:repeat(7,1fr);font-size:11px;color:var(--dim);text-align:center;margin:10px 0 4px}
+
+.docpg{font-size:15px;line-height:1.6;color:var(--txt);padding-bottom:30px}.docpg h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:26px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}.docpg p{margin:0 0 10px}.docpg ul{padding-left:20px;margin:0 0 10px}.docpg li{margin-bottom:6px}.docpg .dim{color:var(--dim);font-size:13px}.docpg .box{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;margin:12px 0}.docpg a{color:var(--blue)}
 </style>
 </head>
 <body>
@@ -1624,7 +1626,7 @@ function mapaPreto(cv){try{const c=document.createElement('canvas');c.width=120;
   for(let i=0;i<d.length;i+=4)if(Math.max(d[i],d[i+1],d[i+2])>90)return false;return true}catch(e){return false}}
 window.mapDiagAbre=()=>{let g='sem WebGL',r='?',mx='?';try{const c=document.createElement('canvas'),x=c.getContext('webgl2')||c.getContext('webgl');if(x){g=c.getContext('webgl2')?'WebGL 2':'WebGL 1';mx=x.getParameter(x.MAX_TEXTURE_SIZE);const e=x.getExtension('WEBGL_debug_renderer_info');if(e)r=x.getParameter(e.UNMASKED_RENDERER_WEBGL)}}catch(e){}
   const ev=LS.get('mapdiag',[]).slice().reverse().map(o=>`${o.t} · ${esc(o.k)}`).join('<br>')||'nenhum problema registrado';
-  openSheet(`<div class="hd"><b>Diagnóstico do mapa</b><button class="b sm" onclick="closeSheet()">✕</button></div><div class="card"><p class="empty" style="color:var(--txt)">${g} · textura máx. ${mx}<br>Placa: ${esc(String(r))}<br>Mapa reserva: ${MLFB?'ligado':'desligado'}<br>Versão: ${BUILD}<br>${esc(navigator.userAgent)}</p></div><div class="sec">ÚLTIMOS PROBLEMAS</div><div class="card"><p class="empty" style="color:var(--txt)">${ev}</p></div>`)};
+  openSheet(`<div class="hd"><b>Diagnóstico do mapa</b><button class="b sm" onclick="closeSheet()">✕</button></div><div class="card"><p class="empty" style="color:var(--txt)">${g} · textura máx. ${mx}<br>Placa: ${esc(String(r))}<br>Mapa reserva: ${MLFB?'ligado':'desligado'}<br>Versão: ${BUILD}<br>${esc(navigator.userAgent)}</p></div><div class="sec">ÚLTIMOS PROBLEMAS</div><div class="card"><p class="empty" style="color:var(--txt)">${ev}</p></div>`,1)};
 function ctxPerdido(m){try{return m.painter.context.gl.isContextLost()}catch(e){return false}}
 // fila: no máximo 2 mapas desenhando ao mesmo tempo (o Android só aguarda uns 8 contextos WebGL; passando disso ele derruba os mais antigos e o mapa fica preto)
 const _dq=[];let _dn=0,_falhaG=0;
@@ -2068,7 +2070,7 @@ function rIni(){
   if(last){const pace=last.dist?fmtP(last.mov/last.dist*1000)+' /km':'',rt=(AX[last.id]||{}).map;
     h+=`<div class="card ucomp" onclick="openAct('${last.id}')"><div class="uc-t">${esc(last.name)}</div><div class="uc-b"><span class="uc-ic"><svg viewBox="0 0 24 24"><path class="ifill" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg></span><div class="uc-n"><b>${km(last.dist).replace('.',',')} km</b><span>${fmtT(last.mov)}${pace?' · '+pace:''}</span></div>${rt?`<div class="uc-r">${rotaSvg(rt,200,160)}</div>`:''}</div></div>`;
     {const pgI=desempBox(cur),ev=evAtual();
-     h+=ev&&evDentro(ev.id)?pgI+eventoBloco():eventoBloco()+pgI}} // quem já se inscreveu vê o evento fininho, depois do cartão de desempenho
+     h+=ev&&evDentro(ev.id)?pgI+glw('e',1)+eventoBloco():eventoBloco()+pgI+glw('e',1)}} // quem já se inscreveu vê o evento fininho, depois do cartão de desempenho
   else h+=`<div class="card"><p class="empty">Nenhuma corrida registrada ainda.</p></div>`+eventoBloco();
   setTimeout(()=>evCarrega('stepon1'),0);
   const mD=h.length;let mD2,mC2,mV2,mP2,mE2;
@@ -2118,7 +2120,7 @@ function rIni(){
     const vf=[!w.sleep&&'sono',!w.rhr&&'FC de repouso',!vo2&&'VO2'].filter(Boolean),vfl=vf.length>1?vf.slice(0,-1).join(', ')+' e '+vf[vf.length-1]:vf[0];
     const bV=blk('vit','Vitais',vl.join('')+(vf.length?`<p class="meta" style="margin:${vl.length?'6px':'0'} 4px 2px;line-height:1.45">Sem dados de ${vfl} hoje.${vl.length?'':' Ligue o relógio ao Intervals e sincronize para ver aqui.'}</p>`:''),null);
     const bP=h.slice(mP,mE); // a próxima atividade fica como cartão completo: um toque já manda ao relógio
-    const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=glw('e',1)+bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
+    const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
   }
   if(DESK()){el.innerHTML=painelDesk(h.slice(0,mU),h.slice(mU,mD2),SIMPLES()?'':h.slice(mD2,mC2),SIMPLES()?'':h.slice(mC2,mV2),h.slice(mP2,mE2),h.slice(mE2));return}
   if(SIMPLES())h=h.slice(0,mU)+h.slice(mP2,mE2)+h.slice(mU,mD2)+h.slice(mE2); // treino de hoje primeiro
@@ -2537,8 +2539,8 @@ function rMais(soTres){
   </div>
   <div class="mgt">Informações</div><div class="mgl">
     ${row("maisAbre('aj')",ic('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17v.5"/>','#4a9eff'),'Ajuda e contato','')}
-    ${row("window.open('termos.html','_blank','noopener')",ic('<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>','#8a929e'),'Termos de uso','')}
-    ${row("window.open('privacidade.html','_blank','noopener')",ic('<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6l7-3z"/>','#8a929e'),'Política de privacidade','')}
+    ${row("abreDoc('termos.html','Termos de uso')",ic('<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>','#8a929e'),'Termos de uso','')}
+    ${row("abreDoc('privacidade.html','Política de privacidade')",ic('<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6l7-3z"/>','#8a929e'),'Política de privacidade','')}
     ${row("diagApp()",ic('<path d="M3 12h4l2-6 4 12 2-6h6"/>','#19c9c0'),'Diagnóstico do app','Erros e telas lentas')}
     ${row("maisAbre('sobre')",ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/>','#8a929e'),'Sobre o StepOn','Versão '+BUILD)}
   </div>
@@ -2649,6 +2651,12 @@ window.diagApp=()=>{
   <button class="b full" style="margin-top:14px" onclick="LS.set('erros',[]);LS.set('lentas',[]);diagApp()">Limpar registros</button>
   <p class="meta" style="margin-top:10px">Se o app travar, abra aqui e mande um print para o suporte.</p>`,1)};
 let MAISP={};
+// termos e privacidade abrem dentro do app, em tela cheia, com a seta de voltar fixa enquanto rola
+window.abreDoc=async(url,tit)=>{openSheet(`<div class="hd"><b>${esc(tit)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><p class="empty">Carregando…</p>`,1);
+  try{const r=await fetch(url+'?v='+BUILD,{cache:'no-cache'});if(!r.ok)throw 0;const d=new DOMParser().parseFromString(await r.text(),'text/html'),m=d.querySelector('main');if(!m)throw 0;
+    m.querySelectorAll('a[href="./"],.vt').forEach(a=>{const p=a.closest('p');(p||a).remove()});const h1=m.querySelector('h1');if(h1)h1.remove();
+    openSheet(`<div class="hd"><b>${esc(tit)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><div class="docpg">${m.innerHTML}</div>`,1)}
+  catch(e){closeSheet();window.open(url,'_blank','noopener')}};
 window.maisAbre=k=>{const m=MAISP[k];if(!m)return;openSheet(`<div class="hd"><b>${m[0]}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+m[1],1);if(k==='con'&&$('#c-go'))connStatus()};
 window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();LS.set('recria',Date.now());toast('CONECTADO // '+(a.name||''),2500);sync(1)};
 
@@ -3878,7 +3886,7 @@ window.openBib=ds=>{
     for(const it of L){const p=bibSessao(it);
       h+=`<button class="cell tap" style="margin-bottom:8px;padding-right:24px" onclick="bibItem(${k})"><b style="color:var(--hi);font-size:14px">${esc(it.nome)}</b><div class="meta">${kmTxt(p.km)} km${p.teste?' · teste':''}</div><div class="meta" style="margin-top:2px;color:var(--txt)">${esc(it.dica.split('. ')[0])}.</div></button>`;k++}}
   h+=`<button class="b full" style="margin-top:8px" onclick="openBuilder()">+ Criar do zero</button>`;
-  openSheet(h);
+  openSheet(h,1);
 };
 window.bibNivel=k=>{BIB.niv=k;const sc=$('#sbox').scrollTop;openBib();$('#sbox').scrollTop=sc};
 window.bibItem=i=>{
@@ -3890,7 +3898,7 @@ window.bibItem=i=>{
   <button class="b pri full" style="margin-top:12px" onclick="bibAgendar(0)">Agendar no calendário</button>
   <div class="grid g2" style="margin-top:8px"><button class="b" onclick="bibAgendar(2)">▶ Fazer agora</button><button class="b" onclick="bibAjustar()">Ajustar antes</button></div>
   ${hasWatch()?`<button class="b full" style="margin-top:8px" onclick="bibAgendar(1)">Agendar e enviar ao relógio</button>`:''}
-  <button class="b full" style="margin-top:8px" onclick="openBib()">◀ Voltar à biblioteca</button>`);
+  <button class="b full" style="margin-top:8px" onclick="openBib()">◀ Voltar à biblioteca</button>`,1);
 };
 // modo 0: agenda; 1: agenda e envia ao relógio; 2: faz agora (agenda para hoje e abre a gravação)
 window.bibAgendar=mode=>{
@@ -5489,7 +5497,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-02b'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-02c'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
