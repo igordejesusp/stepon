@@ -819,6 +819,38 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .evenc{background:transparent;border:1px solid rgba(224,68,47,.6);color:var(--red)}.evcta2{display:flex;flex-direction:column}
 
 .ntp-h{position:relative}.ntp-r{margin-left:auto;width:42px;height:42px;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:0;color:var(--blue)}.ntp-r svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ntp-r:disabled{opacity:.4;color:var(--dim)}
+
+/* Desempenho: painel de cartões (estilo Strava) e páginas de detalhe */
+.dkpg{padding-bottom:10px}
+.card.dk{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:12px;cursor:pointer}
+.dkh{display:flex;align-items:center;gap:10px}.dkh b{font-size:16px;color:var(--hi);font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dkp{font-size:13px;color:var(--dim);white-space:nowrap}.dkc{width:18px;height:18px;flex:none;color:var(--dim)}.dkc svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.dki{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}.dki svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dkb{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}.dkv{min-width:0;display:flex;flex-direction:column;gap:3px}.dkv>small{font-size:13px;color:var(--dim)}
+.dkn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.dkn strong{font-size:32px;line-height:1.05;font-weight:800;color:var(--hi);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.dksub{font-size:13px;color:var(--dim)}.dksp{flex:none}.dks{width:124px;height:58px;display:block}
+.dkd{font-style:normal;font-size:12px;font-weight:700;padding:3px 7px;border-radius:6px;white-space:nowrap}.dkd.ok{color:#5fd18a;background:rgba(52,199,89,.14)}.dkd.mn{color:#ff7a66;background:rgba(224,68,47,.14)}.dkd.neu{color:#c9ced6;background:rgba(255,255,255,.08)}
+.dkst{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.dkst span{display:block;font-size:12px;color:var(--dim)}.dkst b{display:block;font-size:19px;color:var(--hi);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.dkbtn{display:block;width:100%;margin-top:12px;padding:11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--hi);font-weight:700;font-size:14px}
+.dkg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}.dkg2 .card.dk{min-width:0;overflow:hidden}.dkg2 .card.dk{margin:0;padding:14px}.dkmini .dkh{gap:8px}.dkmini .dkh b{font-size:14px}.dkmini .dki{width:24px;height:24px;border-radius:8px}.dkmini .dki svg{width:15px;height:15px}
+.dkdl{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-top:12px}.dkdl small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dkdl small{font-size:12px;color:var(--dim)}.dkdl b{font-size:13px;color:var(--hi)}
+.dkdots{display:flex;justify-content:space-between;margin-top:7px;padding:0 2px}.dkdots i{width:11px;height:11px;border-radius:50%;background:#2a3039}:root[data-theme="light"] .dkdots i{background:#cdd6df}.dkdots i.on{background:#34c759;box-shadow:0 0 0 3px rgba(52,199,89,.18)}.dkdots i.hj{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--dim)}.dkdots i.on.hj{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px #34c759}.dkdots i.fu{opacity:.45}
+.dkring{position:relative;width:66px;height:66px;margin:12px auto 4px}.dkring svg{width:66px;height:66px;display:block}.dkring b{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;color:var(--hi)}
+.dkrt{text-align:center;margin:4px 0 0;display:flex;flex-direction:column}.dkrt b{font-size:13px;color:var(--hi)}.dkrt span{font-size:12px;color:var(--dim)}
+.dkzm{width:118px;display:flex;flex-direction:column;gap:4px}.dkzm i{display:block;height:7px;border-radius:4px}
+.dkmm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center}.dkmm>div{display:flex;flex-direction:column;align-items:center;gap:2px}.dkmm .medal{width:38px;height:38px;margin-bottom:4px}.dkmm span{font-size:12px;color:var(--dim)}.dkmm b{font-size:17px;color:var(--hi);font-variant-numeric:tabular-nums}.dkmm small{font-size:11px;color:var(--dim2)}
+.dkt{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;margin:4px 0 14px}.dkt button{flex:1;border:0;background:transparent;color:var(--dim);font-weight:600;font-size:13px;padding:8px 4px;border-radius:999px;min-height:34px}.dkt button.on{background:var(--hi);color:var(--bg)}
+.dkchip{display:flex;gap:8px;overflow-x:auto;margin:2px 0 14px;scrollbar-width:none}.dkchip::-webkit-scrollbar{display:none}.dkchip button{border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:8px 14px;font-size:13px;white-space:nowrap;min-height:36px}.dkchip button.on{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.1)}
+.dkhero2{display:flex;flex-direction:column;gap:4px;margin:6px 0 4px}.dkhero2 small{font-size:13px;color:var(--dim)}.dkhero2 strong{font-size:38px;font-weight:800;color:var(--hi);line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.dkhero2 strong em{font-style:normal;font-size:16px;font-weight:600;color:var(--dim);letter-spacing:0}.dkhero2 .dkd{align-self:flex-start;margin-top:4px}
+.dkg{position:relative;padding:54px 46px 24px 0;margin:2px 0 2px}.dkg .aw{width:100%}.dkgy{position:absolute;right:0;top:54px;bottom:24px;width:44px;pointer-events:none}.dkgy span{position:absolute;right:0;transform:translateY(-50%);font-size:11px;color:var(--dim);white-space:nowrap}
+.dkgx{position:absolute;left:0;right:46px;bottom:0;height:18px;pointer-events:none}.dkgx span{position:absolute;transform:translateX(-50%);font-size:11px;color:var(--dim);white-space:nowrap}
+.dkhero .dkg{padding-top:50px}.dkhero .dkgy{top:50px}
+.dkdot{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--c);transform:translate(-50%,-50%);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 28%,transparent);pointer-events:none}
+.dkleg{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 0}.dkl{display:inline-block;width:14px;height:4px;border-radius:2px;background:#c4cad3}.dkl.tr{height:0;border-top:2px dashed #c4cad3;background:none!important}
+.dkins{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:16px}.dkins p{margin:0;font-size:14px;line-height:1.5;color:var(--txt)}
+.dkh4{font-size:16px;color:var(--hi);margin:20px 0 8px}
+.dkz{display:flex;flex-direction:column;gap:10px;margin:14px 0 16px}.dkzr{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center}.dkzl{font-size:13px;font-weight:700;color:var(--dim)}.dkzb{display:flex;align-items:center;gap:8px;min-width:0}.dkzb i{display:block;height:26px;border-radius:5px}.dkzb b{font-size:14px;color:var(--hi)}.dkzf{font-size:12px;color:var(--dim);white-space:nowrap}
+.dkhmh{display:grid;grid-template-columns:repeat(7,1fr);font-size:11px;color:var(--dim);text-align:center;margin:10px 0 4px}
 </style>
 </head>
 <body>
@@ -1721,43 +1753,239 @@ function desempBox(cur){
     <div class="dpb">${bars}</div><p class="meta" style="margin-top:6px">Últimas 4 semanas comparadas com as 4 anteriores. Barras: km por semana.</p></div>`;
 }
 
-/* ---------- página de Desempenho (abre pelo cartão da página inicial) ---------- */
-window.openDesempenho=()=>{
-  const runs=D.acts.filter(isRun),W=semanas(runs.map(x=>({date:x.date,dist:x.dist,mov:x.mov,elev:x.elev}))),S=pmc(),cur=S[S.length-1],V=vAtual();
-  const soma=a=>a.reduce((t,w)=>({d:t.d+w.dist,m:t.m+w.mov,n:t.n+w.n}),{d:0,m:0,n:0});
-  const A=soma(W.slice(7,11)),B=soma(W.slice(3,7)),pa=A.d>0?A.m/A.d*1000:null,pb=B.d>0?B.m/B.d*1000:null;
-  const seta=(v,t)=>`<small class="${v>=0?'ok':'mn'}">${v>=0?'▲':'▼'} ${t}</small>`;
-  const f1=x=>x.toFixed(1).replace('.',','),hm=sec=>{const m=Math.round(sec/60);return m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0'):m+' min'};
-  const tile=(l,v,d)=>`<div><span>${l}</span><b>${v}</b>${d||'<small>&nbsp;</small>'}</div>`;
-  const resumo=`<div class="dpt dpt4">${tile('Ritmo médio',pa?fmtP(pa)+'<em>/km</em>':'--',pa&&pb?seta(pb-pa,Math.abs(Math.round(pb-pa))+' s/km'):'')}${tile('Km por semana',A.d>0?f1(A.d/4000):'--',A.d>0&&B.d>0?seta(A.d/4000-B.d/4000,f1(Math.abs(A.d-B.d)/4000)+' km'):'')}${tile('Corridas por semana',f1(A.n/4),B.n?seta(A.n/4-B.n/4,f1(Math.abs(A.n-B.n)/4)):'')}${tile('Tempo por semana',A.m?hm(A.m/4):'--',B.m?seta(A.m/4-B.m/4,hm(Math.abs(A.m-B.m)/4)):'')}</div><p class="meta" style="margin-top:8px">Últimas 4 semanas fechadas, comparadas com as 4 anteriores.</p>`;
-  // gráfico de barras: km por semana
-  const lab=W.map(w=>w.ini.getDate()+'/'+(w.ini.getMonth()+1)),vk=W.map(w=>w.dist/1000),mxk=Math.max(1,...vk),W0=340,H0=140,n=W.length,gap=W0/n,bw=gap*.6,avgk=vk.reduce((t,v)=>t+v,0)/n,yAv=H0-avgk/mxk*(H0-22);
-  const barras=`<svg viewBox="0 0 ${W0} ${H0+24}" class="dpsvg">${vk.map((v,i)=>{const bh=Math.max(3,v/mxk*(H0-22)),x=i*gap+(gap-bw)/2,y=H0-bh;return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="5" fill="#4a9eff" opacity="${i===n-1?1:.42}"/>${v>0&&(i===n-1||i===vk.indexOf(mxk))?`<text x="${(x+bw/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle" class="dpv2">${f1(v)}</text>`:''}`}).join('')}<line x1="0" x2="${W0}" y1="${yAv.toFixed(1)}" y2="${yAv.toFixed(1)}" stroke="#8a929e" stroke-width="1" stroke-dasharray="4 4"/>${lab.map((l,i)=>i%2===1||i===n-1?`<text x="${(i*gap+gap/2).toFixed(1)}" y="${H0+16}" text-anchor="middle" class="dpl">${l}</text>`:'').join('')}</svg><p class="meta">Linha tracejada: média de ${f1(avgk)} km por semana. Barra clara: semana em andamento.</p>`;
-  // ritmo médio por semana (mais rápido = mais alto)
-  const pw=W.map(w=>w.dist>0?w.mov/w.dist*1000:null),pv=pw.filter(x=>x!=null);let ritmo='<p class="empty">Ainda sem corridas suficientes.</p>';
-  if(pv.length>1){const mn=Math.min(...pv),mx=Math.max(...pv),H1=110,y=v=>12+(v-mn)/(mx-mn||1)*(H1-28),pts=pw.map((v,i)=>v==null?null:[i*gap+gap/2,y(v)]).filter(Boolean);
-    ritmo=`<svg viewBox="0 0 ${W0} ${H1+22}" class="dpsvg"><polyline fill="none" stroke="#34c759" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}"/>${pts.map((q,i)=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${i===pts.length-1?4.5:3}" fill="#34c759"/>`).join('')}<text x="2" y="10" class="dpl">${fmtP(mn)}</text><text x="2" y="${H1+4}" class="dpl">${fmtP(mx)}</text>${lab.map((l,i)=>i%2===1||i===n-1?`<text x="${(i*gap+gap/2).toFixed(1)}" y="${H1+18}" text-anchor="middle" class="dpl">${l}</text>`:'').join('')}</svg><p class="meta">Quanto mais alto o ponto, mais rápido o ritmo médio da semana.</p>`}
-  // mapa de calor das últimas 12 semanas
-  const dia={};runs.forEach(r=>{const d=r.date.slice(0,10);dia[d]=(dia[d]||0)+(r.dist||0)});const hoje=ymd(TODAY());let cel='',dc=0;
-  W.forEach(w=>{for(let i=0;i<7;i++){const d=ymd(addD(w.ini,i)),v=(dia[d]||0)/1000,fut=d>hoje;if(v>0)dc++;const nv=v<=0?0:v<5?1:v<10?2:v<16?3:4;cel+=`<i class="hm${fut?' fu':''}" data-n="${nv}" title="${fmtD(d)}: ${f1(v)} km"></i>`}});
-  const calor=`<div class="hmg">${cel}</div><div class="row meta" style="gap:6px;margin-top:8px;align-items:center"><span>${dc} ${dc===1?'dia corrido':'dias corridos'} em 12 semanas</span><span style="margin-left:auto">menos</span>${[0,1,2,3,4].map(k=>`<i class="hm" data-n="${k}" style="width:12px;height:12px;display:inline-block"></i>`).join('')}<span>mais</span></div>`;
-  // melhores treinos
-  const maiorD=[...runs].sort((a,b)=>(b.dist||0)-(a.dist||0))[0],rap=[...runs].filter(r=>r.dist>=5000&&r.mov).sort((a,b)=>a.mov/a.dist-b.mov/b.dist)[0],sub=[...runs].filter(r=>r.elev).sort((a,b)=>b.elev-a.elev)[0],melS=[...W].sort((a,b)=>b.dist-a.dist)[0];
+/* ================= DESEMPENHO: painel de cartões (estilo Strava) e páginas de detalhe com gráfico de arrastar ================= */
+const DK_IC={
+  sem:'<path d="M4 20V10M10 20V5M16 20v-7M2 20h20"/>',
+  prev:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 3h5M12 3v3"/>',
+  forma:'<path d="M3 17l5-5 4 3 8-9"/><path d="M15 6h5v5"/>',
+  esf:'<path d="M13 2.5L5.5 13.5H11l-1 8 8-11.5h-5.5l1-7.5z"/>',
+  ritmo:'<path d="M4.5 17a8 8 0 1115 0"/><path d="M12 17l4-5.5"/>',
+  zona:'<path d="M12 20s-7.5-4.6-7.5-10.3A4.2 4.2 0 0112 7a4.2 4.2 0 017.5 2.7C19.5 15.4 12 20 12 20z"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5H18"/>',
+  marca:'<circle cx="12" cy="14.5" r="6"/><path d="M8.5 3h7l-2 5.8h-3z"/><path d="M12 12v5"/>',
+  mes:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  cons:'<path d="M4 12.5l5 5L20 6.5"/>',
+  plano:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="1"/>',
+  dest:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'};
+const DK_COR={sem:'#4a9eff',prev:'#4a9eff',forma:'#ff7a2f',esf:'#b06cff',ritmo:'#34c759',zona:'#ff6b6b',marca:'#f0c24b',mes:'#4a9eff',cons:'#34c759',plano:'#4a9eff',dest:'#f0c24b'};
+const dkIc=k=>`<span class="dki" style="--c:${DK_COR[k]}"><svg viewBox="0 0 24 24">${DK_IC[k]}</svg></span>`;
+const dkF1=x=>(Math.round(x*10)/10).toFixed(1).replace('.',',');
+const dkHm=s=>{const m=Math.round((s||0)/60);return m>=60?Math.floor(m/60)+' h '+(m%60?(m%60)+' min':''):m+' min'};
+const dkDM=ds=>{const d=parseD(ds);return d.getDate()+' de '+MES3[d.getMonth()]+'.'};
+// variação: a seta mostra para onde o número foi; a cor mostra se isso é bom (verde) ou ruim (vermelho)
+const dkPill=(dif,txt,bomSeSobe=true)=>{if(dif==null||!isFinite(dif)||Math.abs(dif)<1e-6)return '';const bom=bomSeSobe?dif>0:dif<0;return `<em class="dkd ${bom?'ok':'mn'}">${dif>0?'▲':'▼'} ${txt}</em>`};
+// semanas de segunda a domingo, terminando na semana atual
+function dkSemanas(n){const m0=monday(TODAY()),W=[...Array(n)].map((_,i)=>({ini:addD(m0,-7*(n-1-i)),dist:0,mov:0,elev:0,n:0,load:0,dias:new Set()}));
+  const t0=W[0].ini.getTime();
+  for(const a of D.acts){const i=Math.floor((parseD(a.date.slice(0,10))-t0)/(7*864e5));if(i<0||i>=n)continue;const w=W[i];w.load+=loadOf(a);
+    if(!isRun(a))continue;w.dist+=a.dist||0;w.mov+=a.mov||0;w.elev+=a.elev||0;w.n++;w.dias.add(a.date.slice(0,10))}
+  return W}
+const dkSemTxt=w=>{const f=addD(w.ini,6);return w.ini.getMonth()===f.getMonth()?`${w.ini.getDate()} – ${f.getDate()} de ${MES3[f.getMonth()]}.`:`${w.ini.getDate()} de ${MES3[w.ini.getMonth()]}. – ${f.getDate()} de ${MES3[f.getMonth()]}.`};
+// rótulos de mês no eixo das semanas (onde o mês muda)
+const dkMesLab=W=>{const L=[];let m=-1;W.forEach((w,i)=>{const mm=addD(w.ini,3).getMonth();if(mm!==m){m=mm;if(i>0||W.length<=13)L.push({i,t:MES3[mm].toUpperCase()})}});return L.filter((l,k,a)=>!(k>0&&l.i-a[k-1].i<2))};
+const dkDiaLab=(dss,k=4)=>{const n=dss.length;if(!n)return [];const ix=[...new Set([0,Math.round((n-1)/3),Math.round(2*(n-1)/3),n-1])];return ix.map(i=>({i,t:fmtD(dss[i])}))};
+
+// minigráfico do cartão (linha com área e ponto final, ou barrinhas)
+function dkSpark(v,o={}){const W=124,H=58,P=6,vv=[...v,...(o.v2||[])].filter(x=>x!=null&&isFinite(x));if(vv.length<2)return '';
+  let lo=Math.min(...vv),hi=Math.max(...vv);if(o.zero||o.bar)lo=Math.min(0,lo);if(hi-lo<1e-9){hi+=1;lo-=o.bar?0:1}
+  const n=v.length,X=i=>P+(n>1?i/(n-1):.5)*(W-2*P),Y=x=>o.inv?P+(x-lo)/(hi-lo)*(H-2*P):H-P-(x-lo)/(hi-lo)*(H-2*P),c=o.cor||'#4a9eff';
+  if(o.bar){const bw=(W-2*P)/n*.6;return `<svg class="dks" viewBox="0 0 ${W} ${H}">${v.map((x,i)=>{const h=Math.max(2,((x||0)-lo)/(hi-lo)*(H-2*P)),xx=P+(i+.5)/n*(W-2*P)-bw/2;return `<rect x="${xx.toFixed(1)}" y="${(H-P-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.6" fill="${c}" opacity="${i===n-1?1:.45}"/>`}).join('')}</svg>`}
+  const lin=(arr,cor,dash,w)=>{const p=arr.map((x,i)=>x==null?null:[X(i),Y(x)]).filter(Boolean);return p.length<2?'':`<polyline points="${p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="none" stroke="${cor}" stroke-width="${w||2.2}" ${dash?'stroke-dasharray="3 3"':''} stroke-linejoin="round" stroke-linecap="round"/>`};
+  const pts=v.map((x,i)=>x==null?null:[X(i),Y(x)]).filter(Boolean),f=pts[0],u=pts[pts.length-1],gid='dks'+(++CHN);
+  return `<svg class="dks" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".38"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>
+    ${o.v2?lin(o.v2,'#5c636d',1,1.6):''}${o.area!==false?`<polygon points="${f[0].toFixed(1)},${H} ${pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')} ${u[0].toFixed(1)},${H}" fill="url(#${gid})"/>`:''}${lin(v,c)}
+    <circle cx="${f[0].toFixed(1)}" cy="${f[1].toFixed(1)}" r="3" fill="var(--bg)" stroke="${c}" stroke-width="1.6"/><circle cx="${u[0].toFixed(1)}" cy="${u[1].toFixed(1)}" r="7" fill="${c}" opacity=".28"/><circle cx="${u[0].toFixed(1)}" cy="${u[1].toFixed(1)}" r="3.8" fill="${c}"/></svg>`}
+
+// gráfico grande com arrastar o dedo: barras ou linha com área; os rótulos ficam em HTML porque o desenho estica
+function dkGraf(o){ // {tipo:'bar'|'linha', v, v2, cor, cor2, inv, zero, ref, faixa:[[lo,hi]|null], lab:[{i,t}], fy, tip, h}
+  const n=o.v.length,vs=[...o.v,...(o.v2||[])].filter(x=>x!=null&&isFinite(x));if(!n||!vs.length||(o.tipo==='bar'||o.zero)&&!vs.some(x=>x>0))return '<p class="empty" style="margin:18px 0">Ainda sem dados para este período. As suas corridas aparecem aqui.</p>';
+  let lo=Math.min(...vs),hi=Math.max(...vs);(o.faixa||[]).forEach(f=>{if(f){lo=Math.min(lo,f[0]);hi=Math.max(hi,f[1])}});
+  const zero=o.tipo==='bar'||o.zero;if(zero)lo=Math.min(0,lo);if(hi-lo<1e-9)hi=lo+1;const pd=(hi-lo)*.1;hi+=pd;if(!zero)lo-=pd;
+  const W=600,H=o.h||200,Y=x=>o.inv?(x-lo)/(hi-lo)*H:H-(x-lo)/(hi-lo)*H,X=i=>o.tipo==='bar'?(i+.5)/n*W:(n>1?i/(n-1)*W:W/2);
+  const tk=[.2,.55,.9].map(f=>o.inv?hi-(hi-lo)*f:lo+(hi-lo)*f);let g=tk.map(t=>`<line x1="0" x2="${W}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" stroke="#8a929e" stroke-opacity=".16" vector-effect="non-scaling-stroke"/>`).join('');
+  if(o.faixa){const F=o.faixa.map((f,i)=>f?[X(i),Y(f[0]),Y(f[1])]:null).filter(Boolean);if(F.length>1)g+=`<polygon points="${F.map(q=>q[0].toFixed(1)+','+q[2].toFixed(1)).join(' ')} ${F.slice().reverse().map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="${o.cor}" fill-opacity=".14"/>`}
+  const dot=[];
+  if(o.tipo==='bar'){const bw=W/n*(n>30?.7:.6);g+=o.v.map((x,i)=>{if(x==null)return '';const yt=Y(x),yb=Y(Math.max(lo,0)),h=Math.max(2,yb-yt);return `<rect x="${(X(i)-bw/2).toFixed(1)}" y="${(yb-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${o.cor}" opacity="${i===n-1?1:(o.op||.5)}"/>`}).join('')}
+  else{const lin=(arr,cor,dash,area)=>{const p=arr.map((x,i)=>x==null?null:[X(i),Y(x)]).filter(Boolean);if(p.length<1)return '';const L=p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' '),gid='dkG'+(++CHN);
+      return (area?`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cor}" stop-opacity=".42"/><stop offset="1" stop-color="${cor}" stop-opacity="0"/></linearGradient></defs><polygon points="${p[0][0].toFixed(1)},${H} ${L} ${p[p.length-1][0].toFixed(1)},${H}" fill="url(#${gid})"/>`:'')
+        +`<polyline points="${L}" fill="none" stroke="${cor}" stroke-width="${dash?1.6:2.6}" ${dash?'stroke-dasharray="5 4"':''} vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>`};
+    if(o.v2)g+=lin(o.v2,o.cor2||'#5c636d',o.dash2!==false,false);g+=lin(o.v,o.cor,false,o.area!==false);
+    let k=n-1;while(k>=0&&o.v[k]==null)k--;if(k>=0)dot.push(`<i class="dkdot" style="left:${(X(k)/W*100).toFixed(2)}%;top:${(Y(o.v[k])/H*100).toFixed(2)}%;--c:${o.cor}"></i>`)}
+  if(o.ref!=null&&isFinite(o.ref))g+=`<line x1="0" x2="${W}" y1="${Y(o.ref).toFixed(1)}" y2="${Y(o.ref).toFixed(1)}" stroke="#c4cad3" stroke-opacity=".7" stroke-dasharray="6 5" vector-effect="non-scaling-stroke"/>`;
+  const visto=new Set(),yl=tk.map(t=>{const tx=o.fy?o.fy(t):Math.round(t);if(visto.has(tx))return '';visto.add(tx);return `<span style="top:${(Y(t)/H*100).toFixed(1)}%">${tx}</span>`}).join('');
+  const xl=(o.lab||[]).map(l=>{const pc=X(l.i)/W*100;return `<span style="left:${pc.toFixed(1)}%;transform:translateX(${pc<4?'0':pc>96?'-100%':'-50%'})">${l.t}</span>`}).join('');
+  return `<div class="dkg">${scrubWrap(`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${g}</svg>${dot.join('')}`,{n,bar:o.tipo==='bar'?1:0,tip:o.tip},'dkaw',`height:${H}px`)}<div class="dkgy">${yl}</div><div class="dkgx">${xl}</div></div>`}
+
+// cartão do painel e partes repetidas
+const dkCard=(k,tit,per,corpo,on,cls)=>`<div class="card dk ${cls||''}" onclick="${on}"><div class="dkh">${dkIc(k)}<b>${tit}</b>${per?`<span class="dkp">${per}</span>`:''}<span class="dkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></div>${corpo}</div>`;
+const dkCorpo=(lbl,val,pill,sub,spark)=>`<div class="dkb"><div class="dkv">${lbl?`<small>${lbl}</small>`:''}<div class="dkn"><strong>${val}</strong>${pill||''}</div>${sub?`<small class="dksub">${sub}</small>`:''}</div>${spark?`<div class="dksp">${spark}</div>`:''}</div>`;
+const dkTabs=(k,ops,sel)=>`<div class="dkt">${ops.map(([v,t])=>`<button class="${v===sel?'on':''}" onclick="dkAbre('${k}','${v}')">${t}</button>`).join('')}</div>`;
+const dkStats=L=>`<div class="dkst">${L.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>`;
+const dkIns=(t,ic)=>`<div class="dkins">${dkIc(ic||'dest')}<p>${t}</p></div>`;
+const dkTip=(top,cor,linha,baixo)=>`<small>${top}</small><b><i style="background:${cor}"></i>${linha}</b>${baixo?`<small>${baixo}</small>`:''}`;
+
+// previsão de prova em uma data: teste de até 90 dias (vale ele) ou a melhor marca recente, pelo VDOT
+function dkVEm(fim){const ini=ymd(addD(parseD(fim),-90)),T=vHist().filter(h=>h.ds<=fim&&h.ds>=ini);if(T.length)return T[T.length-1].V;let v=0;
+  for(const a of D.acts){if(!isRun(a)||a.type==='TrailRun'||/trilha|trail/i.test(a.name||''))continue;const d=a.date.slice(0,10);if(d<ini||d>fim)continue;
+    for(const [dist] of BE){if(dist<1500||dist>42200)continue;const t=bestIn(a,dist);if(t){const x=vdot(dist,t);if(x>v)v=x}}}
+  return v||null}
+function dkPrevSerie(dist,dias,passo){const out=[];for(let k=dias;k>=0;k-=passo){const ds=ymd(addD(TODAY(),-k)),V=dkVEm(ds);out.push({ds,t:V?predict(V,dist):null})}if(out.length&&out[out.length-1].ds!==ymd(TODAY())){const V=dkVEm(ymd(TODAY()));out.push({ds:ymd(TODAY()),t:V?predict(V,dist):null})}return out}
+// tempo em cada zona de FC (5 zonas pela FC máxima, como no Garmin) num período de dias que termina "fimAtras" dias atrás
+function dkZonas(dias,fimAtras=0){const mx=maxHr(),fim=ymd(addD(TODAY(),-fimAtras)),ini=ymd(addD(TODAY(),-fimAtras-dias+1)),tz=[0,0,0,0,0];let tot=0;
+  for(const a of D.acts){if(!isRun(a))continue;const d=a.date.slice(0,10);if(d<ini||d>fim)continue;const c=(AX[a.id]||{}).chart;if(!c||!c.h||!c.h.length)continue;
+    const T=c.t&&c.t.length===c.h.length?c.t:null,pas=(a.mov||0)/c.h.length;
+    for(let i=0;i<c.h.length;i++){const h=c.h[i],dt=T?(i?T[i]-T[i-1]:T[0]):pas;if(!h||!(dt>0)||dt>300)continue;tz[h>=mx*.9?4:h>=mx*.8?3:h>=mx*.7?2:h>=mx*.6?1:0]+=dt;tot+=dt}}
+  return {tz,tot,mx}}
+const DK_ZC=['#9db7d8','#5fd18a','#f0c24b','#ff8a3d','#e0442f'];
+const dkZFaixa=(z,mx)=>z===0?'< '+Math.round(mx*.6)+' bpm':z===4?'> '+Math.round(mx*.9)+' bpm':Math.round(mx*(.5+.1*z))+' – '+(Math.round(mx*(.6+.1*z))-1)+' bpm';
+const dkZTxt=p=>{const top=p.indexOf(Math.max(...p));
+  if(top<=1)return 'A maior parte do seu tempo foi em ritmo leve (Zonas 1 e 2). É a base que constrói resistência com pouco desgaste e pouco risco de lesão.';
+  if(top===2)return 'Você passou bastante tempo na Zona 3, um ritmo moderado. Ela desenvolve força e resistência, mas cansa mais: equilibre com treinos bem leves.';
+  return 'Muito tempo nas zonas fortes (4 e 5). Ótimo para ganhar velocidade, mas pede recuperação: garanta dias leves entre esses treinos.'};
+// intervalo de esforço da semana: a partir da média das 3 semanas anteriores (como o "esforço relativo" do Strava)
+const dkFaixa=(W,i)=>{const p=W.slice(Math.max(0,i-3),i).map(w=>w.load);const m=p.length?p.reduce((s,x)=>s+x,0)/p.length:0;return m>0?[Math.round(m*.8),Math.round(m*1.3)]:null};
+const dkFaixaTxt=(v,f,and)=>!f?'Sem histórico para comparar':v<f[0]?(and?'Semana em andamento':'Abaixo do intervalo'):v>f[1]?'Acima do intervalo':'Dentro do intervalo';
+const dkSemAnd=()=>TODAY().getDay()!==0; // a semana vai de segunda a domingo
+
+/* ---------- páginas de detalhe ---------- */
+let DKS={};
+const DKD={
+  // km por semana
+  km:{pad:'12',fn:r=>{const n=+r,W=dkSemanas(n),v=W.map(w=>w.dist/1000),fec=W.slice(0,-1),med=fec.length?fec.reduce((s,w)=>s+w.dist,0)/fec.length/1000:0,mx=W.reduce((b,w)=>w.dist>b.dist?w:b,W[0]),tot=W.reduce((s,w)=>s+w.dist,0)/1000;
+    const a4=W.slice(-5,-1).reduce((s,w)=>s+w.dist,0),b4=W.slice(-9,-5).reduce((s,w)=>s+w.dist,0),pc=b4>0?Math.round((a4-b4)/b4*100):null;
+    const ins=pc==null?'Corra mais algumas semanas para o app comparar o seu volume.':pc>=10?`Você correu ${pc}% mais nas últimas 4 semanas do que nas 4 anteriores. Suba o volume aos poucos (até uns 10% por semana) para o corpo acompanhar.`:pc<=-10?`Você correu ${-pc}% menos nas últimas 4 semanas do que nas 4 anteriores. Se foi descanso planejado, ótimo; se não, retome aos poucos.`:'O seu volume está estável nas últimas semanas. Constância é o que mais faz evoluir.';
+    return {tit:'Km por semana',html:`${dkTabs('km',[['12','3 meses'],['26','6 meses'],['52','1 ano']],r)}
+      <div class="dkhero2"><small>Média por semana</small><strong>${dkF1(med)} <em>km</em></strong>${dkPill(pc,Math.abs(pc||0)+'% nas últimas 4 semanas')}</div>
+      ${dkGraf({tipo:'bar',v,cor:'#4a9eff',ref:med,lab:dkMesLab(W),fy:x=>Math.round(x)+' km',tip:i=>{const w=W[i];return dkTip(dkSemTxt(w),'#4a9eff',dkF1(w.dist/1000)+' km',w.n?`${w.n} ${w.n===1?'corrida':'corridas'} · ${dkHm(w.mov)}${w.dist?' · '+fmtP(w.mov/w.dist*1000)+'/km':''}`:'sem corridas')}})}
+      <p class="meta dkleg"><i class="dkl tr"></i> média das semanas fechadas · barra cheia: semana atual</p>
+      ${dkStats([['Total',dkF1(tot)+' km'],['Maior semana',dkF1(mx.dist/1000)+' km'],['Corridas',W.reduce((s,w)=>s+w.n,0)]])}${dkIns(ins,'sem')}`}}},
+  // ritmo médio por semana
+  ritmo:{pad:'12',fn:r=>{const n=+r,W=dkSemanas(n),v=W.map(w=>w.dist>500?w.mov/w.dist*1000:null),vv=v.filter(x=>x!=null),tot=W.reduce((s,w)=>({d:s.d+w.dist,m:s.m+w.mov}),{d:0,m:0}),med=tot.d?tot.m/tot.d*1000:null,best=vv.length?Math.min(...vv):null;
+    const a=W.slice(-5,-1).reduce((s,w)=>({d:s.d+w.dist,m:s.m+w.mov}),{d:0,m:0}),b=W.slice(-9,-5).reduce((s,w)=>({d:s.d+w.dist,m:s.m+w.mov}),{d:0,m:0}),pa=a.d?a.m/a.d*1000:null,pb=b.d?b.m/b.d*1000:null,dif=pa&&pb?pa-pb:null;
+    const ins=dif==null?'Com mais semanas de corrida o app mostra a sua evolução de ritmo.':dif<-3?`O seu ritmo médio ficou ${Math.round(-dif)} s/km mais rápido nas últimas 4 semanas. Lembre que o ritmo médio também muda com o tipo de treino (longões e rodagens puxam para baixo).`:dif>3?`O ritmo médio ficou ${Math.round(dif)} s/km mais lento nas últimas 4 semanas. Pode ser mais treino leve, calor ou cansaço: veja a disposição e o equilíbrio.`:'O seu ritmo médio está estável nas últimas semanas.';
+    return {tit:'Ritmo médio',html:`${dkTabs('ritmo',[['12','3 meses'],['26','6 meses'],['52','1 ano']],r)}
+      <div class="dkhero2"><small>Ritmo médio no período</small><strong>${med?fmtP(med):'--'} <em>/km</em></strong>${dif!=null?dkPill(dif,Math.abs(Math.round(dif))+' s/km nas últimas 4 semanas',false):''}</div>
+      ${dkGraf({tipo:'linha',v,cor:'#34c759',inv:true,lab:dkMesLab(W),fy:fmtP,tip:i=>{const w=W[i];return dkTip(dkSemTxt(w),'#34c759',v[i]?fmtP(v[i])+' /km':'sem corridas',w.n?`${dkF1(w.dist/1000)} km · ${w.n} ${w.n===1?'corrida':'corridas'}`:'')}})}
+      <p class="meta dkleg">Quanto mais alto, mais rápido.</p>${dkStats([['Média',med?fmtP(med)+'/km':'--'],['Semana mais rápida',best?fmtP(best)+'/km':'--'],['Distância',dkF1(tot.d/1000)+' km']])}${dkIns(ins,'ritmo')}`}}},
+  // previsões de prova
+  prev:{pad:'10000|90',fn:r=>{const [ds,dr]=r.split('|'),dist=+ds,dias=+dr,passo=dias<=30?3:dias<=90?7:14,Sr=dkPrevSerie(dist,dias,passo),v=Sr.map(s=>s.t),ok=v.filter(x=>x),cur=ok[ok.length-1],ini=ok[0];
+    const DIS=[[5000,'5 km'],[10000,'10 km'],[21097.5,'Meia'],[42195,'Maratona']],nome=(DIS.find(x=>x[0]===dist)||[0,''])[1],Vn=dkVEm(ymd(TODAY()));
+    const chips=`<div class="dkchip">${DIS.map(([d,t])=>`<button class="${d===dist?'on':''}" onclick="dkAbre('prev','${d}|${dias}')">${t}</button>`).join('')}</div>`;
+    const atuais=Vn?DIS.map(([d,t])=>{const tt=predict(Vn,d);return `<div class="mrow" onclick="dkAbre('prev','${d}|${dias}')"><div class="mt"><b>${t==='Meia'?'Meia maratona':t}</b><span>${fmtP(tt/d*1000)} /km</span></div><span class="mv">${fmtT(tt)}</span></div>`}).join(''):'';
+    const head=cur?`<div class="dkhero2"><small>${nome} · previsão atual</small><strong>${fmtT(cur)} <em>${fmtP(cur/dist*1000)} /km</em></strong>${ini&&cur!==ini?dkPill(cur-ini,fmtT(Math.abs(cur-ini))+(dias<=30?' no último mês':dias<=90?' em 3 meses':' em 6 meses'),false):''}</div>`:'';
+    return {tit:'Previsões de prova',html:`${chips}${head}${ok.length?dkGraf({tipo:'linha',v,cor:'#4a9eff',inv:true,lab:dkDiaLab(Sr.map(s=>s.ds)),fy:x=>fmtT(x),tip:i=>dkTip(fmtD(Sr[i].ds),'#4a9eff',Sr[i].t?fmtT(Sr[i].t):'sem dado',Sr[i].t?fmtP(Sr[i].t/dist*1000)+' /km':'')}):'<p class="empty" style="margin:18px 0">Corra pelo menos 1,5 km ou faça o teste de 1 km para o app prever as suas provas.</p>'}
+      ${dkTabs('prev',[[ds+'|30','1 mês'],[ds+'|90','3 meses'],[ds+'|180','6 meses']],r)}
+      ${atuais?`<h4 class="dkh4">Previsões atuais</h4><div class="card" style="padding:2px 12px">${atuais}</div>`:''}
+      ${dkIns('A previsão usa o seu melhor esforço dos últimos 90 dias (ou o teste de 1 km, se foi feito nesse período) e a tabela de VDOT. Ela mostra do que você é capaz bem descansado, em percurso plano.','prev')}`}}},
+  // condicionamento (forma, fadiga e equilíbrio)
+  forma:{pad:'30',fn:r=>{const dias=+r,S=pmc().slice(-dias-1),c=S[S.length-1],a=S[0],dif=c.ctl-a.ctl,pc=a.ctl>0.5?Math.round(dif/a.ctl*100):null;
+    const per=dias<=30?'nos últimos 30 dias':dias<=90?'nos últimos 3 meses':dias<=180?'nos últimos 6 meses':'no último ano';
+    return {tit:'Condicionamento',html:`<p class="meta" style="margin:-4px 0 12px">O seu treino e a sua recuperação acumulados ao longo do tempo.</p>${dkTabs('forma',[['30','1 mês'],['90','3 meses'],['180','6 meses'],['365','1 ano']],r)}
+      <div class="dkhero2"><small>Forma (condicionamento) ${per}</small><strong>${Math.round(c.ctl)} <em>pts</em></strong>${dkPill(dif,(pc!=null&&Math.abs(pc)<1000?Math.abs(pc)+'% · ':'')+(dif>0?'+':'−')+Math.abs(dif).toFixed(0)+' pts')}</div>
+      ${dkGraf({tipo:'linha',v:S.map(s=>s.ctl),v2:S.map(s=>s.atl),cor:'#ff7a2f',cor2:'#e0442f',zero:true,lab:dkDiaLab(S.map(s=>s.d)),fy:x=>Math.round(x),tip:i=>dkTip(dkDM(S[i].d),'#ff7a2f','Forma '+Math.round(S[i].ctl),'Fadiga '+Math.round(S[i].atl)+' · Equilíbrio '+sgn(S[i].tsb).replace('.',','))})}
+      <p class="meta dkleg"><i class="dkl" style="background:#ff7a2f"></i> Forma <i class="dkl tr" style="border-color:#e0442f"></i> Fadiga</p>
+      ${dkStats([['Forma',Math.round(c.ctl)],['Fadiga',Math.round(c.atl)],['Equilíbrio',sgn(c.tsb).replace('.',',')]])}
+      ${dkIns(esc(tsbTxt(c.tsb))+' A forma sobe devagar com semanas de treino; a fadiga sobe rápido depois de treinos fortes e cai com descanso.','forma')}`}}},
+  // esforço da semana (carga) com o intervalo
+  esf:{pad:'12',fn:r=>{const n=+r,W=dkSemanas(n+3),F=W.map((w,i)=>dkFaixa(W,i)).slice(3),V=W.slice(3),cur=V[V.length-1],fc=F[F.length-1],ant=V[V.length-2];
+    const m0=ymd(monday(TODAY())),ativ=D.acts.filter(a=>a.date.slice(0,10)>=m0).sort((x,y)=>x.date<y.date?1:-1);
+    const lista=ativ.length?ativ.map(a=>`<div class="mrow" onclick="openAct('${a.id}')"><div class="mt"><b>${esc(a.name||'Atividade')}</b><span>${dataLonga(a.date)}</span></div><span class="mv" style="color:#c99bff">${Math.round(loadOf(a))}</span></div>`).join(''):'<p class="empty" style="margin:8px 0">Nenhuma atividade nesta semana ainda.</p>';
+    const txt=!fc?'Ainda não há semanas suficientes para montar o seu intervalo.':cur.load<fc[0]&&dkSemAnd()?`A semana ainda está em andamento: até agora são ${Math.round(cur.load)} pts. O seu intervalo normal vai de ${fc[0]} a ${fc[1]}.`:cur.load<fc[0]?`O seu esforço desta semana está abaixo do normal para você. Se estiver em recuperação, ótimo: tente ficar abaixo de ${fc[1]}.`:cur.load>fc[1]?'O esforço desta semana passou do seu intervalo. Pode ser hora de um dia leve para o corpo absorver o treino.':'O esforço desta semana está dentro do seu intervalo: treino e descanso equilibrados.';
+    return {tit:'Esforço semanal',html:`${dkTabs('esf',[['12','3 meses'],['26','6 meses'],['52','1 ano']],r)}
+      <div class="dkhero2"><small>Esta semana · ${dkSemTxt(cur)}</small><strong>${Math.round(cur.load)} <em>pts</em></strong><em class="dkd neu">${dkFaixaTxt(cur.load,fc,dkSemAnd())}${fc?' ('+fc[0]+'–'+fc[1]+')':''}</em></div>
+      ${dkGraf({tipo:'bar',v:V.map(w=>w.load),faixa:F,cor:'#b06cff',op:.6,lab:dkMesLab(V),fy:x=>Math.round(x),tip:i=>{const w=V[i],f=F[i];return dkTip(dkSemTxt(w),'#b06cff',Math.round(w.load)+' pts',f?dkFaixaTxt(w.load,f)+' ('+f[0]+'–'+f[1]+')':'')}})}
+      <p class="meta dkleg"><i class="dkl" style="background:rgba(176,108,255,.3)"></i> seu intervalo (média das 3 semanas anteriores)${ant?' · semana passada: '+Math.round(ant.load):''}</p>
+      ${dkIns(txt,'esf')}<h4 class="dkh4">Atividades desta semana</h4><div class="card" style="padding:2px 12px">${lista}</div>
+      <p class="meta" style="margin-top:8px">O esforço de cada atividade vem da duração e da frequência cardíaca (carga do Intervals).</p>`}}},
+  // zonas de FC
+  zona:{pad:'30',fn:r=>{const dias=+r,Z=dkZonas(dias),A=dkZonas(dias,dias),p=Z.tz.map(s=>Z.tot?s/Z.tot:0),pa=A.tz.map(s=>A.tot?s/A.tot:0),top=p.indexOf(Math.max(...p)),dif=A.tot?Math.round((p[top]-pa[top])*100):null;
+    const per=dias<=7?'últimos 7 dias':dias<=30?'último mês':dias<=90?'últimos 3 meses':'últimos 6 meses',ini=ymd(addD(TODAY(),-dias+1));
+    const barras=[4,3,2,1,0].map(z=>`<div class="dkzr"><span class="dkzl">Z${z+1}</span><div class="dkzb"><i style="width:${Math.max(1.5,p[z]*100/Math.max(...p,.01)*.8).toFixed(1)}%;background:${DK_ZC[z]}"></i><b>${Math.round(p[z]*100)}%</b></div><span class="dkzf">${dkZFaixa(z,Z.mx)}</span></div>`).join('');
+    return {tit:'Zonas de FC',html:Z.tot?`<div class="dkhero2"><small>${dkDM(ini)} – hoje</small><strong>${Math.round(p[top]*100)}% <em>em Zona ${top+1}</em></strong>${dif?`<em class="dkd neu">${dif>0?'▲':'▼'} ${Math.abs(dif)}% vs período anterior</em>`:''}</div>
+      <div class="dkz">${barras}</div>${dkTabs('zona',[['7','7 dias'],['30','1 mês'],['90','3 meses'],['180','6 meses']],r)}
+      ${dkStats([['Tempo com FC',dkHm(Z.tot)],['FC máxima usada',Z.mx+' bpm'],['Período',per]])}${dkIns(dkZTxt(p),'zona')}
+      <p class="meta" style="margin-top:8px">Zonas pela FC máxima (como no Garmin): Z1 até 60%, Z2 60–70%, Z3 70–80%, Z4 80–90%, Z5 acima de 90%.</p>`
+      :`${dkTabs('zona',[['7','7 dias'],['30','1 mês'],['90','3 meses'],['180','6 meses']],r)}<p class="empty" style="margin:18px 0">Sem corridas com frequência cardíaca neste período.</p>`}}},
+  // atividades do mês (acumulado do mês contra o mês passado)
+  mes:{pad:'dist',fn:r=>{const h=TODAY(),m0=new Date(h.getFullYear(),h.getMonth(),1),mp=new Date(h.getFullYear(),h.getMonth()-1,1),dm=d=>new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    const acum=(ini,ate)=>{const c=Array(31).fill(null),dia=Array(31).fill(0);for(const a of D.acts){if(!isRun(a))continue;const d=parseD(a.date.slice(0,10));if(d.getFullYear()!==ini.getFullYear()||d.getMonth()!==ini.getMonth())continue;dia[d.getDate()-1]+=r==='tempo'?(a.mov||0)/3600:(a.dist||0)/1000}let s=0;for(let i=0;i<ate;i++){s+=dia[i];c[i]=s}return c};
+    const v=acum(m0,h.getDate()),v2=acum(mp,dm(mp)),fv=x=>r==='tempo'?dkHm(x*3600):dkF1(x)+' km',cur=v[h.getDate()-1]||0,tp=v2[dm(mp)-1]||0,mesmo=v2[Math.min(h.getDate(),dm(mp))-1]||0,dif=cur-mesmo;
+    const nomeM=d=>['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][d.getMonth()];
+    return {tit:'Atividades do mês',html:`${dkTabs('mes',[['dist','Distância'],['tempo','Tempo']],r)}
+      <div class="dkhero2"><small>${nomeM(m0)[0].toUpperCase()+nomeM(m0).slice(1)} até hoje</small><strong>${fv(cur)}</strong>${dkPill(dif,fv(Math.abs(dif))+' vs o mesmo dia de '+nomeM(mp))}</div>
+      ${dkGraf({tipo:'linha',v,v2,cor:'#4a9eff',cor2:'#7d8995',zero:true,lab:[{i:0,t:'1'},{i:9,t:'10'},{i:19,t:'20'},{i:30,t:'31'}],fy:x=>r==='tempo'?Math.round(x)+' h':Math.round(x)+' km',tip:i=>dkTip('Dia '+(i+1),'#4a9eff',v[i]!=null?'Este mês: '+fv(v[i]):'Este mês: --',v2[i]!=null?'Mês passado: '+fv(v2[i]):'')})}
+      <p class="meta dkleg"><i class="dkl" style="background:#4a9eff"></i> ${nomeM(m0)} <i class="dkl tr" style="border-color:#7d8995"></i> ${nomeM(mp)} (total ${fv(tp)})</p>
+      ${(()=>{const RA=D.acts.filter(a=>isRun(a)&&a.date.slice(0,7)===ymd(h).slice(0,7)),RP=D.acts.filter(a=>isRun(a)&&a.date.slice(0,7)===ymd(mp).slice(0,7)),dias=dm(m0),proj=h.getDate()>=5?cur/h.getDate()*dias:null;
+        return dkStats([['Corridas',RA.length+' <small style="font-size:12px;color:var(--dim);font-weight:500">('+RP.length+' em '+nomeM(mp)+')</small>'],['Por corrida',RA.length?fv(cur/RA.length):'--'],['Projeção do mês',proj!=null?fv(proj):'--']])
+          +dkIns(proj!=null?`No ritmo atual, você fecha ${nomeM(m0)} com cerca de ${fv(proj)}${tp?`, ${proj>=tp?'acima':'abaixo'} dos ${fv(tp)} de ${nomeM(mp)}`:''}.`:'Com mais alguns dias de mês o app projeta o seu total.','mes')})()}`}}},
+  // constância (mapa de calor)
+  cons:{pad:'12',fn:r=>{const n=+r,W=dkSemanas(n),dia={};D.acts.forEach(a=>{if(!isRun(a))return;const d=a.date.slice(0,10);dia[d]=(dia[d]||0)+(a.dist||0)});const hoje=ymd(TODAY());let cel='',dc=0;
+    W.forEach(w=>{for(let i=0;i<7;i++){const d=ymd(addD(w.ini,i)),v=(dia[d]||0)/1000,fut=d>hoje;if(v>0)dc++;const nv=v<=0?0:v<5?1:v<10?2:v<16?3:4;cel+=`<i class="hm${fut?' fu':''}" data-n="${nv}" title="${fmtD(d)}: ${dkF1(v)} km"></i>`}});
+    const sc=W.filter(w=>w.n>0).length,seq=(()=>{let s=0;for(let i=W.length-1;i>=0;i--){if(W[i].n>0)s++;else if(i===W.length-1)continue;else break}return s})();
+    return {tit:'Constância',html:`${dkTabs('cons',[['12','3 meses'],['26','6 meses']],r)}
+      <div class="dkhero2"><small>Dias com corrida</small><strong>${dc} <em>em ${n} semanas</em></strong></div>
+      <div class="hmg" style="grid-template-columns:repeat(${n},1fr);gap:${n>12?3:4}px;margin-top:12px">${cel}</div><p class="meta" style="margin:6px 0 0">Cada coluna é uma semana (de segunda a domingo, de cima para baixo).</p>
+      <div class="row meta" style="gap:6px;margin-top:8px;align-items:center"><span>menos</span>${[0,1,2,3,4].map(k=>`<i class="hm" data-n="${k}" style="width:12px;height:12px;display:inline-block"></i>`).join('')}<span>mais</span></div>
+      ${dkStats([['Semanas com corrida',sc+' de '+n],['Corridas por semana',dkF1(W.reduce((s,w)=>s+w.n,0)/n)],['Semanas seguidas',seq]])}
+      ${dkIns('Correr com regularidade vale mais do que treinos longos de vez em quando. Tente manter pelo menos 3 dias de corrida por semana.','cons')}`}}}
+};
+window.dkAbre=(k,r)=>{const f=DKD[k];if(!f)return;const sb=$('#sbox');if(!DKS._detalhe&&sb)DKS._top=sb.scrollTop;DKS._detalhe=1;DKS[k]=r||DKS[k]||f.pad;let o;try{o=f.fn(DKS[k])}catch(e){o={tit:'Desempenho',html:'<p class="empty">Não consegui montar esta página agora.</p>'}}
+  openSheet(`<div class="hd"><b>${o.tit}</b><button class="b sm" onclick="closeSheet()">✕</button></div><div class="dkpg">${o.html}<div style="height:24px"></div></div>`,1);
+  const bt=$('#sbox .shfx button');if(bt){bt.removeAttribute('onclick');bt.onclick=e=>{e.preventDefault();dkVolta()}}}; // a seta de voltar leva de volta ao painel
+window.dkVolta=()=>{DKS._detalhe=0;openDesempenho();const sb=$('#sbox');if(sb&&DKS._top)setTimeout(()=>{sb.scrollTop=DKS._top},0)};
+
+/* ---------- painel de Desempenho ---------- */
+window.openDesempenho=()=>{DKS._detalhe=0;
+  const S=pmc(),cur=S[S.length-1],W12=dkSemanas(12),sem=W12[W12.length-1],m0=ymd(monday(TODAY())),hoje=ymd(TODAY());
+  // esta semana: números e as últimas 12 semanas
+  const lab12=dkMesLab(W12);
+  const hero=`<div class="card dk dkhero"><div class="dkh"><b>Esta semana</b><span class="dkp">${dkSemTxt(sem)}</span></div>
+    ${dkStats([['Distância',dkF1(sem.dist/1000)+' km'],['Tempo',sem.mov?dkHm(sem.mov):'0 min'],['Elevação',Math.round(sem.elev)+' m']])}
+    <p class="meta" style="margin:14px 0 2px">Últimas 12 semanas</p>
+    ${dkGraf({tipo:'linha',v:W12.map(w=>w.dist/1000),cor:'#4a9eff',zero:true,h:150,lab:lab12,fy:x=>Math.round(x)+' km',tip:i=>{const w=W12[i];return dkTip(dkSemTxt(w),'#4a9eff',dkF1(w.dist/1000)+' km',w.n?`${w.n} ${w.n===1?'corrida':'corridas'} · ${dkHm(w.mov)}`:'sem corridas')}})}
+    <button class="dkbtn" onclick="dkAbre('km')">Veja mais do seu progresso</button></div>`;
+  // constância: pontos desta semana e da passada
+  const dots=ini=>[0,1,2,3,4,5,6].map(i=>{const d=ymd(addD(parseD(ini),i)),c=D.acts.some(a=>isRun(a)&&a.date.slice(0,10)===d);return `<i class="${c?'on':''}${d===hoje?' hj':''}${d>hoje?' fu':''}"></i>`}).join('');
+  const mp=ymd(addD(monday(TODAY()),-7)),nD=ini=>new Set(D.acts.filter(a=>isRun(a)&&a.date.slice(0,10)>=ini&&a.date.slice(0,10)<=ymd(addD(parseD(ini),6))).map(a=>a.date.slice(0,10))).size;
+  const cCons=`<div class="card dk dkmini" onclick="dkAbre('cons')"><div class="dkh">${dkIc('cons')}<b>Constância</b><span class="dkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></div>
+    <div class="dkdl"><small>Esta semana</small><b>${nD(m0)} ${nD(m0)===1?'dia':'dias'}</b></div><div class="dkdots">${dots(m0)}</div>
+    <div class="dkdl"><small>Semana passada</small><b>${nD(mp)} ${nD(mp)===1?'dia':'dias'}</b></div><div class="dkdots">${dots(mp)}</div></div>`;
+  // plano da semana: quanto do planejado já foi feito
+  const m6=ymd(addD(monday(TODAY()),6)),PS=plan().filter(p=>p.date>=m0&&p.date<=m6&&!p.off&&(p.km||0)>0),kmP=PS.reduce((t,p)=>t+(+p.km||0),0),feitos=PS.filter(p=>status(p)==='cumprido').length,kmF=sem.dist/1000,fr=kmP?Math.min(1,kmF/kmP):0,Rr=26,Cc=2*Math.PI*Rr;
+  const cPlano=`<div class="card dk dkmini" onclick="closeSheet();go('cal')"><div class="dkh">${dkIc('plano')}<b>Seu plano</b><span class="dkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></div>
+    ${kmP?`<div class="dkring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="${Rr}" fill="none" stroke="var(--track)" stroke-width="7"/>${fr>0?`<circle cx="32" cy="32" r="${Rr}" fill="none" stroke="#4a9eff" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(Cc*fr).toFixed(1)} ${Cc.toFixed(1)}" transform="rotate(-90 32 32)"/>`:''}</svg><b>${Math.round(fr*100)}%</b></div>
+    <p class="dkrt"><b>${dkF1(kmF)} de ${dkF1(kmP)} km</b><span>${feitos} de ${PS.length} ${PS.length===1?'treino':'treinos'}</span></p>`:`<p class="empty" style="margin:10px 0 0">Sem treinos planejados nesta semana.</p>`}</div>`;
+  // previsão de 10 km
+  const P10=dkPrevSerie(10000,30,3),pv=P10.map(s=>s.t),pok=pv.filter(x=>x),pc=pok[pok.length-1],pi=pok[0];
+  const cPrev=pc?dkCard('prev','Previsões de prova','Último mês',dkCorpo('10 km',fmtT(pc),pi&&pc!==pi?dkPill(pc-pi,fmtT(Math.abs(pc-pi)),false):'',fmtP(pc/10)+' /km',dkSpark(pv,{inv:true,cor:'#4a9eff'})),"dkAbre('prev','10000|30')"):'';
+  // condicionamento
+  const S30=S.slice(-31),dF=cur.ctl-S30[0].ctl;
+  const cForma=dkCard('forma','Condicionamento','Último mês',dkCorpo('Forma',Math.round(cur.ctl),dkPill(dF,Math.abs(dF).toFixed(0)),tsbTxt(cur.tsb).split(':')[0],dkSpark(S30.map(s=>s.ctl),{cor:'#ff7a2f',zero:true})),"dkAbre('forma','30')");
+  // esforço da semana
+  const WE=dkSemanas(15),fE=dkFaixa(WE,14),eAnt=WE[13];
+  const cEsf=dkCard('esf','Esforço semanal','Esta semana',dkCorpo('Pontuação',Math.round(sem.load),`<em class="dkd neu">${dkFaixaTxt(sem.load,fE,dkSemAnd()).replace(' do intervalo','').replace('Semana em andamento','Em andamento')}</em>`,'Semana passada: '+Math.round(eAnt.load)+(fE?' · intervalo '+fE[0]+'–'+fE[1]:''),dkSpark(WE.slice(-8).map(w=>w.load),{bar:1,cor:'#b06cff'})),"dkAbre('esf','12')");
+  // zonas de FC no último mês
+  const Z=dkZonas(30),zp=Z.tz.map(s=>Z.tot?s/Z.tot:0),zt=zp.indexOf(Math.max(...zp)),ZA=dkZonas(30,30),zpa=ZA.tz.map(s=>ZA.tot?s/ZA.tot:0),zd=ZA.tot?Math.round((zp[zt]-zpa[zt])*100):0;
+  const zmini=`<div class="dkzm">${[4,3,2,1,0].map(z=>`<i style="width:${Math.max(6,zp[z]/Math.max(...zp,.01)*100).toFixed(0)}%;background:${z===zt?DK_ZC[z]:'#3a4049'}"></i>`).join('')}</div>`;
+  const cZona=Z.tot?dkCard('zona','Zonas de FC','Último mês',dkCorpo('A maior parte do tempo',Math.round(zp[zt]*100)+'% na Z'+(zt+1),zd?`<em class="dkd neu">${zd>0?'▲':'▼'} ${Math.abs(zd)}%</em>`:'','',zmini),"dkAbre('zona','30')"):'';
+  // melhores marcas (as 3 mais relevantes)
+  const MT=marcasTodas(),dm=[[1000,'1 km'],[5000,'5 km'],[10000,'10 km'],[1609.34,'1 milha'],[3000,'3 km'],[21097.5,'21 km']].filter(([d])=>MT[d]&&MT[d].length).slice(0,3);
+  const cMarca=dm.length?`<div class="card dk" onclick="closeSheet();openMarcas()"><div class="dkh">${dkIc('marca')}<b>Melhores marcas</b><span class="dkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></div><div class="dkmm">${dm.map(([d,n])=>`<div>${medalha(1,'RP')}<span>${n}</span><b>${fmtT(MT[d][0].t)}</b><small>${fmtD(String(MT[d][0].date).slice(0,10))}</small></div>`).join('')}</div></div>`:'';
+  // ritmo médio
+  const RP=W12.map(w=>w.dist>500?w.mov/w.dist*1000:null),a4=W12.slice(-5,-1).reduce((s,w)=>({d:s.d+w.dist,m:s.m+w.mov}),{d:0,m:0}),b4=W12.slice(-9,-5).reduce((s,w)=>({d:s.d+w.dist,m:s.m+w.mov}),{d:0,m:0}),ra=a4.d?a4.m/a4.d*1000:null,rb=b4.d?b4.m/b4.d*1000:null;
+  const cRitmo=ra?dkCard('ritmo','Ritmo médio','Últimas 4 semanas',dkCorpo('Por km',fmtP(ra),rb?dkPill(ra-rb,Math.abs(Math.round(ra-rb))+' s',false):'',rb?'4 semanas antes: '+fmtP(rb):'',dkSpark(RP,{inv:true,cor:'#34c759'})),"dkAbre('ritmo','12')"):'';
+  // atividades do mês
+  const h=TODAY(),mesA=D.acts.filter(a=>isRun(a)&&a.date.slice(0,7)===ymd(h).slice(0,7)),mesP=D.acts.filter(a=>isRun(a)&&a.date.slice(0,7)===ymd(new Date(h.getFullYear(),h.getMonth()-1,15)).slice(0,7));
+  const tA=mesA.reduce((s,a)=>s+(a.mov||0),0),tP=mesP.reduce((s,a)=>s+(a.mov||0),0),cum=(L,ate)=>{const d=Array(ate).fill(0);L.forEach(a=>{const k=+a.date.slice(8,10)-1;if(k<ate)d[k]+=(a.mov||0)});let s=0;return d.map(x=>s+=x)};
+  const cMes=dkCard('mes','Atividades do mês','Este mês',dkCorpo('Tempo',dkHm(tA),'','Mês passado: '+dkHm(tP),dkSpark(cum(mesA,h.getDate()),{cor:'#4a9eff',v2:cum(mesP,31).slice(0,31),zero:true,area:false})),"dkAbre('mes','tempo')");
+  // destaques
+  const runs=D.acts.filter(isRun),W26=dkSemanas(26),maiorD=[...runs].sort((a,b)=>(b.dist||0)-(a.dist||0))[0],rap=[...runs].filter(r=>r.dist>=5000&&r.mov).sort((a,b)=>a.mov/a.dist-b.mov/b.dist)[0],sub=[...runs].filter(r=>r.elev).sort((a,b)=>b.elev-a.elev)[0],melS=[...W26].sort((a,b)=>b.dist-a.dist)[0];
   const dtc=r=>fmtD(r.date.slice(0,10))+' · '+esc(r.name||'');
-  const melhores=[maiorD?linhaI(icoC('prova'),'Corrida mais longa',dtc(maiorD),km(maiorD.dist).replace('.',',')+' km',`openAct('${maiorD.id}')`):'',rap?linhaI(icoC('vo2'),'Mais rápida (5 km ou mais)',dtc(rap),fmtP(rap.mov/rap.dist*1000)+'/km',`openAct('${rap.id}')`):'',sub&&sub.elev>=30?linhaI(icoC('forma'),'Maior subida',dtc(sub),Math.round(sub.elev)+' m',`openAct('${sub.id}')`):'',melS&&melS.dist>0?linhaI(icoC('cal'),'Melhor semana','Semana de '+melS.ini.getDate()+'/'+(melS.ini.getMonth()+1),f1(melS.dist/1000)+' km'):''].filter(Boolean).join('');
-  // recordes e projeção
-  const BM=bests(0),rec=[[1000,'1 km','1K','#25cbb8'],[3000,'3 km','3K','#34c77b'],[5000,'5 km','5K','#34c77b'],[10000,'10 km','10K','#4a9eff'],[21097.5,'Meia maratona','21K','#8f7bff']].filter(([d])=>BM[d]).map(([d,n,ic,c])=>linhaI(icoDist(ic,c),n,fmtD(BM[d].date.slice(0,10)),fmtT(BM[d].t),`openAct('${BM[d].id}')`)).join('');
-  const proj=V?[[5000,'5K','5 km'],[10000,'10K','10 km'],[21097.5,'21K','Meia maratona'],[42195,'42K','Maratona']].map(([d,ic,n])=>{const t=predict(V.v,d);return linhaI(icoDist(ic,{'5K':'#34c77b','10K':'#4a9eff','21K':'#8f7bff','42K':'#f0b72f'}[ic]),n,fmtP(t/d*1000)+' /km',fmtT(t))}).join(''):'';
-  openSheet(`<div class="hd"><b>Desempenho</b><button class="b sm" onclick="closeSheet()">✕</button></div>
-  <div class="dpsec"><h3>Resumo</h3>${resumo}</div>
-  <div class="dpsec"><h3>Km por semana</h3>${barras}</div>
-  <div class="dpsec"><h3>Ritmo médio por semana</h3>${ritmo}</div>
-  <div class="dpsec"><h3>Constância</h3>${calor}</div>
-  <div class="dpsec"><h3>Forma e fadiga <small>90 dias</small></h3>${pmcSvg(S,90)}<p class="meta" style="margin-top:6px">${esc(tsbTxt(cur.tsb))}</p></div>
-  ${melhores?`<div class="dpsec"><h3>Melhores treinos</h3><div class="card" style="padding:4px 12px">${melhores}</div></div>`:''}
-  ${rec?`<div class="dpsec"><h3>Recordes pessoais</h3><div class="card" style="padding:4px 12px">${rec}</div></div>`:''}
-  ${proj?`<div class="dpsec"><h3>Projeção de prova <small>VDOT ${V.v.toFixed(1)}</small></h3><div class="card" style="padding:4px 12px">${proj}</div></div>`:''}
-  <div style="height:20px"></div>`,1)};
+  const dest=[maiorD?linhaI(icoC('prova'),'Corrida mais longa',dtc(maiorD),km(maiorD.dist).replace('.',',')+' km',`openAct('${maiorD.id}')`):'',rap?linhaI(icoC('vo2'),'Mais rápida (5 km ou mais)',dtc(rap),fmtP(rap.mov/rap.dist*1000)+'/km',`openAct('${rap.id}')`):'',sub&&sub.elev>=30?linhaI(icoC('forma'),'Maior subida',dtc(sub),Math.round(sub.elev)+' m',`openAct('${sub.id}')`):'',melS&&melS.dist>0?linhaI(icoC('cal'),'Melhor semana (6 meses)',dkSemTxt(melS),dkF1(melS.dist/1000)+' km'):''].filter(Boolean).join('');
+  openSheet(`<div class="hd"><b>Desempenho</b><button class="b sm" onclick="closeSheet()">✕</button></div><div class="dkpg">
+    ${hero}<div class="dkg2">${cCons}${cPlano}</div>${cPrev}${cForma}${cEsf}${cZona}${cMarca}${cRitmo}${cMes}
+    ${dest?`<div class="card dk" style="cursor:default"><div class="dkh">${dkIc('dest')}<b>Destaques</b></div><div style="margin-top:4px">${dest}</div></div>`:''}
+    <div style="height:24px"></div></div>`,1)};
+
 // bloquinho pequeno da página inicial (como no Garmin Connect); os detalhes abrem em tela cheia
 function treinoDurMin(p){let t=0,ok=false;for(const s of p.steps||[]){const v=String(s[1]),n=parseFloat(v.replace(',','.'))||0,rep=s[3]||1,pc=s[2]&&s[2].length?(Math.min(...s[2])+Math.max(...s[2]))/2:390;let m=null;
     const u=(v.match(/[a-zA-Z]+\s*$/)||[''])[0].trim().toLowerCase();
@@ -5261,7 +5489,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-01c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-02b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
