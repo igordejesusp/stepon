@@ -1153,11 +1153,15 @@ function readiness(dt){
   const ds=ymd(dt),w=W(ds)||{},S=pmc(),p=S.find(x=>x.d===ds)||S[S.length-1];
   const base=D.well.filter(x=>x.d<ds&&x.d>=ymd(addD(dt,-28))&&x.rhr).map(x=>x.rhr);
   const rb=base.length?base.reduce((a,b)=>a+b,0)/base.length:null;
+  // conta de 100 pontos, mais exigente: 100 só com sono longo e bom, HRV e FC em dia, corpo descansado e acordar ótimo
+  // sono 30 (quantidade, meta 8 h) + 10 (nota de sono do relógio) · HRV 15 · FC repouso 15 · equilíbrio 20 · como acordou 10
+  const hb=D.well.filter(x=>x.d<ds&&x.d>=ymd(addD(dt,-28))&&x.hrv).map(x=>x.hrv),hbm=hb.length?hb.reduce((a,b)=>a+b,0)/hb.length:null;
   let sc=0,parts=[];
-  const sl=w.sleep;const sp=sl?40*clamp(sl/(7.5*3600),0,1):24;sc+=sp;parts.push(['SONO',sl?fmtSleep(sl):'--',sp/40]);
-  let rp=22;if(w.rhr&&rb){const dl=w.rhr-rb;rp=30-clamp(dl,0,6)*5}sc+=rp;parts.push(['FC REPOUSO',w.rhr?w.rhr+(rb?(w.rhr-rb>=0?' (+':' (')+(w.rhr-rb).toFixed(0)+')':''):'--',rp/30]);
-  const tp=30*clamp((p.tsb+30)/20,0,1);sc+=tp;parts.push(['EQUILÍBRIO',(Math.round(p.tsb*10)/10||0).toFixed(1),tp/30]);
-  const ck=LS.get('ck',{})[ds];if(ck){sc+=(ck-3)*4}
+  const sl=w.sleep,sd=sl?30*clamp(sl/(8*3600),0,1):18,sq=w.ss?10*clamp((w.ss-40)/50,0,1):6;sc+=sd+sq;parts.push(['SONO',sl?fmtSleep(sl)+(w.ss?' · nota '+Math.round(w.ss):''):'--',(sd+sq)/40]);
+  let hp=10;if(w.hrv&&hbm){const dl=(w.hrv-hbm)/hbm;hp=15*clamp(1+dl*3,0,1)}sc+=hp;parts.push(['HRV',w.hrv&&hbm?Math.round(w.hrv)+' ms ('+((w.hrv-hbm)>=0?'+':'')+Math.round((w.hrv-hbm)/hbm*100)+'%)':'--',hp/15]);
+  let rp=11;if(w.rhr&&rb){const dl=w.rhr-rb;rp=15-clamp(dl,0,6)*2.5}sc+=rp;parts.push(['FC REPOUSO',w.rhr?w.rhr+(rb?(w.rhr-rb>=0?' (+':' (')+(w.rhr-rb).toFixed(0)+')':''):'--',rp/15]);
+  const tp=20*clamp((p.tsb+30)/25,0,1);sc+=tp;parts.push(['EQUILÍBRIO',(Math.round(p.tsb*10)/10||0).toFixed(1),tp/20]);
+  const ck=LS.get('ck',{})[ds];sc+=ck?(ck-1)*2.5:5;
   sc=Math.round(clamp(sc,0,100));
   return {sc,parts,st:gen(sc>=75?'ÓTIMO':sc>=50?'BOM':'BAIXO'),cls:sc>=75?'ok':sc>=50?'warn':'bad',w,rb,p};
 }
@@ -1910,11 +1914,12 @@ window.acceptAdj=ds=>{const p=planOn(ds),a=adjust(p,readiness(TODAY()));if(!a)re
 
 /* ================= explicações ================= */
 const HELP={
-  disp:['DISPOSIÇÃO',`<p>Nota de <b>0 a 100</b> de como o seu corpo está para treinar hoje. Ela junta quatro coisas:</p>
-  <p><b>Sono</b> da última noite, com meta de 7h30. Dormir menos baixa a nota.</p>
-  <p><b>FC de repouso</b> comparada com a sua média de 28 dias. Se ela acordar mais alta que o normal, costuma ser cansaço, estresse ou doença chegando.</p>
-  <p><b>Equilíbrio</b> entre o treino acumulado e o descanso (veja o ? da Condição atual).</p>
-  <p><b>Como você acordou</b>, a nota de 1 a 5 que você toca de manhã.</p>
+  disp:['DISPOSIÇÃO',`<p>Nota de <b>0 a 100</b> de como o seu corpo está para treinar hoje. Ela é exigente: 100 só vem quando tudo está em dia. Ela junta cinco coisas:</p>
+  <p><b>Sono</b> (40 pontos): a quantidade da última noite, com meta de 8 h, e a nota de sono do seu relógio.</p>
+  <p><b>HRV</b> (15): a variação entre os batimentos, comparada com a sua média de 28 dias. Abaixo do normal costuma ser cansaço, estresse ou doença chegando.</p>
+  <p><b>FC de repouso</b> (15): comparada com a sua média de 28 dias. Mais alta que o normal indica cansaço.</p>
+  <p><b>Equilíbrio</b> (20): entre o treino acumulado e o descanso (veja o ? da Condição atual).</p>
+  <p><b>Como você acordou</b> (10): a nota de 1 a 5 que você toca de manhã. Sem nota, conta o meio do caminho.</p>
   <p><b>75 ou mais ({ótimo}):</b> pode fazer o treino forte.<br><b>50 a 74 ({bom}):</b> treino normal, sem forçar.<br><b>Abaixo de 50 ({baixo}):</b> dia leve ou descanso. O Coach propõe um ajuste e você decide.</p>`],
   carga:['CONDIÇÃO ATUAL',`<p>Cada treino gera uma <b>carga</b>, calculada pela duração e pela frequência cardíaca. Com ela o app acompanha três números:</p>
   <p><b>Forma (CTL):</b> a média da carga das últimas 6 semanas. É o condicionamento que você construiu. Sobe devagar e cai devagar.</p>
@@ -5085,7 +5090,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-30b'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-30c'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
