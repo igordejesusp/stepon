@@ -1942,7 +1942,7 @@ const fmtClk=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/
 function scrubWrap(inner,o,cls,st){const id='ch'+(++CHN);CHR[id]=o;return `<div class="aw ${cls||''}" data-ch="${id}" style="${st||''}">${inner}<div class="acur"></div><div class="atip"></div></div>`}
 function areaChart(o){ // o:{v,t,color,top:'min'|'max',steps,avg,fv,unit,label}
   const n=o.v.length,vs=o.v.filter(x=>x!=null).sort((a,b)=>a-b);if(n<4||!vs.length)return '';
-  let lo=vs[Math.floor(vs.length*.02)],hi=vs[Math.min(vs.length-1,Math.ceil(vs.length*.98)-1)];
+  let lo=o.full?vs[0]:vs[Math.floor(vs.length*.02)],hi=o.full?vs[vs.length-1]:vs[Math.min(vs.length-1,Math.ceil(vs.length*.98)-1)]; // full: usa o menor e o maior valor de verdade (ritmo), sem cortar os extremos
   const stp=o.steps.find(s=>(hi-lo)/s<=5)||o.steps[o.steps.length-1];lo=Math.floor(lo/stp)*stp;hi=Math.ceil(hi/stp)*stp;if(hi<=lo)hi=lo+stp;
   const fr=v=>clamp(o.top==='min'?(v-lo)/(hi-lo):(hi-v)/(hi-lo),0,1),H=200,W=600;
   let last=vs[0],a=o.v.map(x=>{if(x!=null)last=x;return last});
@@ -3115,9 +3115,10 @@ function actCorpo(a,x,pace,am){
   <div class="sstx" hidden>${sst([['FC máxima',a.hrmax?a.hrmax+' bpm':'--'],...(am?[]:[['Carga',String(Math.round(loadOf(a)))]]),['Deriva FC',x.dec!=null?String(x.dec).replace('.',',')+'%':'--']])}</div>
   <button class="smore" onclick="const e=this.previousElementSibling;e.hidden=!e.hidden;this.classList.toggle('on',!e.hidden);this.firstChild.textContent=e.hidden?'Mais estatísticas':'Menos estatísticas'">Mais estatísticas<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>`;
   if(x.chart&&x.chart.p.length>3){const ch=x.chart,len=ch.p.length,TT=ch.t&&ch.t.length===len?ch.t:ch.p.map((_,i)=>Math.round((i+1)/len*(a.mov||len)));
-    const P=ch.p.map(v=>v&&v<600?v:null),pv=P.filter(Boolean).sort((u,w)=>u-w),hv=ch.h.filter(Boolean),pAvg=pace&&pace<600?pace:null;
-    if(pv.length>3)h+=`<div class="sec">RITMO</div>${areaChart({v:P,t:TT,color:'#4a9eff',top:'min',steps:[10,15,20,30,60],avg:pAvg,fv:fmtP,unit:'/km',label:'Ritmo'})}
-    ${sst([['Média',fmtP(pace)],['Mais rápido',fmtP(pv[Math.floor(pv.length*.02)])],['Mais lento',fmtP(pv[Math.min(pv.length-1,Math.ceil(pv.length*.98)-1)])]],3)}`;
+    // ritmo como no Garmin Connect: parado ou andando devagar desce até o fim do gráfico (teto de 15:00/km) em vez de sumir; e o piso de 2:20/km corta só picos de GPS
+    const CAPP=900,P=ch.p.map(v=>v==null||!(v>0)?CAPP:clamp(v,140,CAPP)),pv=P.filter(v=>v<CAPP).sort((u,w)=>u-w),hv=ch.h.filter(Boolean),pAvg=pace&&pace<CAPP?pace:null;
+    if(pv.length>3)h+=`<div class="sec">RITMO</div>${areaChart({v:P,t:TT,color:'#4a9eff',top:'min',steps:[10,15,20,30,60,120,180],avg:pAvg,fv:fmtP,unit:'/km',label:'Ritmo',full:1})}
+    ${sst([['Média',fmtP(pace)],['Mais rápido',fmtP(pv[0])],['Mais lento',fmtP(pv[pv.length-1])]],3)}`;
     if(hv.length>3){const hs=hv.slice().sort((u,w)=>u-w);h+=`<div class="sec">FREQUÊNCIA CARDÍACA</div>${areaChart({v:ch.h,t:TT,color:'#e0442f',top:'max',steps:[5,10,20],avg:a.hr||null,fv:v=>Math.round(v),unit:'bpm',label:'Frequência cardíaca'})}
     ${sst([['Média',(a.hr||Math.round(hv.reduce((u,w)=>u+w,0)/hv.length))+' bpm'],['Máxima',(a.hrmax||hs[hs.length-1])+' bpm'],['Mínima',hs[0]+' bpm']],3)}`;
       h+=zonasFC(ch.h,TT,am&&am.mx)}
@@ -5084,7 +5085,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-11-30a'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-11-30b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
