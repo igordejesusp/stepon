@@ -817,6 +817,8 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .evrt{display:flex;flex-direction:column;align-items:flex-end}.evrt b{font-size:16px;color:var(--hi);font-variant-numeric:tabular-nums}.evrt small{font-size:11px;color:var(--dim)}.evrx{border:0;background:none;color:var(--dim);font-size:16px;padding:6px;min-width:34px;min-height:34px}
 .evdq{margin:8px 0 0}.evprm{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.evprm div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--txt)}.evprm .evmed{width:54px;height:auto}
 .evenc{background:transparent;border:1px solid rgba(224,68,47,.6);color:var(--red)}.evcta2{display:flex;flex-direction:column}
+
+.ntp-h{position:relative}.ntp-r{margin-left:auto;width:42px;height:42px;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:0;color:var(--blue)}.ntp-r svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ntp-r:disabled{opacity:.4;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -940,7 +942,11 @@ function saveCfg(){LS.set('cfg',CFG)}
 // conta ligada: pelo login do Intervals (token) ou pelo jeito antigo (ID + chave de API)
 const temConta=()=>!!(CFG.athlete&&(CFG.token||CFG.key));
 const authH=()=>CFG.token?'Bearer '+CFG.token:'Basic '+btoa('API_KEY:'+CFG.key);
-const credSrv=()=>CFG.token?{athlete:CFG.athlete,token:CFG.token}:{athlete:CFG.athlete,key:CFG.key};
+const credSrv=()=>{const c=CFG.token?{athlete:CFG.athlete,token:CFG.token}:{athlete:CFG.athlete,key:CFG.key};if(Date.now()-(+LS.get('recria',0)||0)<15*60e3)c.novo=1;return c}; // novo: login feito agora (libera uma conta que foi excluída antes)
+// a conta foi excluída em outro aparelho: este aparelho para de enviar dados, apaga o que tem e sai
+let _excRem=0;
+function contaExcluidaRemota(){if(_excRem)return;_excRem=1;const tema=localStorage.getItem('br.tema');Object.keys(localStorage).filter(k=>k.startsWith('br.')).forEach(k=>localStorage.removeItem(k));if(tema)localStorage.setItem('br.tema',tema);localStorage.setItem('br.cfg',JSON.stringify({athlete:'',key:'',token:''}));
+  try{openSheet(`<div class="hd"><b>Conta excluída</b></div><p class="empty" style="color:var(--txt)">Esta conta foi excluída em outro aparelho. Os dados deste aparelho foram apagados.</p>`,1)}catch(x){}setTimeout(()=>location.replace(redirUri()),2500)}
 
 /* ================= Intervals.icu ================= */
 const API='https://intervals.icu/api/v1';
@@ -980,6 +986,7 @@ function bkMarca(){try{localStorage.setItem('br.bkSujo','1')}catch(e){}clearTime
 async function bkEnvia(){
   if(!temConta()||RESTAURANDO)return;if(!BKPRONTO&&!+(localStorage.getItem('br.bkAt')||0))return;const dados={};for(const k of BK_CHAVES){const v=LS.get(k,undefined);if(v!==undefined&&v!==null)dados[k]=v}
   const at=Date.now(),r=await fetch(PUBURL+'/dados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'gravar',at,dados})});
+  if(r.status===410){contaExcluidaRemota();return}
   if(!r.ok)throw new Error('HTTP '+r.status);try{localStorage.setItem('br.bkAt',String(at));localStorage.removeItem('br.bkSujo')}catch(e){}
 }
 // ao entrar ou sincronizar: se o servidor tem uma cópia mais nova (outro aparelho ou app reinstalado), ela volta para cá
@@ -1150,6 +1157,19 @@ function bests(days){
 }
 // histórico dos testes: {ds, V (depois), Va (antes), d, t}; o mais recente, se tiver até 90 dias, define o condicionamento
 const vHist=()=>LS.get('vhist',[]);
+// teste de 1 km a cada 8 semanas: 8 semanas depois do último teste marca outro (no mesmo dia da semana, ou no primeiro dia livre), se o plano ainda não tiver um por perto
+function teste8Garante(){
+  const H=vHist(),u=H.length?H[H.length-1]:null;if(!u||!u.ds||!temConta())return;
+  const feito=LS.get('teste8',{});if(feito[u.ds])return;
+  const alvo=ymd(addD(parseD(u.ds),56)),hoje=ymd(TODAY());
+  if(alvo>ymd(addD(TODAY(),14)))return; // só quando faltarem até 2 semanas
+  if(plan().some(p=>p.teste&&p.date>u.ds&&Math.abs((parseD(p.date)-parseD(alvo))/864e5)<=3)){feito[u.ds]=1;LS.set('teste8',feito);return}
+  let ds=alvo<=hoje?ymd(addD(TODAY(),1)):alvo,ok=false;
+  for(let i=0;i<5;i++){const x=planOn(ds);if(!x||x.off||x.tipo==='rodagem'){ok=true;break}ds=ymd(addD(parseD(ds),1))}
+  if(!ok)return;const ex=LS.get('extra',{});if(ex[ds]&&!ex[ds].off)return;
+  const sess=sessaoLib('teste1k',PF?{a:1.5,d:1.5}:{a:2,d:2},zonesFor(curV()||40));
+  pbGuarda(ds);ex[ds]={...sess,date:ds,custom:1,criado:hoje,auto8:u.ds};LS.set('extra',ex);feito[u.ds]=1;LS.set('teste8',feito);
+  ntAdd('teste8:'+u.ds,'novo','Hora do teste de 1 km','Já se passaram 8 semanas do seu último teste. Marcamos outro para '+DOW[parseD(ds).getDay()]+' '+fmtD(ds)+', para atualizar os seus ritmos.',{go:{k:'home'},av:{k:'me'}})}
 function vTeste(){const H=vHist(),u=H.length?H[H.length-1]:null;return u&&Date.now()-parseD(u.ds)<90*864e5?u:null}
 function vAtual(){const u=vTeste();if(u)return {v:u.V,teste:u.ds,dist:u.d,t:u.t};const c=curVdot();if(c)return c;return PF?{v:PF.V,est:1}:null}
 function curVdot(){const B=bests(90);let best=null;for(const k in B){const dist=+k;if(dist<1500)continue;const v=vdot(dist,B[k].t);if(!best||v>best.v)best={v,dist,t:B[k].t}}return best}
@@ -1551,7 +1571,7 @@ const MCORL={background:'#e3e9ee',water:'#a9c6dd',waterway:'#9fc0da',landuse_res
   highway_path:'#eef2f5',highway_minor:'#f7f9fb',highway_major_casing:'#bfcad4',highway_major_inner:'#ffffff',highway_major_subtle:'#ffffff',
   highway_motorway_casing:'#aebbc7',highway_motorway_inner:'#ffffff',highway_motorway_subtle:'#ffffff',railway:'#c1cbd4',railway_minor:'#c1cbd4',railway_transit:'#c1cbd4'};
 const TEMA=()=>document.documentElement.dataset.theme==='light'?'light':'dark';
-const TM={dark:{cor:MCOR,txt:'#6b727c',halo:'#000',verde:'#0b1d11',parque:'#0e2416',sob:'#000'},light:{cor:MCORL,txt:'#5f6b77',halo:'#eef2f5',verde:'#cddfcd',parque:'#c3d8c3',sob:'#ffffff'}};
+const TM={dark:{cor:MCOR,txt:'#b3bcc7',halo:'#000',verde:'#0b1d11',parque:'#0e2416',sob:'#000'},light:{cor:MCORL,txt:'#3f4a55',halo:'#f4f7f9',verde:'#cddfcd',parque:'#c3d8c3',sob:'#ffffff'}};
 let _mlj=null;
 // mapa reserva: se o OpenFreeMap não carregar (rede, bloqueio, provedor), usa os mapas do OpenStreetMap; se nem isso, desenha só o trajeto
 let MLFB=(Date.now()-LS.get('mlfb',0))<20*60e3,_sonda=null;
@@ -1795,7 +1815,7 @@ function rIni(){
   if(!temConta()){el.innerHTML=`<div class="sec">CONFIGURAÇÃO</div><div class="card alert"><h2>Sem conexão com o Intervals.icu</h2><p class="empty">Toque no botão abaixo para entrar com a sua conta.</p>${btnEntrar('margin-top:10px')}</div>`;return}
   const t=TODAY(),ds=ymd(t),r=readiness(t),last=D.acts.find(isRun),S=pmc(),cur=S[S.length-1];
   const w=r.w,vo2=[...D.well].reverse().find(x=>x.vo2);
-  let h='';
+  let h='';const mA=h.length;
   // a conexão foi recusada (chave trocada ou acesso revogado): mostra o caminho para entrar de novo
   if(LS.get('authRuim',0))h+=CFG.token?`<div class="card alert"><div class="lbl bad">VOCÊ ENTROU EM OUTRO APARELHO</div><p class="empty" style="margin-top:4px">O Intervals só mantém um acesso ativo por vez. Como você entrou em outro aparelho, este perdeu o acesso. Toque em Reconectar para voltar a usar aqui. As suas corridas continuam todas lá.</p>${btnEntrar('margin-top:10px','Reconectar')}<p class="meta" style="margin-top:8px;line-height:1.5">Reconectar aqui desconecta o outro aparelho. Para usar dois aparelhos ao mesmo tempo, entre com o ID e a chave de API, em Mais.</p><button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`:`<div class="card alert"><div class="lbl bad">O INTERVALS NÃO ACEITOU A CONEXÃO</div><p class="empty" style="margin-top:4px">A chave ou o acesso deixou de valer. Entre de novo com a sua conta; as suas corridas continuam lá.</p>${btnEntrar('margin-top:10px')}<button class="b full" style="margin-top:8px" onclick="sairConta()">Sair da conta</button></div>`;
   if(!LS.get('guia'))h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">COMO USAR</div><p class="empty" style="margin-top:4px">Toque no <b style="color:var(--hi)">?</b> ao lado de cada título para ver o que o número significa. Os cartões de sono, VO2 e FC abrem um resumo com o histórico.</p><button class="b sm pri" style="margin-top:8px" onclick="LS.set('guia',1);render()">Entendi</button></div>`;
@@ -1812,6 +1832,8 @@ function rIni(){
   const tf=testeAchado(),tk=tf&&tf.d/1000;
   if(tf)h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">TESTE DE ${tk} KM</div>${tf.t?`<h2 style="margin-top:4px">Seu ${tk} km: ${fmtT(tf.t)}</h2><p class="empty" style="margin-top:4px">Use o resultado para ajustar os ritmos dos seus treinos.</p><button class="b sm pri" style="margin-top:8px" onclick="abrirTeste('${tf.date}',${tf.t},${tf.d})">Ver novos ritmos</button>`:`<p class="empty" style="margin-top:4px">Você fez o teste de ${fmtD(tf.date)}. Informe o tempo dos ${tk} km para ajustar os ritmos dos seus treinos.</p><button class="b sm pri" style="margin-top:8px" onclick="abrirTeste('${tf.date}',null,${tf.d})">Informar o tempo</button>`}</div>`;
   if(SIMPLES()&&!LS.get('simplesConv')&&D.acts.filter(isRun).length>=5)h+=`<div class="card cur"><div class="lbl" style="color:var(--blue)">QUER VER MAIS DETALHES?</div><p class="empty" style="margin-top:4px">Você já fez ${D.acts.filter(isRun).length} corridas. O app tem mais números, como forma, fadiga e sono, para quem quer entender o treino a fundo. Dá para mudar quando quiser, em Mais.</p><div class="row" style="margin-top:8px"><button class="b sm pri" onclick="setSimples(0)">Mostrar tudo</button><button class="b sm" onclick="LS.set('simplesConv',1);render()">Agora não</button></div></div>`;
+  // os avisos aparecem um por vez (o primeiro da fila); quando a pessoa resolve ou dispensa, o próximo aparece na vez seguinte
+  {const T=document.createElement('div');T.innerHTML=h.slice(mA);const f=T.firstElementChild;h=h.slice(0,mA)+(f?f.outerHTML:'')}
   const mU=h.length;
   // último treino
   h+=`<div class="sec">ÚLTIMO TREINO<small>${last?DOW[parseD(last.date).getDay()]+' '+last.date.slice(8,10)+'/'+last.date.slice(5,7):''}</small></div>`;
@@ -1829,7 +1851,14 @@ function rIni(){
     <div class="row meta" style="justify-content:space-between;margin-top:3px"><span>destruído</span><span>100%</span></div></div>`;
   const mC=h.length;
   // vitais (abrem o detalhe)
-  h+=`<div class="sec">VITAIS<small>TOQUE PARA VER MAIS</small></div><div class="grid g3"><button class="cell tap" onclick="openVital('sono')"><div class="lbl">Sono</div><span class="num">${fmtSleep(w.sleep)}</span><div class="meta">última noite</div></button><button class="cell tap" onclick="openVital('vo2')"><div class="lbl">VO2 Máx</div><span class="num">${vo2?vo2.vo2:'--'}</span><div class="meta">${vo2?'Garmin '+vo2.d.slice(8)+'/'+vo2.d.slice(5,7):''}</div></button><button class="cell tap" onclick="openVital('fc')"><div class="lbl">FC repouso</div><span class="num">${w.rhr||'--'}<small> bpm</small></span><div class="meta">${r.rb?'média '+r.rb.toFixed(0):''}</div></button></div>`;
+  {const cel=[];
+   if(w.sleep)cel.push(`<button class="cell tap" onclick="openVital('sono')"><div class="lbl">Sono</div><span class="num">${fmtSleep(w.sleep)}</span><div class="meta">última noite</div></button>`);
+   if(vo2)cel.push(`<button class="cell tap" onclick="openVital('vo2')"><div class="lbl">VO2 Máx</div><span class="num">${vo2.vo2}</span><div class="meta">Garmin ${vo2.d.slice(8)}/${vo2.d.slice(5,7)}</div></button>`);
+   if(w.rhr)cel.push(`<button class="cell tap" onclick="openVital('fc')"><div class="lbl">FC repouso</div><span class="num">${w.rhr}<small> bpm</small></span><div class="meta">${r.rb?'média '+r.rb.toFixed(0):''}</div></button>`);
+   const falta=[!w.sleep&&'sono',!vo2&&'VO2',!w.rhr&&'FC de repouso'].filter(Boolean),lst=x=>x.length>1?x.slice(0,-1).join(', ')+' e '+x[x.length-1]:x[0];
+   h+=`<div class="sec">VITAIS<small>${cel.length?'TOQUE PARA VER MAIS':''}</small></div>`
+     +(cel.length?`<div class="grid g3" style="grid-template-columns:repeat(${cel.length},minmax(0,1fr))">${cel.join('')}</div>`:'')
+     +(falta.length?(cel.length?`<p class="meta" style="margin:8px 2px 0">Sem dados de ${lst(falta)} hoje.</p>`:`<div class="card"><p class="empty" style="margin:0">Sem dados de ${lst(falta)} hoje. Ligue o relógio ao Intervals e sincronize para ver aqui.</p></div>`):'')}
   const mV=h.length;
   // condição
   h+=`<div class="sec"><span>CONDIÇÃO ATUAL${qb('carga')}</span><small>TREINO × DESCANSO</small></div><div class="card"><div class="grid g3"><div class="cell"><div class="lbl">Forma</div><span class="num ok">${cur.ctl.toFixed(1)}</span><div class="meta">CTL</div></div><div class="cell"><div class="lbl">Fadiga</div><span class="num bad">${cur.atl.toFixed(1)}</span><div class="meta">ATL</div></div><div class="cell"><div class="lbl">Equilíbrio</div><span class="num ${cur.tsb<-30?'bad':cur.tsb<-10?'warn':'ok'}">${sgn(cur.tsb)}</span><div class="meta">TSB</div></div></div><div style="margin-top:10px">${pmcSvg(S)}</div><p class="empty" style="margin-top:8px">${tsbTxt(cur.tsb)}</p></div>`;
@@ -1854,7 +1883,12 @@ function rIni(){
     const bD=`<div class="card blc dispc"><div class="blh"><b>Disposição</b><button class="dsa" onclick="openBlk('disp')" aria-label="Ver detalhes da disposição"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
     <div class="dsp1">${bateria(sc)}<div class="mt"><b>${r.st}</b><span>Hoje você está ${sc}%</span></div></div>
     <div class="dsq">Como você acordou hoje?</div><div class="dsf">${[1,2,3,4,5].map(n=>`<button class="${ck===n?'on':''}" onclick="checkin(${n})"><b>${n}</b><small>${CKN[n]}</small></button>`).join('')}</div></div>`;
-    const bV=blk('vit','Vitais',linhaI(icoC('sono'),'Sono',w.sleep?'Última noite':'Sem dado de hoje',fmtSleep(w.sleep),"openVital('sono')")+linhaI(icoC('fc','red'),'FC de repouso',r.rb?'Média '+r.rb.toFixed(0)+' bpm':'',(w.rhr||'--')+' bpm',"openVital('fc')")+linhaI(icoC('vo2'),'VO2 máx',vo2?'Garmin '+fmtD(vo2.d):'Sem dado',vo2?vo2.vo2:'--',"openVital('vo2')"),null);
+    const vl=[];
+    if(w.sleep)vl.push(linhaI(icoC('sono'),'Sono','Última noite',fmtSleep(w.sleep),"openVital('sono')"));
+    if(w.rhr)vl.push(linhaI(icoC('fc','red'),'FC de repouso',r.rb?'Média '+r.rb.toFixed(0)+' bpm':'',w.rhr+' bpm',"openVital('fc')"));
+    if(vo2)vl.push(linhaI(icoC('vo2'),'VO2 máx','Garmin '+fmtD(vo2.d),vo2.vo2,"openVital('vo2')"));
+    const vf=[!w.sleep&&'sono',!w.rhr&&'FC de repouso',!vo2&&'VO2'].filter(Boolean),vfl=vf.length>1?vf.slice(0,-1).join(', ')+' e '+vf[vf.length-1]:vf[0];
+    const bV=blk('vit','Vitais',vl.join('')+(vf.length?`<p class="meta" style="margin:${vl.length?'6px':'0'} 4px 2px;line-height:1.45">Sem dados de ${vfl} hoje.${vl.length?'':' Ligue o relógio ao Intervals e sincronize para ver aqui.'}</p>`:''),null);
     const bP=h.slice(mP,mE); // a próxima atividade fica como cartão completo: um toque já manda ao relógio
     const fim=h.slice(mE);h=h.slice(0,mD);mD2=h.length;h+=bD;mC2=h.length;h+=glw('e',1)+bV;mV2=h.length;mP2=h.length;h+=bP;mE2=h.length;h+=fim;
   }
@@ -2388,7 +2422,7 @@ window.diagApp=()=>{
   <p class="meta" style="margin-top:10px">Se o app travar, abra aqui e mande um print para o suporte.</p>`,1)};
 let MAISP={};
 window.maisAbre=k=>{const m=MAISP[k];if(!m)return;openSheet(`<div class="hd"><b>${m[0]}</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+m[1],1);if(k==='con'&&$('#c-go'))connStatus()};
-window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();toast('CONECTADO // '+(a.name||''),2500);sync(1)};
+window.saveConn=async()=>{const a=await connTry();if(!a)return;saveCfg();LS.set('recria',Date.now());toast('CONECTADO // '+(a.name||''),2500);sync(1)};
 
 /* ================= PERFIL ================= */
 function semanasSeguidas(){const m=monday(TODAY());let s=0,best=0;for(let i=0;i<120;i++){const a=addD(m,-7*i);const n=D.acts.filter(x=>isRun(x)&&x.date.slice(0,10)>=ymd(a)&&x.date.slice(0,10)<=ymd(addD(a,6))).length;if(n>=2){s++;best=Math.max(best,s)}else if(i>0)s=0}return best}
@@ -3319,7 +3353,7 @@ async function voltaOAuth0(){
     const R=await trocaCodigo({client_id:OAUTH.id,code:q.get('code'),code_verifier:o.v,redirect_uri:redirUri(),grant_type:'authorization_code'});
     if(!R.ok||!R.j.access_token)throw new Error(R.j.error_description||R.j.error||('HTTP '+R.status));
     let id=String((R.j.athlete&&R.j.athlete.id)||'');if(/^\d+$/.test(id))id='i'+id;
-    CFG.token=R.j.access_token;CFG.key='';if(id)CFG.athlete=id;saveCfg();
+    CFG.token=R.j.access_token;CFG.key='';if(id)CFG.athlete=id;saveCfg();LS.set('recria',Date.now());
     if(!CFG.athlete){const a=await api('/athlete/0');CFG.athlete=a.id;saveCfg()}
     OB={i:0,a:null};
     toast('CONECTADO // '+((R.j.athlete&&R.j.athlete.name)||''),2500);
@@ -3472,7 +3506,7 @@ window.obUsaObj=()=>{const o={...(OB.obj||{})},v=id=>($('#'+id)||{}).value||'';
   OB.obj=o;if(OB.a)OB.a.obj=o;obSet('meta','x')};
 window.obSet=(k,v)=>{if(OB.a)OB.a[k]=v;else OB[k]=v;obGo(1)};
 window.obDia=d=>{const a=OB.a;a.dias=a.dias.includes(d)?a.dias.filter(x=>x!==d):a.dias.concat(d);a.longo=ORD.filter(x=>a.dias.includes(x)).pop(); rOB()}; // o longão fica no último dia escolhido da semana (ex.: ter, qui e dom → domingo)
-window.obConn=async()=>{const a=await connTry();if(!a)return;saveCfg();toast('CONECTADO // '+(a.name||''),2500);OB={i:0,a:null};await sync(0)};
+window.obConn=async()=>{const a=await connTry();if(!a)return;saveCfg();LS.set('recria',Date.now());toast('CONECTADO // '+(a.name||''),2500);OB={i:0,a:null};await sync(0)};
 window.obDone=()=>{PF=obPF();LS.set('pf',PF);OB={i:0,a:null};
   // a meta do objetivo entra (ou é atualizada) nos Desafios
   const M=metaDe(PF),P=genPlan(PF);
@@ -3789,7 +3823,7 @@ async function publishMine(force,entrar){
   while(terr.length&&JSON.stringify({runs,terr,foto,m:medsPub()}).length>640000)terr.pop();
   const r=await fetch(PUBURL+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),runs,foto,xp,terr,cor,perfil:(p=>({bio:p.bio,link:p.link,capa:p.capa,capaImg:p.capa==='foto'?p.capaImg:undefined,meds:medsPub(),seg:(FR.seg||[]).length,sgd:(FR.fol||[]).length}))(LS.get('perfil',null)||{}),...(entrar?{entrar:true}:{})})});
   if(!r.ok)throw new Error('HTTP '+r.status);
-  {const j=await r.clone().json().catch(()=>({}));if(j.fora){LS.set('comp','nao');return}}
+  {const j=await r.clone().json().catch(()=>({}));if(j.excluido){contaExcluidaRemota();return}if(j.fora){LS.set('comp','nao');return}}
   LS.set('pubh',sig);LS.set('pubErr',null);LS.set('pubOk',Date.now());
 }
 // envio ou leitura falhou: guarda o motivo, avisa uma vez e deixa o ranking mostrar o alerta
@@ -5227,7 +5261,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-01b'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-01c'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
@@ -5257,6 +5291,7 @@ async function notifRefresh(force){
       for(const e of EVENTOS){await evCarrega(e.id);const S=EVS[e.id];if(!S||!S.ins)continue;
         for(const x of S.ins){if(x.id!==me&&(FR.fol||[]).includes(x.id))ntAdd('ev:'+e.id+':'+x.id,'evento',`${String(frNome(x.id)||x.name).split(' ')[0]} entrou na ${e.nome}`,'Vai lá dar uma olhada na corrida.',{go:{k:'evento',id:e.id},av:{k:'u',id:x.id}})}}}catch(e){}
     try{evNotifs()}catch(x){}
+    try{teste8Garante()}catch(x){}
     const titulo=a=>a.name||nomeHora(a.date);
     if(temConta()){try{await medSync(B)}catch(e){}}
     bonusTemporada();
@@ -5330,14 +5365,15 @@ function dataNt(t){const d=new Date(t),h=String(d.getHours()).padStart(2,'0')+':
 function ntRender(){
   const L=[...NT.items].sort((a,b)=>b.t-a.t);let el=$('#ntp');if(!el){el=document.createElement('div');el.id='ntp';document.body.appendChild(el)}
   const rola=el.querySelector('.ntp-l'),top=rola?rola.scrollTop:0;
-  el.innerHTML=`<div class="ntp-h"><button class="ntp-v" onclick="ntFecha()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>Notificações</b></div>
+  el.innerHTML=`<div class="ntp-h"><button class="ntp-v" onclick="ntFecha()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>Notificações</b><button class="ntp-r" onclick="ntLerTudo()" aria-label="Marcar tudo como lido" ${NT.items.some(i=>!i.lido)?'':'disabled'}><svg viewBox="0 0 24 24"><path d="M2 12.5l4.5 4.5L15 8.5M10.5 15.5l1.5 1.5L22 7.5"/></svg></button></div>
   <div class="ntp-l">${L.length?L.map(i=>`<button class="nti" onclick="ntGo('${esc(i.id)}')">${ntAv(i.av)}<span class="ntx"><b>${esc(i.tit||NT_TIT[i.tipo]||'Novidade')}${i.lido?'':'<i class="ntd"></i>'}</b><span class="nts">${esc(i.desc||i.txt||'')}</span><small>${dataNt(i.t)}</small></span></button>`).join(''):`<p class="empty" style="padding:30px 6px;text-align:center">Nada por aqui ainda.<br>Curtidas, comentários, treinos, desafios, recordes e território aparecem neste sino.</p>`}</div>`;
   if(rola)el.querySelector('.ntp-l').scrollTop=top;
-  NT.items.forEach(i=>i.lido=1);ntSave();sinoIcone();
+  sinoIcone();
 }
+window.ntLerTudo=()=>{NT.items.forEach(i=>i.lido=1);ntSave();sinoIcone();ntRender()};
 window.ntFecha=()=>{const e=$('#ntp');if(e)e.remove()};
 window.openNotif=()=>{closeSheet();ntRender();const n0=NT.items.length;notifRefresh(1).then(()=>{if(ntMostrando()&&NT.items.length!==n0)ntRender()})};
-window.ntGo=id=>{const i=NT.items.find(x=>x.id===id);ntFecha();if(!i||!i.go)return;const g=i.go;
+window.ntGo=id=>{const i=NT.items.find(x=>x.id===id);if(i&&!i.lido){i.lido=1;ntSave();sinoIcone()}ntFecha();if(!i||!i.go)return;const g=i.go;
   if(g.k==='act')openAct(g.id);else if(g.k==='soc')socAbrir(g.dono,g.act);else if(g.k==='comp')go('comp');else if(g.k==='marc')openMarcas();else if(g.k==='badges')openBadges();else if(g.k==='home')go('ini');else if(g.k==='perfil')openPerfilAmigo(g.id);else if(g.k==='evento')openEvento(g.id);else if(g.k==='medctl')medCtl();else if(g.k==='medlista'){window._medL={eu:medsGet()};medLista('eu')}};
 
 /* ================= tema claro (gelo) e escuro ================= */

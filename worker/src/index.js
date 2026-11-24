@@ -280,6 +280,27 @@ const evLista = (d) => {
 };
 
 
+// ---------- data da primeira entrada (selo "Pioneiro StepOn") e conta excluída ----------
+// 'pio:<id>' = { t, fonte }: quando a pessoa apareceu pela 1ª vez ('servidor' = registrado na hora; 'estimada' = reconstruída para quem já usava).
+async function marcaEntrada(env, id) {
+  try { if (!(await env.BR.get('pio:' + id))) await env.BR.put('pio:' + id, JSON.stringify({ t: Date.now(), fonte: 'servidor' })); } catch (e) {}
+}
+// 'del:<id>' = conta excluída: um app que ficou aberto em outro aparelho NÃO recria o perfil nem o backup; só um login novo (novo: true) libera de novo.
+// devolve true quando a requisição deve ser recusada
+async function contaExcluida(env, id, liberar) {
+  const d = await env.BR.get('del:' + id);
+  if (!d) return false;
+  if (liberar) { await env.BR.delete('del:' + id); return false; }
+  return true;
+}
+async function pioneiros(env) {
+  const out = []; let cur;
+  do { const l = await env.BR.list({ prefix: 'pio:', cursor: cur });
+    for (const k of l.keys) { const id = k.name.slice(4), v = await env.BR.get(k.name, 'json'), a = await env.BR.get('a:' + id, 'json'); out.push({ id, name: (a && a.name) || id, t: v && v.t, fonte: v && v.fonte }); }
+    cur = l.list_complete ? null : l.cursor; } while (cur);
+  return { ok: true, n: out.length, pioneiros: out.sort((x, y) => x.t - y.t) };
+}
+
 // ---------- bloquear, denunciar e excluir a conta (exigências das lojas de aplicativos) ----------
 async function lerBl(env, id) { return (await env.BR.get('bl:' + id, 'json')) || []; }
 async function bloquear(env, eu, acao, alvo) {
@@ -410,8 +431,11 @@ async function excluirConta(env, id) {
   const uidc = await env.BR.get('prov:intervals:' + id);
   if (uidc) { const cc = await env.BR.get('acc:' + uidc, 'json'); if (cc && cc.email) await env.BR.delete('em:' + cc.email); await env.BR.delete('acc:' + uidc); }
   await env.BR.delete('prov:intervals:' + id);
-  for (const k of ['a:' + id, 'xr:' + id, 'fora:' + id, 'u:' + id, 'g:' + id, 'm:' + id, 'bl:' + id, 'f:' + id]) await env.BR.delete(k);
+  for (const k of ['a:' + id, 'xr:' + id, 'u:' + id, 'g:' + id, 'm:' + id, 'bl:' + id, 'f:' + id, 'pio:' + id]) await env.BR.delete(k);
   await trocaNoSnap(env, id, null);
+  // marca a exclusão: um app ainda aberto em outro aparelho não recria o perfil, o ranking nem o backup (só um login novo libera)
+  await env.BR.put('fora:' + id, String(Date.now()));
+  await env.BR.put('del:' + id, String(Date.now()));
   return { ok: true };
 }
 
@@ -503,6 +527,8 @@ export default {
         await trocaNoSnap(env, b.athlete, null);
         return json(req, { ok: true });
       }
+      if (await contaExcluida(env, b.athlete, b.entrar || b.novo)) return json(req, { ok: false, fora: true, excluido: true });
+      await marcaEntrada(env, b.athlete);
       // quem saiu do ranking só volta tocando em "Entrar no ranking" (entrar: true)
       if (b.entrar) await env.BR.delete('fora:' + b.athlete);
       else if (await env.BR.get('fora:' + b.athlete)) return json(req, { ok: false, fora: true });
@@ -685,8 +711,10 @@ export default {
       try { b = JSON.parse(txt); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
       const a = await confere(b.athlete, b.key, b.token);
       if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
+      if (await contaExcluida(env, b.athlete, b.novo)) return json(req, { erro: 'conta excluída', excluido: true }, 410);
       const k = 'u:' + b.athlete;
       if (b.acao === 'gravar') {
+        await marcaEntrada(env, b.athlete);
         if (!b.dados || typeof b.dados !== 'object') return json(req, { erro: 'sem dados' }, 400);
         const at = Number.isFinite(+b.at) ? Math.min(+b.at, Date.now() + 60e3) : Date.now();
         await env.BR.put(k, JSON.stringify({ at, dados: b.dados }));
@@ -727,12 +755,13 @@ export default {
       return json(req, r, r.erro ? 400 : 200);
     }
 
-    if (req.method === 'POST' && ['/excluir', '/bloquear', '/denunciar', '/denuncias', '/conta'].includes(url.pathname)) {
+    if (req.method === 'POST' && ['/excluir', '/bloquear', '/denunciar', '/denuncias', '/conta', '/pioneiros'].includes(url.pathname)) {
       let b;
       try { b = JSON.parse(await req.text()); } catch (e) { return json(req, { erro: 'json inválido' }, 400); }
       const a = await confere(b.athlete, b.key, b.token);
       if (!a) return json(req, { erro: 'chave não confere com o atleta' }, 403);
-      if (url.pathname === '/conta') { const r = await contaStepOn(env, b.athlete, a, b.acao || 'ver', b); return json(req, r, r.erro ? 400 : 200); }
+      if (url.pathname === '/pioneiros') { if (b.athlete !== ADMIN_MED) return json(req, { erro: 'só o administrador' }, 403); return json(req, await pioneiros(env)); }
+      if (url.pathname === '/conta') { if (await contaExcluida(env, b.athlete, b.novo)) return json(req, { erro: 'conta excluída', excluido: true }, 410); await marcaEntrada(env, b.athlete); const r = await contaStepOn(env, b.athlete, a, b.acao || 'ver', b); return json(req, r, r.erro ? 400 : 200); }
       if (url.pathname === '/excluir') { if (b.confirmar !== 'EXCLUIR') return json(req, { erro: 'confirmação ausente' }, 400); return json(req, await excluirConta(env, b.athlete)); }
       if (url.pathname === '/bloquear') { const r = await bloquear(env, b.athlete, b.acao || 'lista', b.alvo); return json(req, r, r.erro ? 400 : 200); }
       if (url.pathname === '/denunciar') { const r = await denunciar(env, b.athlete, b); return json(req, r, r.erro ? 400 : 200); }
