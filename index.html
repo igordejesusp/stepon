@@ -659,6 +659,10 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .fcar{display:flex;gap:3px;overflow-x:auto;scroll-snap-type:x mandatory;margin:10px 0 0;border-radius:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.fcar::-webkit-scrollbar{display:none}
 .fcar .fcs{flex:none;scroll-snap-align:start;height:230px;position:relative;overflow:hidden}.fcar .fcm{width:100%}.fcar.mais .fcm{width:86%}.fcar .fcf{width:70%}.fcar .map{margin:0;border:0;border-radius:0;height:100%!important;width:100%}.fcar .fcf img{width:100%;height:100%;object-fit:cover;display:block}
 .fflat .fcar{margin:12px -12px 0;border-radius:0}.fflat .fcar .map{margin:0}
+#fview{position:fixed;inset:0;z-index:9000;background:#000;display:flex;flex-direction:column;animation:paginaEntra .18s ease-out}
+#fview .fvb{position:absolute;left:14px;top:calc(14px + env(safe-area-inset-top));width:38px;height:38px;border-radius:50%;border:0;background:rgba(40,40,44,.75);color:#fff;display:grid;place-items:center;z-index:2;padding:0}#fview .fvb svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#fview .fvi{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:auto}#fview .fvi img{width:100%;max-height:100%;object-fit:contain;display:block}
+#fview .fvr{display:flex;gap:10px;padding:10px 16px calc(14px + env(safe-area-inset-bottom))}#fview .fvr button{flex:1;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-weight:600}#fview .fvr .rm{color:#ff6b5a;border-color:rgba(255,107,90,.5)}
 @keyframes paginaEntra{from{transform:translateX(26px);opacity:.3}to{transform:none;opacity:1}}
 @media (min-width:760px){#sheet.cheio .box{padding-left:calc(50% - 380px);padding-right:calc(50% - 380px)}}
 #sheet.cheio .hd{margin-bottom:20px}
@@ -3041,11 +3045,14 @@ window.addFoto=act=>{
     catch(e){toast('Não deu para enviar: '+e.message,4000)}};
   i.click();
 };
-window.verFoto=(dono,act,pid)=>{const f=(FOT[dono]||[]).find(x=>x.p===pid);if(!f)return;
-  openSheet(`<div class="hd"><b>Foto do treino</b><button class="b sm" onclick="closeSheet()">✕</button></div><img src="${fotoUrl(dono,f)}" alt="" style="width:100%;border-radius:14px;display:block">
-  <div class="grid g2" style="margin-top:10px">${dono===CFG.athlete&&D.acts.some(a=>a.id===act)?`<button class="b" onclick="openAct('${act}')">Ver o treino</button><button class="b red" onclick="apagaFoto('${pid}')">Remover foto</button>`:SOCV?`<button class="b" onclick="${SOCV}">◀ Voltar</button>`:''}</div>`)};
+// foto em tela cheia: fundo preto e a foto no tamanho dela, inteira
+window.fechaFoto=()=>{const e=document.getElementById('fview');if(e)e.remove()};
+window.verFoto=(dono,act,pid)=>{const f=(FOT[dono]||[]).find(x=>x.p===pid);if(!f)return;fechaFoto();
+  const meu=dono===CFG.athlete&&D.acts.some(a=>a.id===act),v=document.createElement('div');v.id='fview';
+  v.innerHTML=`<button class="fvb" aria-label="Voltar" onclick="fechaFoto()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="fvi"><img src="${fotoUrl(dono,f)}" alt=""></div>${meu?`<div class="fvr"><button onclick="fechaFoto();openAct('${act}')">Ver o treino</button><button class="rm" onclick="apagaFoto('${pid}')">Remover foto</button></div>`:''}`;
+  document.body.appendChild(v)};
 window.apagaFoto=async pid=>{if(!confirm('Remover esta foto do treino?'))return;
-  try{const r=await fetch(PUBURL+'/foto',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'apagar',pid})}),j=await r.json();if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));FOT[CFG.athlete]=j.lista;closeSheet();toast('Foto removida');render()}
+  try{const r=await fetch(PUBURL+'/foto',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...credSrv(),acao:'apagar',pid})}),j=await r.json();if(!r.ok)throw new Error(j.erro||('HTTP '+r.status));FOT[CFG.athlete]=j.lista;fechaFoto();closeSheet();toast('Foto removida');render()}
   catch(e){toast('Não deu para remover: '+e.message,4000)}};
 const fotosTira=(dono,act)=>{const L=fotosDe(dono,act);return L.length?`<div class="fph" onclick="event.stopPropagation()">${L.map(f=>`<img src="${fotoUrl(dono,f)}" alt="" loading="lazy" onclick="verFoto('${dono}','${act}','${f.p}')">`).join('')}</div>`:''};
 
@@ -5621,7 +5628,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-03e'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-03f'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
