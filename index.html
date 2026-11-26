@@ -656,6 +656,9 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .fflat .fa{border-top:0;margin-top:6px;padding:4px 0 10px;justify-content:space-between}.fflat .fa button{flex:none;padding:8px 6px}
 .fflat .fdes,.fflat .fdesw{margin-top:0}
 .gal{gap:2px;margin:0 -12px}.gal .gi{aspect-ratio:3/4;border:0;border-radius:0;padding:0;background:var(--panel)}
+.fcar{display:flex;gap:3px;overflow-x:auto;scroll-snap-type:x mandatory;margin:10px 0 0;border-radius:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.fcar::-webkit-scrollbar{display:none}
+.fcar .fcs{flex:none;scroll-snap-align:start;height:230px;position:relative;overflow:hidden}.fcar .fcm{width:100%}.fcar.mais .fcm{width:86%}.fcar .fcf{width:70%}.fcar .map{margin:0;border:0;border-radius:0;height:100%!important;width:100%}.fcar .fcf img{width:100%;height:100%;object-fit:cover;display:block}
+.fflat .fcar{margin:12px -12px 0;border-radius:0}.fflat .fcar .map{margin:0}
 @keyframes paginaEntra{from{transform:translateX(26px);opacity:.3}to{transform:none;opacity:1}}
 @media (min-width:760px){#sheet.cheio .box{padding-left:calc(50% - 380px);padding-right:calc(50% - 380px)}}
 #sheet.cheio .hd{margin-bottom:20px}
@@ -3240,7 +3243,7 @@ function feedCard(o){
   return `<div class="fcard"${o.meu?` onclick="openAct('${o.id}')"`:o.abre?` onclick="openActAmigo('${o.dono}','${o.id}')"`:''}>
   <div class="fh">${avatar({pic:o.pic},42)}<div><b>${esc(o.nome)}</b><span class="meta">${diaTxt(o.date)}${o.src?' · '+esc(o.src):''}${o.priv?` · <span class="fpriv">${PRIV_ROT[o.priv]}</span>`:''}</span>${o.cidade?`<span class="meta">${esc(o.cidade)}</span>`:''}</div>${o.meu&&!o.mk?`<button class="fdots" aria-label="Mais opções do treino" onclick="event.stopPropagation();menuAtiv('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:(!o.meu&&o.dono&&o.dono!==CFG.athlete?`<button class="fdots" aria-label="Denunciar ou bloquear" onclick="event.stopPropagation();pessoaMenu('${esc(o.dono)}','corrida','${esc(o.id)}')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>`:'')}</div>
   <h2 class="ft">${esc(o.titulo||nomeHora(o.date))}</h2><div class="fjunto" data-jk="${k}">${o.com?comTxt(o.com):''}</div>${seloDes(o.des,1,o.meu?o.id:null)}
-  <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${fotosTira(o.dono,o.id)}${mapa}
+  <div class="fst">${st.map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('')}</div>${(()=>{const F=fotosDe(o.dono,o.id);if(!F.length)return mapa;if(!mapa)return fotosTira(o.dono,o.id);return `<div class="fcar${F.length?' mais':''}">${'<div class="fcs fcm">'+mapa+'</div>'}${F.map(f=>`<div class="fcs fcf" onclick="event.stopPropagation();verFoto('${o.dono}','${o.id}','${f.p}')"><img src="${fotoUrl(o.dono,f)}" alt="" loading="lazy"></div>`).join('')}</div>`})()}
   <div class="fa" data-k="${k}" onclick="event.stopPropagation()"><button class="fcur" onclick="socCurtir('${o.dono}','${o.id}')">${ICO.cur}<span>Curtir</span></button><button onclick="socAbrir('${o.dono}','${o.id}')">${ICO.com}<span>Comentar</span></button>${o.meu?`<button onclick="addFoto('${o.id}')">${ICO.fot}<span>Foto</span></button><button onclick="openCartao('${o.id}')">${ICO.sha}<span>Compartilhar</span></button>`:''}</div></div>`;
 }
 // traçado da corrida desenhado à mão (para os amigos e a galeria): pontos [lat, lng]
@@ -5618,7 +5621,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-03d'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-03e'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
