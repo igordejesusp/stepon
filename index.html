@@ -635,6 +635,14 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 .nti .ntx{gap:3px}.nti .ntx b{font-size:18px;line-height:1.25;color:var(--hi)}.nti .nts{font-size:16px;line-height:1.4;color:var(--txt);display:block}.nti .ntx small{font-size:14px;color:var(--dim);margin-top:2px}.ntd{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);margin-left:8px;vertical-align:middle}
 #sheet.cheio{background:var(--bg)}#sheet.cheio.on{display:block;padding:0}
 #sheet.cheio .box{position:absolute;inset:0;width:100%;max-width:none;height:100%;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--bg);padding:calc(16px + env(safe-area-inset-top)) 14px calc(34px + env(safe-area-inset-bottom));animation:paginaEntra .2s ease-out}
+.hero{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:6px;margin:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hero::-webkit-scrollbar{display:none}
+.hero .hs{flex:none;scroll-snap-align:start;height:calc(330px + env(safe-area-inset-top));overflow:hidden;position:relative}.hero .hm{width:100%}.hero.mais .hm{width:92%}.hero .hf{width:76%}.hero .hf:only-child,.hero.sem .hf:first-child:last-child{width:100%}
+.hero .map{margin:0;border:0;border-radius:0;height:100%!important;width:100%}.hero .hf img{width:100%;height:100%;object-fit:cover;display:block}
+#sheet.hero .box{padding:0 0 calc(34px + env(safe-area-inset-bottom))}#sheet.hero .hd{height:0;margin:0;padding:0;min-height:0}#sheet.hero .shfx{top:calc(14px + env(safe-area-inset-top))}#sheet.hero .shfx .shv{left:14px}
+.hpad{padding:0 16px}.hdt{margin:16px 0 4px;font-size:14px}.htit{font-size:28px;line-height:1.12;margin:0 0 4px;letter-spacing:-.02em;font-weight:800;color:var(--hi)}
+.cbl{margin:14px 0 4px;border-radius:16px;background:var(--cell);border:1px solid color-mix(in srgb,var(--blue) 38%,var(--line));padding:12px 14px 6px}.cbt{font-size:10.5px;letter-spacing:.09em;color:var(--blue);font-weight:700;margin-bottom:4px}
+.cbr{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.cbt+.cbr{border-top:0}.cbr i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}.cbr.d i{background:rgba(240,194,75,.16);color:#f0c24b}.cbr.r i{background:rgba(95,209,138,.16);color:#5fd18a}
+.cbr i svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.cbr span{font-size:13px;color:var(--dim);flex:1}.cbr b{font-size:14px;color:var(--hi);text-align:right}
 @keyframes paginaEntra{from{transform:translateX(26px);opacity:.3}to{transform:none;opacity:1}}
 @media (min-width:760px){#sheet.cheio .box{padding-left:calc(50% - 380px);padding-right:calc(50% - 380px)}}
 #sheet.cheio .hd{margin-bottom:20px}
@@ -3375,14 +3383,15 @@ function terrNovo(a,x){
       if(novo){const sobra=ant?pcSeguro('difference',novo,ant):novo;if(sobra)r=geoKm2(sobra)}}
   }catch(e){r=null}
   _tnv[k]=r;return r}
-function terrNota(a,x){const t=x&&x.tg;if(!t||!isRun(a)||isMk(a)||isMan(a))return '';let txt,cls='';
-  if(t.a>0){const nv=terrNovo(a,x);
-    if(nv!=null&&nv<0.002)txt='<b>Território:</b> você fechou o circuito, mas essa área já é sua. Não conta como área nova.';
-    else{cls='ok';txt=`<b>Território:</b> você dominou uma nova área${nv!=null?': '+fmtKm2(nv):' ('+String(t.ha).replace('.',',')+' ha)'}.${MODO()==='g'?' No Geral, onde outra pessoa já tem a área com ritmo melhor, ela continua dela.':''}`}}
-  else if(t.g!=null&&t.g<=50)txt='<b>Território:</b> o começo e o fim se encontram, mas o percurso foi de ida e volta (ou ficou pequeno demais) e não formou uma área. Para dominar, feche um circuito: volte por outro caminho.';
-  else if(t.g!=null)txt=`<b>Território:</b> não fechou circuito. O final ficou a ${t.g} m do começo. Para dominar uma área, termine a menos de 50 m de onde começou ou cruze o seu próprio caminho.`;
-  else return '';
-  return `<div class="tnote ${cls}">${txt}</div>`}
+// bloco único da corrida: só aparece quando houve algo novo (área dominada, desafio concluído, recorde pessoal)
+function conqBloco(a,x){
+  if(!isRun(a)||isMk(a)||isMan(a))return '';
+  const L=[],t=x&&x.tg,IC={t:'<svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>',d:TROFEU,r:'<svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg>'};
+  try{if(t&&t.a>0){const nv=terrNovo(a,x);if(!(nv!=null&&nv<0.002))L.push(['t','Nova área dominada',nv!=null?fmtKm2(nv):String(t.ha).replace('.',',')+' ha'])}}catch(e){}
+  try{(desPorAtiv(D.acts.filter(isRun))[a.id]||[]).forEach(c=>L.push(['d','Desafio concluído',c.n]))}catch(e){}
+  try{const M=marcasTodas();for(const [d,nm] of BE){const l=M[d]||[];if(l.length>=2&&l[0].id===a.id)L.push(['r','Recorde pessoal',nm+' · '+fmtT(l[0].t)])}}catch(e){}
+  if(!L.length)return '';
+  return `<div class="cbl"><div class="cbt">CONQUISTAS DESTA CORRIDA</div>${L.map(([k,tt,v])=>`<div class="cbr ${k}"><i>${IC[k]}</i><span>${tt}</span><b>${esc(v)}</b></div>`).join('')}</div>`}
 function fbCard(id){
   const f=FB[id]||{},n=f.rpe,ps=f.partes||[];
   return `<div class="sec"><span>COMO FOI?</span><small>${n?`<b style="color:${PSE_COR(n)}">${n} · ${PSE_TXT[n]}</b>`:'ESFORÇO PERCEBIDO'}</small></div><div class="fbc">
@@ -3496,14 +3505,17 @@ window.openAct=async id=>{
   if(isRun(a)&&!isMan(a)&&!isMk(a)&&AX[id]&&AX[id].chart&&AX[id].chart.a===undefined&&temConta()){openSheet('<p class="empty">Carregando gráficos…</p>');try{const et=AX[id].etapas;await loadAX(id);if(et!==undefined)AX[id].etapas=et;LS.set('ax5',AX)}catch(e){}}
   if(isRun(a)&&!isMan(a)&&!isMk(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
   const x=AX[id]||{},pace=a.dist?a.mov/a.dist*1000:null;
-  let h=`<div class="hd"><b>${typeIc(a)} // ${a.date.slice(8,10)}/${a.date.slice(5,7)}/${a.date.slice(0,4)}</b><button class="b sm" onclick="closeSheet()">✕</button></div><h2 style="font-size:17px">${esc(a.name)}</h2><div class="meta">${a.date.slice(11,16)} · ${esc(devNome(a))}</div>${isRun(a)?seloDes(desPorAtiv(D.acts.filter(isRun))[id]):''}${fotosTira(CFG.athlete,id)}${x.map?mapBox(id,220):''}${terrNota(a,x)}${isMk(a)?`<div class="card" style="margin-top:8px"><p class="empty" style="color:var(--txt)">${esc(a.por||'Um amigo')} marcou você nesta corrida. Ela conta para você como se tivesse gravado.</p><button class="b full" style="margin-top:8px" onclick="tiraMarcada('${id}')">Tirar da minha conta</button></div>`:''}<div class="arow">${isRun(a)&&!isMk(a)?`<button class="acom" onclick="openMarcar('${id}')"><span class="fjunto" data-jk="${CFG.athlete}:${id}" data-auto="${esc(autoJuntos(a).join(','))}">${comOuConvite(autoJuntos(a))}</span></button>`:'<span></span>'}<div class="aico">${isRun(a)&&!isMk(a)?`<button aria-label="Marcar quem correu junto" onclick="openMarcar('${id}')">${ICO.add}</button>`:''}<button aria-label="Adicionar foto" onclick="addFoto('${id}')">${ICO.fot}</button>${x.map?`<button aria-label="Compartilhar treino" onclick="openCartao('${id}')">${ICO.sha}</button>`:''}</div></div>`;
+  const fts=fotosDe(CFG.athlete,id),ehMk=isMk(a);
+  const slides=(x.map?`<div class="hs hm">${mapBox(id,330)}</div>`:'')+fts.map(f=>`<div class="hs hf"><img src="${fotoUrl(CFG.athlete,f)}" alt="" loading="lazy" onclick="verFoto('${CFG.athlete}','${id}','${f.p}')"></div>`).join('');
+  const mes=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'][+a.date.slice(5,7)-1];
+  let h=`<div class="hd"><button class="b sm" onclick="closeSheet()">✕</button></div>${slides?`<div class="hero${x.map?'':' sem'}${fts.length&&x.map?' mais':''}">${slides}</div>`:'<div style="height:56px"></div>'}<div class="hpad"><div class="meta hdt">${+a.date.slice(8,10)} de ${mes} @ ${a.date.slice(11,16)} · ${esc(devNome(a))}</div><h2 class="htit">${esc(a.name)}</h2>${conqBloco(a,x)}${ehMk?`<div class="card" style="margin-top:8px"><p class="empty" style="color:var(--txt)">${esc(a.por||'Um amigo')} marcou você nesta corrida. Ela conta para você como se tivesse gravado.</p><button class="b full" style="margin-top:8px" onclick="tiraMarcada('${id}')">Tirar da minha conta</button></div>`:''}<div class="arow">${isRun(a)&&!isMk(a)?`<button class="acom" onclick="openMarcar('${id}')"><span class="fjunto" data-jk="${CFG.athlete}:${id}" data-auto="${esc(autoJuntos(a).join(','))}">${comOuConvite(autoJuntos(a))}</span></button>`:'<span></span>'}<div class="aico">${isRun(a)&&!isMk(a)?`<button aria-label="Marcar quem correu junto" onclick="openMarcar('${id}')">${ICO.add}</button>`:''}<button aria-label="Adicionar foto" onclick="addFoto('${id}')">${ICO.fot}</button>${x.map?`<button aria-label="Compartilhar treino" onclick="openCartao('${id}')">${ICO.sha}</button>`:''}</div></div>`;
   h+=actCorpo(a,x,pace);
   if(isRun(a)&&!isMk(a))h+=`<div id="fb-card">${fbCard(id)}</div>`;
   if(isRun(a))h+=`<div class="coach" style="margin-top:14px"><b>COACH // LEITURA</b>${esc(coachLast(a))}</div>`;
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
-  openSheet(h,1);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
+  h+='</div>';openSheet(h,1);$('#sheet').classList.add('hero');$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
-function openSheet(h,cheio){if(SCAN)scanPara();$('#sheet').classList.remove('baixo','cheio');if(cheio)$('#sheet').classList.add('cheio');const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
+function openSheet(h,cheio){if(SCAN)scanPara();$('#sheet').classList.remove('baixo','cheio','hero');if(cheio)$('#sheet').classList.add('cheio');const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
   // o X do topo vira a setinha de voltar, à esquerda do título
   const x=b.querySelector('.hd button[onclick="closeSheet()"]');if(x){x.className='shv';x.setAttribute('aria-label','Voltar');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
     // a seta fica fixa no canto enquanto a janela rola (só ela; o título rola junto)
@@ -5565,7 +5577,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-03a'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-03b'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
