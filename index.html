@@ -1068,7 +1068,7 @@ async function sync(full){
     await analyzeRuns(full);
     await puxaMarcados().catch(()=>{});
     if(LS.get('comp',null)!=='sim')await pullAll().catch(()=>{});
-    corrigeEnvios().catch(()=>{});evEnviaResultado().catch(()=>{});
+    corrigeEnvios().catch(()=>{});evEnviaResultado().catch(()=>{});processaFila().catch(()=>{});
     LS.set('redeAt',0);rede(); // corrida nova entra no ranking público (só para quem aceitou) e os amigos são atualizados
     toast('SINCRONIZADO // '+D.acts.length+' ATIVIDADES');
   }catch(e){const neg=/HTTP 40[13]/.test(e.message);LS.set('authRuim',neg?1:0);toast(e.message==='SEM CHAVE'?'CONECTE O INTERVALS EM MAIS':neg?(CFG.token?'ESTE APARELHO PERDEU O ACESSO. TOQUE EM RECONECTAR':'O INTERVALS NÃO ACEITOU A CONEXÃO. TOQUE EM ENTRAR COM O INTERVALS'):'FALHA NA SINCRONIZAÇÃO // '+e.message,4500)}
@@ -1256,7 +1256,7 @@ let PF=LS.get('pf',null);
 const isIgor=()=>CFG.athlete==='i504491';
 // relógio: a marca escolhida no questionário (ou detectada pelo nome do aparelho que o Intervals manda nas corridas)
 const MARCAS={garmin:'Garmin',coros:'Coros',polar:'Polar',suunto:'Suunto',amazfit:'Amazfit',huawei:'Huawei',wahoo:'Wahoo',apple:'Apple Watch',android:'Samsung / Pixel / Fitbit',outro:'Outra marca'};
-const MARCA_RX=[['garmin',/garmin|forerunner|fenix|f[eē]nix|venu|vivoactive|epix|instinct|enduro/i],['coros',/coros|pace \d|apex|vertix/i],['polar',/polar|vantage|grit x|pacer/i],['suunto',/suunto/i],['amazfit',/amazfit|zepp|t-rex|cheetah|balance|bip|gtr|gts/i],['huawei',/huawei|watch gt|honor/i],['wahoo',/wahoo|elemnt/i],['apple',/apple watch/i],['android',/galaxy watch|samsung|pixel watch|fitbit|wear os/i]];
+const MARCA_RX=[['garmin',/garmin|forerunner|fenix|f[eē]nix|venu|vivoactive|epix|instinct|enduro/i],['coros',/coros|pace \d|apex|vertix/i],['polar',/polar|vantage|grit x|pacer/i],['suunto',/suunto/i],['amazfit',/amazfit|zepp|t-rex|cheetah|balance|bip|gtr|gts/i],['huawei',/huawei|watch gt|honor/i],['wahoo',/wahoo|elemnt/i],['apple',/apple|iphone|companion|\bwatch\d+,\d+/i],['android',/galaxy watch|samsung|pixel watch|fitbit|wear os/i]];
 const marcaDe=t=>{t=String(t||'');for(const [k,rx] of MARCA_RX)if(rx.test(t))return k;return null};
 // o aparelho da corrida mais recente que tem nome (ex.: "Garmin Forerunner 165")
 const ultAparelho=()=>{const a=(D.acts||[]).find(x=>isRun(x)&&x.dev&&!/stepon/i.test(x.dev)&&x.src!=='MARCADO');return a?devNome(a):''};
@@ -1269,6 +1269,8 @@ const ENVIO={
     passo:'No intervals.icu (Configurações → Conexões → Garmin) deixe marcado <b>Carregar treinos planejados</b>. Depois sincronize o relógio pelo Garmin Connect.'},
   amazfit:{nome:'Amazfit (Zepp)',ok:1,conf:'O Intervals repassa ao app Zepp (confere umas 3 vezes por dia). Depois abra o Zepp no celular e sincronize o relógio.',toast:'ENVIADO AO INTERVALS // ABRA O ZEPP E SINCRONIZE O RELÓGIO',flag:/zepp|amazfit/i,
     passo:'No intervals.icu (Configurações → Conexões → Amazfit) deixe ligado o envio de treinos planejados e, no Zepp, confirme Perfil → Vinculação de contas de terceiros. O treino aparece no calendário de treinamento do Zepp; sincronize o relógio. Funcionou no Amazfit Active 2.'},
+  apple:{nome:'Apple Watch',conf:'O Intervals guarda o treino e o app gratuito Intervals Companion, no iPhone, passa o treino para o app Treino do Apple Watch (ao abrir o app ou por um Atalho automático). Precisa de iOS 18.6+ e watchOS 11.1+.',toast:'ENVIADO AO INTERVALS // ABRA O INTERVALS COMPANION NO IPHONE PARA IR AO RELÓGIO',flag:/nao-existe-conexao-apple/i,
+    passo:'O Intervals não tem conexão direta com o Apple Watch. No iPhone, o app <b>Intervals.icu Companion</b> (grátis) leva o treino ao app Treino do relógio. Abra o Companion depois de enviar (ou ligue o Atalho automático). Precisa de iOS 18.6+ e watchOS 11.1+. Siga o passo a passo em Mais › Dispositivos.'},
   coros:{nome:'Coros',conf:'O Intervals manda a semana de treinos para a Coros. Na primeira vez, no app Coros abra Perfil → Biblioteca de planos de treino → plano "Intervals.icu" → Iniciar plano. Treino apagado no Intervals pode continuar na Coros.',toast:'ENVIADO AO INTERVALS // CONFIRA NO APP COROS',flag:/coros/i,
     passo:'No intervals.icu (Configurações → Conexões → Coros) ligue o envio de treinos planejados. No app Coros: Perfil → Biblioteca de planos de treino → plano "Intervals.icu" → Iniciar plano. Treino apagado no Intervals pode continuar na Coros. Ainda não testado num relógio Coros.'},
   suunto:{nome:'Suunto',conf:'O Intervals repassa à Suunto como guia SuuntoPlus (a próxima semana). No relógio ele aparece nas guias, não no calendário do app.',toast:'ENVIADO AO INTERVALS // CONFIRA AS GUIAS NO RELÓGIO SUUNTO',flag:/suunto/i,
@@ -1523,9 +1525,12 @@ window.diagRelogio=async()=>{
     if(!ev.length)lin(false,'Nenhum treino no calendário do Intervals','O envio pelo StepOn não chegou lá. Toque em "Enviar ao relógio" num treino dos próximos dias e teste de novo.');
     else{lin(true,ev.length+(ev.length===1?' treino no calendário do Intervals':' treinos no calendário do Intervals'),ev.slice(0,4).map(e=>String(e.start_date_local||'').slice(8,10)+'/'+String(e.start_date_local||'').slice(5,7)+' · '+esc(e.name||'')).join('<br>'));
       const e0=ev[0],doc=JSON.stringify(e0.workout_doc||{}),temPace=/pace|speed/i.test(doc);
-      lin(e0.workout_doc?(temPace?true:null):false,e0.workout_doc?(temPace?'O Intervals entendeu o treino com ritmo':'O Intervals leu o treino, mas sem ritmo nas etapas'):'O Intervals não conseguiu ler as etapas do treino',null)}
+      lin(e0.workout_doc?(temPace?true:null):false,e0.workout_doc?(temPace?'O Intervals entendeu o treino com ritmo':'O Intervals leu o treino, mas sem ritmo nas etapas'):'O Intervals não conseguiu ler as etapas do treino',null);
+      const pl0=planOn(String(e0.start_date_local||'').slice(0,10)),cf0=pl0?confereDoc(e0,pl0):null;
+      if(cf0)lin(cf0.av.length?false:true,cf0.av.length?'O Intervals leu o treino diferente do que o StepOn mandou':`Etapas conferem (${cf0.folhas} etapas, todas com duração${cf0.temRitmo?' e ritmo':''})`,cf0.av.length?cf0.av.join('<br>'):null)}
     // 2) conexão do Intervals com o Zepp
-    if(fl.length){const off=up&&/^(false|null)$/i.test(up[1]);lin(off?false:null,off?`Envio de treinos à ${E.nome} está desligado no Intervals`:`Conexão do Intervals com a ${E.nome}`,off?`No Intervals: Configurações → Conexões. Marque o envio de treinos planejados e autorize de novo.`:`Campos que o Intervals mostra: ${fl.map(([k,v])=>esc(k)+' = '+esc(v)).join(' · ')}`)}
+    if(marcaRel()==='apple')lin(null,'Apple Watch: o treino segue pelo app Intervals.icu Companion','O Intervals não tem conexão direta com o Apple Watch. Confira os passos em Mais › Dispositivos (iOS 18.6+, watchOS 11.1+, envio ligado no Companion e o Atalho automático). A conferência final é abrir o Companion e ver o treino no app Treino do relógio.');
+    else if(fl.length){const off=up&&/^(false|null)$/i.test(up[1]);lin(off?false:null,off?`Envio de treinos à ${E.nome} está desligado no Intervals`:`Conexão do Intervals com a ${E.nome}`,off?`No Intervals: Configurações → Conexões. Marque o envio de treinos planejados e autorize de novo.`:`Campos que o Intervals mostra: ${fl.map(([k,v])=>esc(k)+' = '+esc(v)).join(' · ')}`)}
     else lin(null,`Nenhuma conexão com a ${E.nome} aparece na conta`,'No Intervals: Configurações → Conexões. Conecte, marque o envio de treinos planejados e autorize.');
     lin(ss&&ss.threshold_pace?true:null,ss&&ss.threshold_pace?'Ritmo de limiar preenchido':'Ritmo de limiar vazio no Intervals','O StepOn pergunta e preenche quando você manda um treino.');
   }catch(e){falha=String(e&&e.message||e).slice(0,80)}
@@ -1557,16 +1562,63 @@ async function corrigeEnvios(){
     try{await api(`/athlete/${CFG.athlete}/events/${e.id}`,{method:'PUT',body:JSON.stringify({description:toIcu(p)})});feito.push(e.id);mexeu=true}catch(err){}}
   if(mexeu)LS.set('icuFix',feito.slice(-200));
 }
+// confere no que o Intervals devolveu se ele leu o treino do jeito que o app mandou (etapas e ritmo): quem monta o treino no relógio só enxerga isso
+function confereDoc(ev,p){
+  const doc=ev&&ev.workout_doc;if(!doc||typeof doc!=='object')return null; // o Intervals ainda não devolveu: não dá para conferir
+  let folhas=0,semDur=0;
+  (function walk(L){(L||[]).forEach(x=>{if(!x||typeof x!=='object')return;if(Array.isArray(x.steps)&&x.steps.length)walk(x.steps);else{folhas++;if(!(x.duration>0||x.distance>0))semDur++}})})(doc.steps);
+  const querRitmo=(p.steps||[]).some(x=>x[2]),temRitmo=/pace|speed/i.test(JSON.stringify(doc));
+  const av=[];
+  if(folhas&&folhas!==p.steps.length)av.push(`o Intervals leu ${folhas} etapas e o treino tem ${p.steps.length}`);
+  if(!folhas)av.push('o Intervals não leu nenhuma etapa');
+  if(semDur)av.push(`${semDur} etapa(s) sem duração ou distância`);
+  if(querRitmo&&!temRitmo)av.push('as etapas ficaram sem faixa de ritmo (confira o ritmo de limiar no Intervals)');
+  return {folhas,semDur,temRitmo,av};
+}
+// envia ao Intervals tentando de novo se a internet falhar; antes de repetir, procura se a tentativa anterior já criou o treino (para não duplicar)
+async function enviaIcu(ds,p){
+  const body=JSON.stringify({category:'WORKOUT',type:'Run',target:'PACE',start_date_local:ds+'T00:00:00',name:p.titulo,description:toIcu(p)});
+  let ult;
+  for(let t=0;t<3;t++){
+    try{
+      let old=evOn(ds);
+      if(!old&&t>0){try{const l=await api(`/athlete/${CFG.athlete}/events?oldest=${ds}&newest=${ds}&category=WORKOUT`),m=(l||[]).find(e=>e.name===p.titulo);if(m)old={id:m.id}}catch(e){}}
+      return old?await api(`/athlete/${CFG.athlete}/events/${old.id}`,{method:'PUT',body}):await api(`/athlete/${CFG.athlete}/events`,{method:'POST',body});
+    }catch(e){ult=e;const m=String(e&&e.message||'');
+      if(!(/Failed to fetch|NetworkError|Load failed|HTTP (429|5\d\d)/i.test(m)||(e&&e.name==='TypeError'))||t===2)throw e;
+      await new Promise(r=>setTimeout(r,t?3500:1200))}
+  }
+  throw ult;
+}
+// sem internet: guarda o pedido e envia sozinho quando voltar
+function filaEnvio(ds){const f=LS.get('envPend',[]);if(!f.includes(ds)){f.push(ds);LS.set('envPend',f)}}
+async function processaFila(){
+  const f=LS.get('envPend',[]);if(!f.length||!navigator.onLine||!temConta())return;
+  const rest=[];let ok=0;
+  for(const ds of f){const p=planOn(ds);if(!p||ds<ymd(TODAY()))continue;
+    try{const ev=await enviaIcu(ds,p);D.ev=(D.ev||[]).filter(e=>e.d!==ds).concat([{id:ev.id,d:ds,name:ev.name}]);ok++}catch(e){rest.push(ds)}}
+  LS.set('envPend',rest);if(ok){LS.set('data',D);toast(ok+(ok>1?' treinos pendentes enviados':' treino pendente enviado')+' ao Intervals',3500);render()}
+}
+addEventListener('online',()=>setTimeout(processaFila,1500));
 async function sendWatch(ds){
   const p=planOn(ds);if(!p)return;
-  if(!confirm(`${evOn(ds)?'Atualizar':'Enviar'} "${p.titulo}" (${ds.split('-').reverse().join('/')}) no calendário do Intervals.icu?\n\n${(ENVIO[marcaRel()]||ENVIO.garmin).conf}${ENVIO[marcaRel()]&&!ENVIO[marcaRel()].ok?'\n\nAtenção: este envio é novo para a sua marca e ainda não foi testado num relógio. Se não chegar, use Mais → Dispositivos → Testar envio ao relógio.':''}`))return;
+  const mc=marcaRel();
+  if(!confirm(`${evOn(ds)?'Atualizar':'Enviar'} "${p.titulo}" (${ds.split('-').reverse().join('/')}) no calendário do Intervals.icu?\n\n${(ENVIO[mc]||ENVIO.garmin).conf}${ENVIO[mc]&&!ENVIO[mc].ok?'\n\nAtenção: este envio é novo para a sua marca e ainda não foi testado num relógio. Se não chegar, use Mais → Dispositivos → Testar envio ao relógio.':''}`))return;
+  if(!navigator.onLine){filaEnvio(ds);toast('SEM INTERNET // O TREINO FICA NA FILA E VAI SOZINHO QUANDO A INTERNET VOLTAR',5000);return}
   try{
     if(!(await limiarGarante()))return;
-    const old=evOn(ds),body=JSON.stringify({category:'WORKOUT',type:'Run',target:'PACE',start_date_local:ds+'T00:00:00',name:p.titulo,description:toIcu(p)});
-    const ev=old?await api(`/athlete/${CFG.athlete}/events/${old.id}`,{method:'PUT',body}):await api(`/athlete/${CFG.athlete}/events`,{method:'POST',body});
+    const ev=await enviaIcu(ds,p);
     D.ev=(D.ev||[]).filter(e=>e.d!==ds).concat([{id:ev.id,d:ds,name:ev.name}]);LS.set('data',D);
-    toast(marcaRel()==='garmin'?(D.athlete&&D.athlete.gUp?ENVIO.garmin.toast:'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN'):(ENVIO[marcaRel()]||ENVIO.garmin).toast,4500);render();
-  }catch(e){toast('FALHA NO ENVIO // '+e.message,3500)}
+    const cf=confereDoc(ev,p);
+    if(cf&&cf.av.length){LS.set('envAviso',{ds,av:cf.av,em:Date.now()});toast('ENVIADO, MAS CONFIRA // '+cf.av[0].toUpperCase()+'. USE MAIS › DISPOSITIVOS › TESTAR ENVIO',7000)}
+    else toast(mc==='garmin'?(D.athlete&&D.athlete.gUp?ENVIO.garmin.toast:'ENVIADA AO INTERVALS // LIGUE O ENVIO AO GARMIN'):(ENVIO[mc]||ENVIO.garmin).toast,4500);
+    render();
+    if(mc==='apple'&&!LS.get('appleVisto',0)){LS.set('appleVisto',1);setTimeout(appleGuiaSheet,900)}
+  }catch(e){
+    const m=String(e&&e.message||'');
+    if(/Failed to fetch|NetworkError|Load failed/i.test(m)||(e&&e.name==='TypeError')){filaEnvio(ds);toast('SEM CONEXÃO // O TREINO FICA NA FILA E VAI SOZINHO QUANDO A INTERNET VOLTAR',5000)}
+    else if(/HTTP 401|HTTP 403/.test(m))toast('FALHA NO ENVIO // O INTERVALS NÃO ACEITOU O LOGIN. ENTRE DE NOVO EM MAIS › CONTA',6000);
+    else toast('FALHA NO ENVIO // '+m,4500)}
 }
 
 /* ================= Coach (regras; Claude entra na fase 2) ================= */
@@ -3761,7 +3813,7 @@ const DICA_MARCA={
   suunto:'No intervals.icu, abra Configurações → Conexões → <b>Suunto</b>, autorize e marque <b>Baixar atividades</b>. Para as antigas, use <b>Download Old Data</b>.',
   huawei:'No intervals.icu, abra Configurações → Conexões → <b>Huawei</b>, autorize com a conta Huawei e marque <b>Baixar atividades</b>. No app Saúde do celular, deixe a sincronização ligada.',
   wahoo:'No intervals.icu, abra Configurações → Conexões → <b>Wahoo</b>, autorize e marque <b>Baixar atividades</b>.',
-  apple:'O Intervals não lê direto do Apple Watch. No iPhone, use um app ponte: o <b>HealthFit</b> (ou o RunGap) manda as corridas do app Saúde para o Intervals. Depois confira se elas chegam. Não use o Strava como ponte: o Strava não libera os dados.',
+  apple:'O Intervals não lê direto do Apple Watch. No iPhone, o app <b>Intervals.icu Companion</b> (grátis) manda as corridas do app Saúde para o Intervals: abra o app, entre com a conta do Intervals e permita o acesso ao Saúde. O <b>HealthFit</b> também faz isso, mas use só UM dos dois, senão a corrida entra duas vezes. Depois confira se ela chega. Não use o Strava como ponte: o Strava não libera os dados.',
   android:'O Intervals não lê direto do Samsung Health, do Fitbit nem do Pixel Watch. Em relógios Wear OS (Galaxy Watch, Pixel Watch) o app <b>Watchletic</b> conversa com o Intervals; para Samsung Health e Fitbit o app <b>Health Sync</b> serve de ponte. Depois confira se as corridas chegam. Não use o Strava como ponte.',
   outro:'Veja se a sua marca aparece em intervals.icu → Configurações → Conexões e ligue <b>Baixar atividades</b>. Não use o Strava como ponte: o Strava não libera os dados para outros apps.'};
 const SEM_ENVIO={
@@ -3770,12 +3822,28 @@ const SEM_ENVIO={
   apple:'<b>Treinos no relógio:</b> o envio de treino ao Apple Watch só funciona em app nativo da Apple, então o StepOn não manda ao pulso. Siga pela tela do StepOn com <b>Fazer treino agora</b> (guia com voz); a corrida pode ser gravada no próprio app.',
   android:'<b>Treinos no relógio:</b> o StepOn não manda o treino ao pulso do Samsung, Pixel ou Fitbit. Siga pela tela do StepOn com <b>Fazer treino agora</b> (guia com voz); a corrida pode ser gravada no próprio app.',
   outro:'<b>Treinos no relógio:</b> para a sua marca o StepOn não manda o treino ao pulso. Siga pela tela do StepOn com <b>Fazer treino agora</b> (guia com voz); a corrida pode ser gravada no próprio app.'};
+const APPLE_PASSOS=[
+  ['Atualizar iPhone e relógio','No iPhone: Ajustes → Geral → Atualização de Software (precisa de <b>iOS 18.6 ou mais novo</b>). No relógio: app Watch → Geral → Atualização de Software (<b>watchOS 11.1 ou mais novo</b>). Se não der para atualizar, siga o treino pelo botão <b>Fazer treino agora</b> do StepOn.'],
+  ['Instalar o Intervals.icu Companion','Na App Store, procure <b>Intervals.icu Companion</b> (grátis) e abra. Entre com a conta do Intervals. Se ele pedir a chave de API: no site intervals.icu → Configurações → Developer Settings → API Key. Permita o acesso ao app Saúde e as notificações.'],
+  ['Ligar o envio ao Apple Watch','No Companion, abra Ajustes → Treinos (Workout Settings) e ligue o envio dos treinos ao Apple Watch e a sincronização automática. Ele leva os treinos dos próximos 7 dias.'],
+  ['Atalho automático (recomendado)','No app Atalhos do iPhone: Automação → Hora do dia (por exemplo, 6h e 18h) → ação de sincronizar treinos do Companion com o Apple Watch. Assim o treino chega sem você abrir o app.'],
+  ['Testar o envio','No StepOn, toque em <b>Enviar ao relógio</b> num treino dos próximos dias. Abra o Companion no iPhone, espere sincronizar e confira no app Treino do relógio (o treino aparece como treino agendado).'],
+  ['Corridas voltando ao StepOn','Depois de correr, abra o Companion: ele leva a corrida do app Saúde ao Intervals e ela aparece no StepOn. Não use o HealthFit junto (duplica a corrida).']
+];
+function appleGuia(){
+  const ck=LS.get('appleChk',[]);
+  return `<div class="card dica" style="margin-top:12px"><p><b>Receber os treinos no Apple Watch</b></p><p class="meta" style="margin-top:4px">Marque cada passo quando fizer. Este caminho depende do app Intervals.icu Companion (de terceiros) e ainda não foi testado por nós num Apple Watch real: se algo não bater com a sua tela, mande um print.</p>
+  ${APPLE_PASSOS.map((x,i)=>`<label class="row" style="gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line2);flex-wrap:nowrap"><input type="checkbox" ${ck.includes(i)?'checked':''} onchange="appleChk(${i},this.checked)" style="width:20px;height:20px;flex:none;margin-top:2px"><span style="min-width:0"><b style="display:block;font-size:13.5px;color:var(--hi)">${i+1}. ${x[0]}</b><span class="meta" style="display:block;margin-top:2px;line-height:1.45">${x[1]}</span></span></label>`).join('')}
+  <p class="meta" style="margin-top:8px">Sem o relógio à mão ou com algum passo travado, o treino continua no StepOn: toque em <b>Fazer treino agora</b> (guia com voz) e grave a corrida no app Treino do relógio.</p></div>`;
+}
+window.appleChk=(i,v)=>{const a=LS.get('appleChk',[]).filter(x=>x!==i);if(v)a.push(i);LS.set('appleChk',a)};
+function appleGuiaSheet(){openSheet(`<div class="hd"><b>Apple Watch: como receber os treinos</b><button class="b sm" onclick="closeSheet()">✕</button></div>`+appleGuia()+`<button class="b pri full" style="margin-top:10px" onclick="closeSheet()">Entendi</button>`)}
 function devMarca(mc,apar,lastRun){
   const chega=!!lastRun&&lastRun.date.slice(0,10)>=ymd(addD(TODAY(),-30)),nm=apar||MARCAS[mc]||'Relógio';
   return `<div class="sec">DISPOSITIVOS</div><div class="card ${chega?'cur grad':'alert'}"><div class="row" style="justify-content:space-between"><h2>${esc(nm)}</h2><span class="tag ${chega?'ok':'bad'}">${chega?'CONECTADO':'ATENÇÃO'}</span></div><div class="meta">Via Intervals.icu · última corrida recebida ${lastRun?lastRun.date.slice(0,10).split('-').reverse().join('/'):'--'}</div>
   ${chega?'':`<p class="empty" style="margin-top:8px;color:var(--txt)">${DICA_MARCA[mc]||DICA_MARCA.outro}</p><a class="b sm" style="margin-top:8px;display:inline-block" href="https://intervals.icu/settings" target="_blank" rel="noopener">Abrir as conexões do Intervals</a>`}
   ${ENVIO[mc]?`<p class="empty" style="margin-top:8px;color:var(--txt)"><b>Treinos no relógio:</b> toque em <b>Enviar ao relógio</b> no treino. ${ENVIO[mc].passo}</p>`:`<p class="empty" style="margin-top:8px;color:var(--txt)">${SEM_ENVIO[mc]||SEM_ENVIO.outro}</p>`}
-  <div class="row" style="margin-top:10px;gap:8px"><button class="b sm pri" onclick="sync(1)">Sincronizar tudo</button>${ENVIO[mc]?`<button class="b sm" onclick="diagRelogio()">Testar envio ao relógio</button>`:''}</div>${trocaRel(mc)}</div>`;
+  <div class="row" style="margin-top:10px;gap:8px"><button class="b sm pri" onclick="sync(1)">Sincronizar tudo</button>${ENVIO[mc]?`<button class="b sm" onclick="diagRelogio()">Testar envio ao relógio</button>`:''}</div>${trocaRel(mc)}</div>${mc==='apple'?appleGuia():''}`;
 }
 function devApp(lastRun){
   const nm='Sem relógio';
@@ -5497,7 +5565,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-02c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-03a'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
