@@ -636,10 +636,12 @@ body.desk .pcvf:not(.sh){margin:0;height:200px;border-radius:20px;overflow:hidde
 #sheet.cheio{background:var(--bg)}#sheet.cheio.on{display:block;padding:0}
 #sheet.cheio .box{position:absolute;inset:0;width:100%;max-width:none;height:100%;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--bg);padding:calc(16px + env(safe-area-inset-top)) 14px calc(34px + env(safe-area-inset-bottom));animation:paginaEntra .2s ease-out}
 .hero{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:6px;margin:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hero::-webkit-scrollbar{display:none}
-.hero .hs{flex:none;scroll-snap-align:start;height:calc(330px + env(safe-area-inset-top));overflow:hidden;position:relative}.hero .hm{width:100%}.hero.mais .hm{width:92%}.hero .hf{width:76%}.hero .hf:only-child,.hero.sem .hf:first-child:last-child{width:100%}
+.hero .hs{flex:none;scroll-snap-align:start;height:calc(250px + env(safe-area-inset-top));overflow:hidden;position:relative}.hero .hm{width:100%}.hero.mais .hm{width:88%}.hero .hf{width:76%}.hero .hf:only-child,.hero.sem .hf:first-child:last-child{width:100%}
 .hero .map{margin:0;border:0;border-radius:0;height:100%!important;width:100%}.hero .hf img{width:100%;height:100%;object-fit:cover;display:block}
 #sheet.hero .box{padding:0 0 calc(34px + env(safe-area-inset-bottom))}#sheet.hero .hd{height:0;margin:0;padding:0;min-height:0}#sheet.hero .shfx{top:calc(14px + env(safe-area-inset-top))}#sheet.hero .shfx .shv{left:14px}
-.hpad{padding:0 16px}.hdt{margin:16px 0 4px;font-size:14px}.htit{font-size:28px;line-height:1.12;margin:0 0 4px;letter-spacing:-.02em;font-weight:800;color:var(--hi)}
+.hpad{padding:0 16px}.hdt{margin:16px 0 4px;font-size:14px}.htit{font-size:21px;line-height:1.2;margin:0 0 6px;letter-spacing:-.015em;font-weight:700;color:var(--hi)}.hpad .sst{padding-top:12px}.hpad .sst b{font-size:21px;font-weight:650}.hpad .sst span{font-size:12px}.hdt{font-size:12.5px!important}
+.mzb{position:absolute;right:10px;bottom:22px;display:flex;flex-direction:column;gap:6px;z-index:5}.mzb button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--hi);font-size:20px;line-height:1;padding:0;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.hm .lmap{position:absolute;inset:0;opacity:0;transition:opacity .35s}.hm .lmap.on{opacity:1}
 .cbl{margin:14px 0 4px;border-radius:16px;background:var(--cell);border:1px solid color-mix(in srgb,var(--blue) 38%,var(--line));padding:12px 14px 6px}.cbt{font-size:10.5px;letter-spacing:.09em;color:var(--blue);font-weight:700;margin-bottom:4px}
 .cbr{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.cbt+.cbr{border-top:0}.cbr i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}.cbr.d i{background:rgba(240,194,75,.16);color:#f0c24b}.cbr.r i{background:rgba(95,209,138,.16);color:#5fd18a}
 .cbr i svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.cbr span{font-size:13px;color:var(--dim);flex:1}.cbr b{font-size:14px;color:var(--hi);text-align:right}
@@ -3510,6 +3512,34 @@ window.openActAmigo=async(dono,id)=>{
   const b=$('#sbox').querySelector('.shv');if(b)b.setAttribute('onclick',volta);
   socLoad([k]);fotosPede(dono,()=>{if($('#sbox').dataset.actf===dono+id)openActAmigo(dono,id)});
 };
+// mapa vivo da corrida (como no Strava): aproximar, afastar e arrastar o trajeto ali mesmo. A foto fixa aparece primeiro; o mapa vivo entra por cima quando fica pronto, e se algo falhar fica a foto
+let _hm=null;
+window.hmZ=d=>{if(_hm)try{d>0?_hm.zoomIn():_hm.zoomOut()}catch(e){}};
+function liveMap(el,tr){
+  if(!el||!tr||tr.length<2||typeof maplibregl==='undefined')return;
+  dqAdd(async fim=>{let m=null,box=null,vig=null,ok=0;
+    const solta=()=>{clearInterval(vig);try{m&&m.remove()}catch(e){}if(box)box.remove();if(_hm===m)_hm=null};
+    try{
+      if(!el.isConnected)return fim();
+      const st=await mlLoad(),ll=tr.map(p=>[p[1],p[0]]);box=document.createElement('div');box.className='lmap';el.appendChild(box);
+      const b=ll.reduce((b,p)=>b.extend(p),new maplibregl.LngLatBounds(ll[0],ll[0]));
+      m=new maplibregl.Map({...optMapa(),container:box,style:clonaSt(aliviaEstilo(clonaSt(st))),pitch:0,bearing:0,maxPitch:0,dragRotate:false,attributionControl:false,fadeDuration:0,bounds:b,fitBoundsOptions:{padding:{top:70,bottom:34,left:34,right:34},maxZoom:17}});
+      try{m.touchZoomRotate.disableRotation()}catch(e){}
+      vig=setInterval(()=>{if(!el.isConnected){solta();if(!ok)fim()}},500);
+      const tmo=setTimeout(()=>{if(!ok){solta();fim()}},10000);
+      m.on('load',()=>{
+        m.addSource('rt',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:ll}}});
+        m.addSource('pt',{type:'geojson',data:{type:'FeatureCollection',features:[ll[0],ll[ll.length-1]].map((c,i)=>({type:'Feature',properties:{f:i},geometry:{type:'Point',coordinates:c}}))}});
+        const lay={'line-join':'round','line-cap':'round'};
+        m.addLayer({id:'rt0',type:'line',source:'rt',layout:lay,paint:{'line-color':TM[TEMA()].sob,'line-opacity':.6,'line-width':7}});
+        m.addLayer({id:'rt1',type:'line',source:'rt',layout:lay,paint:{'line-color':'#4a9eff','line-width':3.5}});
+        m.addLayer({id:'pt',type:'circle',source:'pt',paint:{'circle-radius':5,'circle-color':['case',['==',['get','f'],0],'#fff','#4a9eff'],'circle-stroke-width':2.5,'circle-stroke-color':['case',['==',['get','f'],0],'#4a9eff','#fff']}});
+        m.once('idle',()=>{clearTimeout(tmo);if(ok)return;ok=1;_hm=m;box.classList.add('on');fim()});
+      });
+      m.getCanvas().addEventListener('webglcontextlost',()=>{if(!ok){solta();fim()}});
+    }catch(e){solta();fim()}
+  },el);
+}
 window.openAct=async id=>{
   const a=D.acts.find(x=>x.id===id);if(!a)return;
   if(a.dist&&!AX[id]&&!isMan(a)&&!isMk(a)){openSheet('<p class="empty">Carregando parciais…</p>');try{await loadAX(id);LS.set('ax5',AX)}catch(e){}}
@@ -3517,14 +3547,14 @@ window.openAct=async id=>{
   if(isRun(a)&&!isMan(a)&&!isMk(a)&&AX[id]&&AX[id].etapas===undefined&&temConta()){openSheet('<p class="empty">Carregando etapas…</p>');await loadEtapas(id)}
   const x=AX[id]||{},pace=a.dist?a.mov/a.dist*1000:null;
   const fts=fotosDe(CFG.athlete,id),ehMk=isMk(a);
-  const slides=(x.map?`<div class="hs hm">${mapBox(id,330)}</div>`:'')+fts.map(f=>`<div class="hs hf"><img src="${fotoUrl(CFG.athlete,f)}" alt="" loading="lazy" onclick="verFoto('${CFG.athlete}','${id}','${f.p}')"></div>`).join('');
+  const slides=(x.map?`<div class="hs hm">${mapBox(id,250)}<div class="mzb"><button aria-label="Aproximar" onclick="hmZ(1)">+</button><button aria-label="Afastar" onclick="hmZ(-1)">−</button></div></div>`:'')+fts.map(f=>`<div class="hs hf"><img src="${fotoUrl(CFG.athlete,f)}" alt="" loading="lazy" onclick="verFoto('${CFG.athlete}','${id}','${f.p}')"></div>`).join('');
   const mes=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'][+a.date.slice(5,7)-1];
   let h=`<div class="hd"><button class="b sm" onclick="closeSheet()">✕</button></div>${slides?`<div class="hero${x.map?'':' sem'}${fts.length&&x.map?' mais':''}">${slides}</div>`:'<div style="height:56px"></div>'}<div class="hpad"><div class="meta hdt">${+a.date.slice(8,10)} de ${mes} @ ${a.date.slice(11,16)} · ${esc(devNome(a))}</div><h2 class="htit">${esc(a.name)}</h2>${conqBloco(a,x)}${ehMk?`<div class="card" style="margin-top:8px"><p class="empty" style="color:var(--txt)">${esc(a.por||'Um amigo')} marcou você nesta corrida. Ela conta para você como se tivesse gravado.</p><button class="b full" style="margin-top:8px" onclick="tiraMarcada('${id}')">Tirar da minha conta</button></div>`:''}<div class="arow">${isRun(a)&&!isMk(a)?`<button class="acom" onclick="openMarcar('${id}')"><span class="fjunto" data-jk="${CFG.athlete}:${id}" data-auto="${esc(autoJuntos(a).join(','))}">${comOuConvite(autoJuntos(a))}</span></button>`:'<span></span>'}<div class="aico">${isRun(a)&&!isMk(a)?`<button aria-label="Marcar quem correu junto" onclick="openMarcar('${id}')">${ICO.add}</button>`:''}<button aria-label="Adicionar foto" onclick="addFoto('${id}')">${ICO.fot}</button>${x.map?`<button aria-label="Compartilhar treino" onclick="openCartao('${id}')">${ICO.sha}</button>`:''}</div></div>`;
   h+=actCorpo(a,x,pace);
   if(isRun(a)&&!isMk(a))h+=`<div id="fb-card">${fbCard(id)}</div>`;
   if(isRun(a))h+=`<div class="coach" style="margin-top:14px"><b>COACH // LEITURA</b>${esc(coachLast(a))}</div>`;
   if(a.gpx&&isMan(a))h+=`<div class="card alert" style="margin-top:12px"><div class="lbl bad">AINDA NÃO ESTÁ NO INTERVALS</div><p class="empty" style="margin-top:4px">Esta corrida foi gravada no celular, mas o envio falhou. Ela já conta aqui no app.</p><button class="b pri full" style="margin-top:8px" onclick="resendGpx('${a.id}')">Enviar ao Intervals</button></div>`;
-  h+='</div>';openSheet(h,1);$('#sheet').classList.add('hero');$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
+  h+='</div>';openSheet(h,1);$('#sheet').classList.add('hero');if(x.map)liveMap($('#sbox .hm .map'),x.map);$('#sbox').dataset.act=id;if(isRun(a)&&!isMk(a))juntosLoad([CFG.athlete+':'+id]);fotosPede(CFG.athlete,()=>{if($('#sbox').dataset.act===id)openAct(id)});
 };
 function openSheet(h,cheio){if(SCAN)scanPara();$('#sheet').classList.remove('baixo','cheio','hero');if(cheio)$('#sheet').classList.add('cheio');const b=$('#sbox'),on=$('#sheet').classList.contains('on');b.dataset.act='';b.dataset.blk='';b.innerHTML=h;b.style.transform='';if(!on)b.scrollTop=0;
   // o X do topo vira a setinha de voltar, à esquerda do título
@@ -5588,7 +5618,7 @@ if(recLive()){recWatch(1);RTK=setInterval(recUI,1000);
    Tudo é calculado no aparelho, comparando o que o app vê agora com o que já viu antes (NT.base).
    Curtidas e comentários vêm do servidor; território, recordes, conquistas e disposição vêm dos próprios dados. */
 (()=>{try{const m=location.search.match(/[?&]seg=(i\d{3,12})/i);if(m){const id=m[1].toLowerCase();history.replaceState(null,'',location.pathname);setTimeout(()=>{if(temConta()&&id!==CFG.athlete)openPerfilAmigo(id)},3500)}}catch(e){}})();
-const BUILD='2026-12-03c'; // troque a cada publicação: o app confere sozinho se há versão nova
+const BUILD='2026-12-03d'; // troque a cada publicação: o app confere sozinho se há versão nova
 setTimeout(async()=>{try{const t=await (await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='([^']+)'/);
   if(m&&m[1]!==BUILD&&sessionStorage.getItem('rl')!==m[1]){sessionStorage.setItem('rl',m[1]);location.replace(location.pathname+'?v='+m[1])}}catch(e){}},3000);
 const NT_NOVOS=[{id:'v1118a',tit:'Notificações no StepOn',desc:'Aqui você vê curtidas, comentários, treinos concluídos, desafios, recordes, conquistas e território.',t:Date.parse('2026-11-18T12:00:00')},
